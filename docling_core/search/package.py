@@ -7,6 +7,7 @@
 
 import re
 from typing import Final
+import importlib.metadata
 
 from pydantic import BaseModel, StrictStr, StringConstraints
 from typing_extensions import Annotated
@@ -27,7 +28,7 @@ class Package(BaseModel, extra="forbid"):
 
     name: StrictStr
     version: Annotated[str, StringConstraints(strict=True, pattern=VERSION_PATTERN)] = (
-        "0.3.0"
+        importlib.metadata.version("docling-core")
     )
 
     def __hash__(self):
