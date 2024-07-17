@@ -6,7 +6,7 @@
 """Models for the Docling Document data type."""
 
 from datetime import datetime
-from typing import Generic, Optional, Union
+from typing import Generic, List, Optional, Union
 
 from pydantic import (
     AnyHttpUrl,
@@ -16,6 +16,7 @@ from pydantic import (
     StrictStr,
     model_validator,
 )
+from tabulate import tabulate
 
 from docling_core.search.mapping import es_field
 from docling_core.types.base import (
@@ -391,3 +392,98 @@ class ExportedCCSDocument(
                     item["$ref"] = ref
 
         return data
+
+    def _resolve_ref(self, item: Ref) -> Optional[Table]:
+        """Return the resolved reference in case of table reference, otherwise None."""
+        result: Optional[Table] = None
+
+        # NOTE: currently only resolves table refs & makes assumptions on ref parts
+        if item.obj_type == "table" and self.tables:
+            parts = item.ref.split("/")
+            result = self.tables[int(parts[2])]
+
+        return result
+
+    def export_to_markdown(
+        self,
+        sep: str = "\n\n",
+        start_incl: int = 0,
+        end_excl: Optional[int] = None,
+    ) -> str:
+        """Return a Markdown serialization of the document."""
+        has_title = False
+        prev_text = ""
+        md_texts: List[str] = []
+
+        if self.main_text is not None:
+            for orig_item in self.main_text[start_incl:end_excl]:
+                markdown_text = ""
+
+                item = (
+                    self._resolve_ref(orig_item)
+                    if isinstance(orig_item, Ref)
+                    else orig_item
+                )
+                if item is None:
+                    continue
+
+                item_type = item.obj_type
+                if isinstance(item, BaseText) and item_type in {
+                    "title",
+                    "subtitle-level-1",
+                    "paragraph",
+                    "caption",
+                }:
+                    text = item.text
+
+                    print(f"{text=}, {has_title=}, {item_type=}")
+
+                    # ignore repeated text
+                    if prev_text == text:
+                        continue
+                    else:
+                        prev_text = text
+
+                    # first title match
+                    if item_type == "title" and not has_title:
+                        markdown_text = f"# {text}"
+                        has_title = True
+
+                    # secondary titles
+                    elif item_type in {"title", "subtitle-level-1"} or (
+                        has_title and item_type == "title"
+                    ):
+                        markdown_text = f"## {text}"
+
+                    # normal text
+                    else:
+                        markdown_text = text
+
+                elif isinstance(item, Table) and item.data:
+                    table = []
+                    for row in item.data:
+                        tmp = []
+                        for col in row:
+                            tmp.append(col.text)
+                        table.append(tmp)
+
+                    if len(table) > 1 and len(table[0]) > 0:
+                        try:
+                            md_table = tabulate(
+                                table[1:], headers=table[0], tablefmt="github"
+                            )
+                        except ValueError:
+                            md_table = tabulate(
+                                table[1:],
+                                headers=table[0],
+                                tablefmt="github",
+                                disable_numparse=True,
+                            )
+
+                        markdown_text = md_table
+
+                if markdown_text:
+                    md_texts.append(markdown_text)
+
+        result = sep.join(md_texts)
+        return result
