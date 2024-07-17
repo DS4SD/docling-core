@@ -65,7 +65,7 @@ ACQUISITION_TYPE = Literal[
 
 
 class Identifier(AliasModel, Generic[IdentifierTypeT], extra="forbid"):
-    """Unique identifier of a Deep Search data object."""
+    """Unique identifier of a Docling data object."""
 
     type_: IdentifierTypeT = Field(
         alias="type",
@@ -85,7 +85,7 @@ class Identifier(AliasModel, Generic[IdentifierTypeT], extra="forbid"):
         alias="_name",
         title="_Name",
         description=(
-            "A unique identifier of the data object across Deep Search, consisting of "
+            "A unique identifier of the data object across Docling, consisting of "
             "the concatenation of type and value in lower case, separated by hash "
             "(#)."
         ),
@@ -122,7 +122,7 @@ class Log(AliasModel, extra="forbid"):
         json_schema_extra=es_field(type="keyword", ignore_above=8191),
     )
     agent: StrictStr = Field(
-        description="The Deep Search agent that performed the task, e.g., CCS or CXS.",
+        description="The Docling agent that performed the task, e.g., CCS or CXS.",
         json_schema_extra=es_field(type="keyword", ignore_above=8191),
     )
     type_: StrictStr = Field(
@@ -142,7 +142,7 @@ class Log(AliasModel, extra="forbid"):
 
 
 class FileInfoObject(AliasModel):
-    """Filing information for any data object to be stored in a Deep Search database."""
+    """Filing information for any data object to be stored in a Docling database."""
 
     filename: StrictStr = Field(
         description="The name of a persistent object that created this data object",
@@ -160,7 +160,7 @@ class FileInfoObject(AliasModel):
     document_hash: StrictStr = Field(
         description=(
             "A unique identifier of this data object within a collection of a "
-            "Deep Search database"
+            "Docling database"
         ),
         alias="document-hash",
         json_schema_extra=es_field(type="keyword", ignore_above=8191),
@@ -168,7 +168,7 @@ class FileInfoObject(AliasModel):
 
 
 class CollectionTypeEnum(str, Enum):
-    """Enumeration of valid Deep Search collection types."""
+    """Enumeration of valid Docling collection types."""
 
     generic = "Generic"
     document = "Document"
