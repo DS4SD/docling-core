@@ -8,6 +8,7 @@ import json
 import glob
 import pytest
 from pydantic import BaseModel, ValidationError
+from typing import Optional
 
 from docling_core.types.base import (
     CollectionNameTypeT,
@@ -89,7 +90,7 @@ def test_description_advanced_t():
 
     class MyAdvanced(BaseModel):
         serial: str
-        comment: str | None = None
+        comment: Optional[str] = None
 
     # with a model and bound specification
     adv_inst = MyAdvanced(serial="CXS12345", comment="public document")
