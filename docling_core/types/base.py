@@ -39,6 +39,10 @@ PredicateKeyNameT = TypeVar("PredicateKeyNameT", bound=str)
 PredicateKeyTypeT = TypeVar("PredicateKeyTypeT", bound=str)
 ProvenanceTypeT = TypeVar("ProvenanceTypeT", bound=str)
 CollectionNameTypeT = TypeVar("CollectionNameTypeT", bound=str)
+Coordinates = Annotated[
+    list[float],
+    Field(min_length=2, max_length=2, json_schema_extra=es_field(type="geo_point")),
+]
 T = TypeVar("T", bound=Hashable)
 
 UniqueList = Annotated[
