@@ -6,7 +6,7 @@
 """Models for the Docling Document data type."""
 
 from datetime import datetime
-from typing import Generic, List, Optional, Union
+from typing import Generic, Optional, Union
 
 from pydantic import (
     AnyHttpUrl,
@@ -413,7 +413,7 @@ class ExportedCCSDocument(
         """Return a Markdown serialization of the document."""
         has_title = False
         prev_text = ""
-        md_texts: List[str] = []
+        md_texts: list[str] = []
 
         if self.main_text is not None:
             for orig_item in self.main_text[start_incl:end_excl]:
@@ -435,8 +435,6 @@ class ExportedCCSDocument(
                     "caption",
                 }:
                     text = item.text
-
-                    print(f"{text=}, {has_title=}, {item_type=}")
 
                     # ignore repeated text
                     if prev_text == text:
