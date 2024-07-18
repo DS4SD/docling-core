@@ -406,17 +406,32 @@ class ExportedCCSDocument(
 
     def export_to_markdown(
         self,
-        sep: str = "\n\n",
-        start_incl: int = 0,
-        end_excl: Optional[int] = None,
+        delim: str = "\n\n",
+        main_text_start: int = 0,
+        main_text_stop: Optional[int] = None,
     ) -> str:
-        """Return a Markdown serialization of the document."""
+        r"""Serialize to Markdown.
+
+        Operates on a slice of the document's main_text as defined through arguments
+        main_text_start and main_text_stop; defaulting to the whole main_text.
+
+        Args:
+            delim (str, optional): Delimiter to use when concatenating the various
+                Markdown parts. Defaults to "\n\n".
+            main_text_start (int, optional): Main-text slicing start index (inclusive).
+                Defaults to 0.
+            main_text_end (Optional[int], optional): Main-text slicing stop index
+                (exclusive). Defaults to None.
+
+        Returns:
+            str: The exported Markdown representation.
+        """
         has_title = False
         prev_text = ""
         md_texts: list[str] = []
 
         if self.main_text is not None:
-            for orig_item in self.main_text[start_incl:end_excl]:
+            for orig_item in self.main_text[main_text_start:main_text_stop]:
                 markdown_text = ""
 
                 item = (
@@ -483,5 +498,5 @@ class ExportedCCSDocument(
                 if markdown_text:
                     md_texts.append(markdown_text)
 
-        result = sep.join(md_texts)
+        result = delim.join(md_texts)
         return result
