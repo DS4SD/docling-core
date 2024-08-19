@@ -500,3 +500,76 @@ class ExportedCCSDocument(
 
         result = delim.join(md_texts)
         return result
+
+    
+class HierarchicalDocument(
+    MinimalDocument,
+    Generic[
+        DescriptionAdvancedT,
+        DescriptionAnalyticsT,
+        IdentifierTypeT,
+        LanguageT,
+        CollectionNameTypeT,
+    ],
+):
+    """HierarchicalDocument model for Docling."""
+
+    # description of the document
+
+    obj_type: Optional[StrictStr] = Field(
+        "pdf-document",
+        alias="type",
+        json_schema_extra=es_field(type="keyword", ignore_above=8191),
+    )
+
+    description: CCSDocumentDescription[
+        DescriptionAdvancedT,
+        DescriptionAnalyticsT,
+        IdentifierTypeT,
+        LanguageT,
+        CollectionNameTypeT,
+    ]
+
+    file_info: CCSFileInfoObject = Field(alias="file-info")
+
+    s3_data: Optional[S3Data] = Field(default=None, alias="_s3_data")
+
+    identifiers: Optional[list[Identifier[IdentifierTypeT]]] = None
+
+    # content of the document
+
+    prov: list[Union[Ref, BaseText]] = Field(
+        default=None, alias="prov"
+    )
+    
+    body: list[Union[Ref, BaseText]] = Field(
+        default=None, alias="body"
+    )
+    meta: list[Union[Ref, BaseText]] = Field(
+        default=None, alias="meta"
+    )
+
+    texts: list[Union[Ref, BaseText]] = Field(
+        default=None, alias="texts"
+    )
+    tables: list[Union[Ref, BaseText]] = Field(
+        default=None, alias="tables"
+    )
+    figures: list[Union[Ref, BaseText]] = Field(
+        default=None, alias="figures"
+    )
+
+    page_headers: list[Union[Ref, BaseText]] = Field(
+        default=None, alias="page_headers"
+    )
+    page_footers: list[Union[Ref, BaseText]] = Field(
+        default=None, alias="page_footers"
+    )
+    footnotes: list[Union[Ref, BaseText]] = Field(
+        default=None, alias="footnotes"
+    )
+
+    other: list[Union[Ref, BaseText]] = Field(
+        default=None, alias="other"
+    )
+
