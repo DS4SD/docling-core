@@ -18,7 +18,7 @@ DomainT = TypeVar("DomainT", bound=str)
 
 
 class S3Path(BaseModel, extra="forbid"):
-    """The path details within a cloud object storage for CCS-parsed files."""
+    """The path details within a cloud object storage for Documents."""
 
     bucket: StrictStr
     prefix: StrictStr
@@ -30,7 +30,7 @@ class S3Path(BaseModel, extra="forbid"):
 
 
 class S3CcsData(BaseModel, extra="forbid"):
-    """The access details to a cloud object storage for CCS-parsed files."""
+    """The access details to a cloud object storage for Documents."""
 
     endpoint: StrictStr
     paths: UniqueList[S3Path] = Field(min_length=1)

@@ -20,7 +20,7 @@ from docling_core.types.base import (
     Log,
     StrictDateTime,
 )
-from docling_core.types.doc.document import CCSDocumentDescription
+from docling_core.types.doc.document import DocumentDescription
 from docling_core.types.rec.record import RecordDescription
 
 
@@ -215,11 +215,11 @@ def test_collection_document_info():
             "alias": ["patent"],
         },
     }
-    CCSDocumentDescription(**desc_dict)
+    DocumentDescription(**desc_dict)
 
     desc_dict["collection"]["type"] = "Record"
     with pytest.raises(ValidationError, match="collection.type"):
-        CCSDocumentDescription(**desc_dict)
+        DocumentDescription(**desc_dict)
 
 
 def test_collection_record_info():

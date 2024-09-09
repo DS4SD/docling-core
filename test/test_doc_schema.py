@@ -18,23 +18,23 @@ from docling_core.types.base import (
     LanguageT,
 )
 from docling_core.types.doc.document import (
-    CCSDocument,
-    CCSDocumentDescription,
+    DocumentDescription,
+    LayoutDocument,
     Publication,
 )
 
 
 def test_ccs_document():
-    """Validate data with CCSDocument schema."""
+    """Validate data with Document schema."""
     for filename in glob.glob("test/data/doc/doc-*.json"):
         with open(filename) as file_obj:
             file_json = file_obj.read()
         try:
             # do not pass strict=True, since date input values are not an instance of datetime.
-            CCSDocument.model_validate_json(file_json)
+            LayoutDocument.model_validate_json(file_json)
             # try as well as dictionary
             doc = json.loads(file_json)
-            CCSDocument.model_validate(doc)
+            LayoutDocument.model_validate(doc)
         except ValidationError as e:
             print(f"Validation error in file {filename}:\n{e.json()}")
             raise
@@ -43,8 +43,8 @@ def test_ccs_document():
     try:
         with open("test/data/doc/error-1.json") as file_obj:
             file_json = file_obj.read()
-        CCSDocument.model_validate_json(file_json)
-        assert False, f"Data in file {filename} should be invalid for CCSDocument model"
+        LayoutDocument.model_validate_json(file_json)
+        assert False, f"Data in file {filename} should be invalid for Document model"
     except ValidationError as e:
         for error in e.errors():
             print(type(error))
@@ -58,7 +58,7 @@ def test_ccs_document():
         open("test/data/doc/error-2.json") as file_obj,
     ):
         file_json = file_obj.read()
-        CCSDocument.model_validate_json(file_json)
+        LayoutDocument.model_validate_json(file_json)
 
     # check doc-error-3 is invalid for wrong types in citation_count and reference_count
     with (
@@ -66,7 +66,7 @@ def test_ccs_document():
         open("test/data/doc/error-3.json") as file_obj,
     ):
         file_json = file_obj.read()
-        CCSDocument.model_validate_json(file_json)
+        LayoutDocument.model_validate_json(file_json)
 
 
 def test_publication_journal():
@@ -89,15 +89,15 @@ def test_description_advanced_t():
         desc = json.load(file_obj)["description"]
 
     # without advanced
-    CCSDocumentDescription.model_validate(desc)
+    DocumentDescription.model_validate(desc)
 
     # any dictionary is valid, since it is not parametrized
-    CCSDocumentDescription(**desc, advanced={"serial": "CXS12345"})
-    CCSDocumentDescription(**desc, advanced={0: "CXS12345"})
+    DocumentDescription(**desc, advanced={"serial": "CXS12345"})
+    DocumentDescription(**desc, advanced={0: "CXS12345"})
     with pytest.raises(
         ValidationError, match="should be a valid dictionary or instance of BaseModel"
     ):
-        CCSDocumentDescription(**desc, advanced=False)
+        DocumentDescription(**desc, advanced=False)
 
     class MyAdvanced(BaseModel):
         serial: str
@@ -105,20 +105,20 @@ def test_description_advanced_t():
 
     # with a model and bound specification
     adv_inst = MyAdvanced(serial="CXS12345", comment="public document")
-    CCSDocumentDescription(**desc, advanced=adv_inst)
+    DocumentDescription(**desc, advanced=adv_inst)
     with pytest.raises(ValidationError, match="Field required"):
-        CCSDocumentDescription(**desc, advanced=MyAdvanced(comment="public document"))
+        DocumentDescription(**desc, advanced=MyAdvanced(comment="public document"))
 
     # with a model and generic type specification
     advanced = MyAdvanced(serial="CXS12345", comment="public document")
-    CCSDocumentDescription[
+    DocumentDescription[
         MyAdvanced,
         DescriptionAnalyticsT,
         IdentifierTypeT,
         LanguageT,
         CollectionNameTypeT,
     ](**desc)
-    CCSDocumentDescription[
+    DocumentDescription[
         MyAdvanced,
         DescriptionAnalyticsT,
         IdentifierTypeT,
@@ -126,7 +126,7 @@ def test_description_advanced_t():
         CollectionNameTypeT,
     ](**desc, advanced=adv_inst)
     with pytest.raises(ValidationError, match="Field required"):
-        CCSDocumentDescription[
+        DocumentDescription[
             MyAdvanced,
             DescriptionAnalyticsT,
             IdentifierTypeT,
@@ -135,7 +135,7 @@ def test_description_advanced_t():
         ](**desc, advanced={})
 
     # deriving a new type
-    MyDocument = CCSDocumentDescription[
+    MyDocument = DocumentDescription[
         MyAdvanced,
         DescriptionAnalyticsT,
         IdentifierTypeT,

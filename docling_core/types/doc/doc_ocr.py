@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-"""Models for CCS objects with OCR."""
+"""Models for Document objects with OCR."""
 from typing import Any, Dict, List, Literal
 
 from pydantic import BaseModel, Field

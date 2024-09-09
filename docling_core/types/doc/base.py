@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-"""Define common models across CCS objects."""
+"""Define common models across Documents."""
 from typing import Annotated, Literal, Optional, Union
 
 from pydantic import BaseModel, Field, PositiveInt, StrictStr

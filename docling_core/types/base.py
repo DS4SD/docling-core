@@ -122,7 +122,7 @@ class Log(AliasModel, extra="forbid"):
         json_schema_extra=es_field(type="keyword", ignore_above=8191),
     )
     agent: StrictStr = Field(
-        description="The Docling agent that performed the task, e.g., CCS or CXS.",
+        description="The Docling agent that performed the task.",
         json_schema_extra=es_field(type="keyword", ignore_above=8191),
     )
     type_: StrictStr = Field(

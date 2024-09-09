@@ -10,7 +10,7 @@ import os
 import jsondiff
 
 from docling_core.search.json_schema_to_search_mapper import JsonSchemaToSearchMapper
-from docling_core.types.doc.document import ExportedCCSDocument
+from docling_core.types.doc.document import LayoutDocument
 from docling_core.types.rec.record import Record
 
 
@@ -23,7 +23,7 @@ def _load(filename):
 
 def test_json_schema_to_search_mapper_0():
     """Test the class JsonSchemaToSearchMapper."""
-    s = ExportedCCSDocument.model_json_schema()
+    s = LayoutDocument.model_json_schema()
 
     mapper = JsonSchemaToSearchMapper(
         mappings_extra={

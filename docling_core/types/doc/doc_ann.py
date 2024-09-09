@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-"""Models for annotations and predictions in CCS."""
+"""Models for annotations and predictions on Documents."""
 from typing import Any
 
 from pydantic import BaseModel

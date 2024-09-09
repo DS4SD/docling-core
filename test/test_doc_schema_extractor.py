@@ -8,11 +8,11 @@ import json
 
 from pydantic import ValidationError
 
-from docling_core.types.doc.document import CCSDocument
+from docling_core.types.doc.document import LayoutDocument
 
 
 def test_ccs_document_update():
-    """Validate data with CCSDocument extract."""
+    """Validate data with Document extract."""
     filename = "test/data/doc/ext-1.json"
     try:
         with open(filename) as f:
@@ -21,7 +21,7 @@ def test_ccs_document_update():
                 if "$ref" in item:
                     assert False, f"$ref should not be in file {filename}"
 
-            doc = CCSDocument.model_validate(raw_doc)
+            doc = LayoutDocument.model_validate(raw_doc)
 
             if doc.description.abstract:
                 assert False, f"Abstract should not be present"

@@ -54,7 +54,7 @@ class FileInfoDescription(BaseModel, extra="forbid"):
     creation_date: Optional[str] = None  # datetime
 
 
-class FileInfoObject(FileInfoObject, extra="forbid"):
+class LayoutFileInfoObject(FileInfoObject, extra="forbid"):
     """File info object."""
 
     num_pages: Optional[int] = Field(default=None, alias="#-pages")
@@ -260,7 +260,7 @@ class SimpleDocument(
         CollectionNameTypeT,
     ],
 ):
-    """Minimal model for a document."""
+    """Simple model for a document."""
 
     name: StrictStr = Field(alias="_name")
     obj_type: Optional[StrictStr] = Field("document", alias="type")
@@ -280,7 +280,7 @@ class SimpleDocument(
 
 
 class LayoutDocument(
-    MinimalDocument,
+    SimpleDocument,
     Generic[
         DescriptionAdvancedT,
         DescriptionAnalyticsT,
@@ -361,7 +361,12 @@ class LayoutDocument(
         delim: str = "\n\n",
         main_text_start: int = 0,
         main_text_stop: Optional[int] = None,
-        main_text_labels: Optional[List[str]] = ["title", "subtitle-level-1", "paragraph", "caption"]     
+        main_text_labels: list[str] = [
+            "title",
+            "subtitle-level-1",
+            "paragraph",
+            "caption",
+        ],
     ) -> str:
         r"""Serialize to Markdown.
 

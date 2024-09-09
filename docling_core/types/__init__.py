@@ -17,9 +17,9 @@ from docling_core.types.doc.base import (  # noqa
     Ref,
 )
 from docling_core.types.doc.document import (  # noqa
-    CCSDocumentDescription as DocumentDescription,
+    DocumentDescription as DocumentDescription,
 )
-from docling_core.types.doc.document import CCSFileInfoObject as FileInfoObject  # noqa
-from docling_core.types.doc.document import ExportedCCSDocument as Document  # noqa
+from docling_core.types.doc.document import FileInfoObject as FileInfoObject  # noqa
+from docling_core.types.doc.document import LayoutDocument as Document  # noqa
 from docling_core.types.gen.generic import Generic  # noqa
 from docling_core.types.rec.record import Record  # noqa
