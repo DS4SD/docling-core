@@ -55,8 +55,10 @@ def test_document_md_export():
 
     md = doc.export_to_markdown()
 
+    """
     with open("test/data/doc/md-export.md", "w") as gold_obj:
         gold_obj.write(md)
+    """
 
     with open("test/data/doc/md-export.md") as gold_obj:
         gold_data = gold_obj.read().strip()
@@ -72,8 +74,10 @@ def test_document_xml_export():
     doc = Document.model_validate_json(src_data)
     xml = doc.export_to_xml(add_new_line=True)
 
+    """
     with open("test/data/doc/md-export.xml", "w") as gold_obj:
         gold_obj.write(xml)
+    """
 
     with open("test/data/doc/md-export.xml", "r") as gold_obj:
         gold_data = gold_obj.read().strip()
