@@ -634,7 +634,7 @@ class ExportedCCSDocument(
         Returns:
             str: The content of the document formatted as an XML string.
         """
-        xml_str = "<document>"
+        xml_str = DocumentToken.BEG_DOCUMENT.value
 
         new_line = ""
         if add_new_line:
@@ -710,6 +710,6 @@ class ExportedCCSDocument(
 
                     xml_str += f"</{item_type}>{new_line}"
 
-        xml_str += "</document>"
+        xml_str += DocumentToken.END_DOCUMENT.value
 
         return xml_str
