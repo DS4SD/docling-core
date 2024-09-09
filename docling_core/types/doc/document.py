@@ -517,6 +517,7 @@ class ExportedCCSDocument(
             "caption",
             "table",
         ],
+        strict_text: bool = False,
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -562,14 +563,20 @@ class ExportedCCSDocument(
 
                     # first title match
                     if item_type == "title" and not has_title:
-                        markdown_text = f"# {text}"
+                        if strict_text:
+                            markdown_text = f"{text}"
+                        else:
+                            markdown_text = f"# {text}"
                         has_title = True
 
                     # secondary titles
                     elif item_type in {"title", "subtitle-level-1"} or (
                         has_title and item_type == "title"
                     ):
-                        markdown_text = f"## {text}"
+                        if strict_text:
+                            markdown_text = f"{text}"
+                        else:
+                            markdown_text = f"## {text}"
 
                     # normal text
                     else:
@@ -579,6 +586,7 @@ class ExportedCCSDocument(
                     isinstance(item, Table)
                     and item.data
                     and item_type in main_text_labels
+                    and not strict_text
                 ):
                     table = []
                     for row in item.data:
