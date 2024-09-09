@@ -35,12 +35,12 @@ from docling_core.types.doc.base import (
     BaseCell,
     BaseText,
     BitmapObject,
+    Figure,
     PageDimensions,
     PageReference,
     Ref,
     S3Data,
     Table,
-    Figure,
 )
 from docling_core.utils.alias import AliasModel
 
@@ -428,10 +428,12 @@ class ExportedCCSDocument(
         delim: str = "\n\n",
         main_text_start: int = 0,
         main_text_stop: Optional[int] = None,
-        main_text_labels: list[str] = ["title",
-                                       "subtitle-level-1",
-                                       "paragraph",
-                                       "caption",]
+        main_text_labels: list[str] = [
+            "title",
+            "subtitle-level-1",
+            "paragraph",
+            "caption",
+        ],
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -466,9 +468,7 @@ class ExportedCCSDocument(
                     continue
 
                 item_type = item.obj_type
-                if isinstance(item, BaseText) and item_type in {
-
-                }:
+                if isinstance(item, BaseText) and item_type in {}:
                     text = item.text
 
                     # ignore repeated text
@@ -526,22 +526,53 @@ class ExportedCCSDocument(
         delim: str = "\n\n",
         main_text_start: int = 0,
         main_text_stop: Optional[int] = None,
-        main_text_labels: list[str] = ["title",
-                                       "subtitle-level-1",
-                                       "paragraph",
-                                       "caption",],
+        main_text_labels: list[str] = [
+            "title",
+            "subtitle-level-1",
+            "paragraph",
+            "caption",
+        ],
         location_tagging: bool = True,
         location_dimensions: list[int] = [500, 500],
-        add_new_line: bool = True
+        add_new_line: bool = True,
     ) -> str:
-        r"""Serialize to XML."""
+        r"""Exports the document content to an XML format.
 
-        xml_str="<document>"
+        Operates on a slice of the document's main_text as defined through arguments
+        main_text_start and main_text_stop; defaulting to the whole main_text.
+
+        Args:
+            delim (str, optional): The delimiter used to separate text blocks in the
+                exported XML. Default is two newline characters ("\n\n").
+            main_text_start (int, optional): The starting index of the main text to
+                be included in the XML. Default is 0 (the beginning of the text).
+            main_text_stop (Optional[int], optional): The stopping index of the main
+                text. If set to None, the export includes text up to the end.
+                Default is None.
+            main_text_labels (list[str], optional): A list of text labels that
+                categorize the different sections of the document (e.g., "title",
+                "subtitle-level-1", "paragraph", "caption"). Default labels are
+                "title", "subtitle-level-1", "paragraph", and "caption".
+            location_tagging (bool, optional): Determines whether to include
+                location-based tagging in the XML. If True, the exported XML will
+                contain information about the locations of the text elements.
+                Default is True.
+            location_dimensions (list[int], optional): Specifies the dimensions
+                (width and height) for the location tagging, if enabled.
+                Default is [500, 500].
+            add_new_line (bool, optional): Whether to add new line characters after
+                each text block. If True, a new line is added after each block of
+                text in the XML. Default is True.
+
+        Returns:
+            str: The content of the document formatted as an XML string.
+        """
+        xml_str = "<document>"
 
         new_line = ""
         if add_new_line:
             new_line = "\n"
-        
+
         if self.main_text is not None:
             for orig_item in self.main_text[main_text_start:main_text_stop]:
 
@@ -550,61 +581,68 @@ class ExportedCCSDocument(
                     if isinstance(orig_item, Ref)
                     else orig_item
                 )
-                
+
                 if item is None:
                     continue
 
                 prov = item.prov
-                
+
                 loc_str = ""
-                if location_tagging and (prov!=None) and (len(prov)>0):
+                if (
+                    location_tagging
+                    and self.page_dimensions is not None
+                    and prov is not None
+                    and len(prov) > 0
+                ):
 
                     page = prov[0].page
-                    page_dim = self.page_dimensions[page-1]
+                    page_dim = self.page_dimensions[page - 1]
 
-                    page_w = float(page_dim.width)/float(location_dimensions[0])
-                    page_h = float(page_dim.height)/float(location_dimensions[1])
-                    
-                    X0 = round(float(prov[0].bbox[0])/float(page_w))
-                    X1 = round(float(prov[0].bbox[2])/float(page_w))
-                    Y0 = round(float(prov[0].bbox[1])/float(page_h))
-                    Y1 = round(float(prov[0].bbox[3])/float(page_h))
-                    
-                    loc_str = f"<location>__loc_{X0}__loc_{Y0}__loc_{X1}__loc_{Y1}</location>"
-                
+                    page_w = float(page_dim.width) / float(location_dimensions[0])
+                    page_h = float(page_dim.height) / float(location_dimensions[1])
+
+                    x0 = round(float(prov[0].bbox[0]) / float(page_w))
+                    x1 = round(float(prov[0].bbox[2]) / float(page_w))
+                    y0 = round(float(prov[0].bbox[1]) / float(page_h))
+                    y1 = round(float(prov[0].bbox[3]) / float(page_h))
+
+                    loc_str = (
+                        f"<location>__loc_{x0}__loc_{y0}__loc_{x1}__loc_{y1}</location>"
+                    )
+
                 item_type = item.obj_type
                 if isinstance(item, BaseText) and (item_type in main_text_labels):
                     text = item.text
-                        
+
                     xml_str += f"<{item_type}>{loc_str}{text}</{item_type}>{new_line}"
 
                 elif isinstance(item, Table):
 
                     xml_str += f"<{item_type}>{loc_str}"
 
-                    if item.text!=None and len(item.text)>0:
+                    if item.text is not None and len(item.text) > 0:
                         xml_str += f"<caption>{item.text}</caption>{new_line}"
 
-                    if item.data!=None and len(item.data)>0:
-                        for i,row in enumerate(item.data):
+                    if item.data is not None and len(item.data) > 0:
+                        for i, row in enumerate(item.data):
                             xml_str += f"<row_{i}>"
-                            for j,col in enumerate(row):
+                            for j, col in enumerate(row):
                                 text = col.text
                                 xml_str += f"<col_{j}>{text}</col_{j}>"
-                            
+
                             xml_str += f"</row_{i}>{new_line}"
-                            
-                    xml_str += f"</{item_type}>{new_line}"                           
+
+                    xml_str += f"</{item_type}>{new_line}"
 
                 elif isinstance(item, Figure):
 
                     xml_str += f"<{item_type}>{loc_str}"
 
-                    if item.text!=None and len(item.text)>0:
+                    if item.text is not None and len(item.text) > 0:
                         xml_str += f"<caption>{item.text}</caption>{new_line}"
-                    
-                    xml_str += f"</{item_type}>{new_line}"                           
 
-        xml_str += "</document>"                    
-                    
+                    xml_str += f"</{item_type}>{new_line}"
+
+        xml_str += "</document>"
+
         return xml_str

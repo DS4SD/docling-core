@@ -151,12 +151,13 @@ class Table(BaseCell):
     data: Optional[list[list[Union[GlmTableCell, TableCell]]]] = None
     model: Optional[str] = None
 
-    
+
 class Figure(BaseCell):
     """Figure."""
 
-    figure_type: str = None
+    figure_type: Union[str, None] = None
     model: Optional[str] = None
+
 
 class BaseText(AliasModel):
     """Base model for text objects."""
