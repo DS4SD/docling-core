@@ -412,6 +412,19 @@ class DocumentToken(Enum):
 
         return special_tokens
 
+    @classmethod
+    def get_loc_token(val:float, rnorm:int=100):
+        """Function to get location tokens."""
+        val_ = round(rnorm*val)
+
+        if val_<0:
+            return f"__loc_0"
+
+        if val_>rnorm:
+            return f"__loc_{rnorm}"
+        
+        return f"__loc_{val_}"
+
 
 class ExportedCCSDocument(
     MinimalDocument,
@@ -598,6 +611,8 @@ class ExportedCCSDocument(
             "subtitle-level-1",
             "paragraph",
             "caption",
+            "table",
+            "figure"
         ],
         location_tagging: bool = True,
         location_dimensions: list[int] = [500, 500],
@@ -654,7 +669,7 @@ class ExportedCCSDocument(
 
                 prov = item.prov
 
-                loc_str = ""
+                loc_str = "" # default is zero
                 if (
                     location_tagging
                     and self.page_dimensions is not None
@@ -665,16 +680,22 @@ class ExportedCCSDocument(
                     page = prov[0].page
                     page_dim = self.page_dimensions[page - 1]
 
-                    page_w = float(page_dim.width) / float(location_dimensions[0])
-                    page_h = float(page_dim.height) / float(location_dimensions[1])
-
+                    page_w = float(page_dim.width)
+                    page_h = float(page_dim.height)
+                    
                     x0 = round(float(prov[0].bbox[0]) / float(page_w))
                     x1 = round(float(prov[0].bbox[2]) / float(page_w))
                     y0 = round(float(prov[0].bbox[1]) / float(page_h))
                     y1 = round(float(prov[0].bbox[3]) / float(page_h))
 
+                    x0_tok = DocumentToken.get_loc_token(min(x0, x1), location_dimensions[0])
+                    y0_tok = DocumentToken.get_loc_token(min(y0, y1), location_dimensions[1])
+                    x1_tok = DocumentToken.get_loc_token(max(x0, x1), location_dimensions[0])
+                    y1_tok = DocumentToken.get_loc_token(max(y0, y1), location_dimensions[1])
+
+                    # update
                     loc_str = (
-                        f"<location>__loc_{x0}__loc_{y0}__loc_{x1}__loc_{y1}</location>"
+                        f"{DocumentToken.BEG_LOCATION.value}{x0_tok}{y0_tok}{x1_tok}{y1_tok}{DocumentToken.END_LOCATION.value}"
                     )
 
                 item_type = item.obj_type
@@ -683,12 +704,12 @@ class ExportedCCSDocument(
 
                     xml_str += f"<{item_type}>{loc_str}{text}</{item_type}>{new_line}"
 
-                elif isinstance(item, Table):
+                elif isinstance(item, Table) and (item_type in main_text_labels):
 
                     xml_str += f"<{item_type}>{loc_str}"
 
                     if item.text is not None and len(item.text) > 0:
-                        xml_str += f"<caption>{item.text}</caption>{new_line}"
+                        xml_str += f"{DocumentToken.END_CAPTION.value}{item.text}{DocumentToken.END_CAPTION.value}{new_line}"
 
                     if item.data is not None and len(item.data) > 0:
                         for i, row in enumerate(item.data):
@@ -701,12 +722,12 @@ class ExportedCCSDocument(
 
                     xml_str += f"</{item_type}>{new_line}"
 
-                elif isinstance(item, Figure):
+                elif isinstance(item, Figure) and (item_type in main_text_labels):
 
                     xml_str += f"<{item_type}>{loc_str}"
 
                     if item.text is not None and len(item.text) > 0:
-                        xml_str += f"<caption>{item.text}</caption>{new_line}"
+                        xml_str += f"{DocumentToken.END_CAPTION.value}{item.text}{DocumentToken.END_CAPTION.value}{new_line}"
 
                     xml_str += f"</{item_type}>{new_line}"
 
