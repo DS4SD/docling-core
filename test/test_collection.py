@@ -47,7 +47,7 @@ def test_document():
         Document.model_validate_json(file_json)
 
 
-def test_document_md_export():
+def test_export_document_to_md():
     """Test the Document Markdown export."""
     with open("test/data/doc/md-export.json") as src_obj:
         src_data = src_obj.read()
@@ -66,13 +66,13 @@ def test_document_md_export():
     assert md == gold_data
 
 
-def test_document_xml_export():
+def test_export_to_document_tokens():
     """Test the Document Markdown export."""
     with open("test/data/doc/md-export.json") as src_obj:
         src_data = src_obj.read()
 
     doc = Document.model_validate_json(src_data)
-    xml = doc.export_to_xml(add_new_line=True)
+    xml = doc.export_to_document_tokens(add_new_line=True)
 
     """
     with open("test/data/doc/md-export.xml", "w") as gold_obj:

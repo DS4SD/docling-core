@@ -7,7 +7,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Generic, Optional, Union
+from typing import Generic, Optional, Tuple, Union
 
 from pydantic import (
     AnyHttpUrl,
@@ -277,7 +277,7 @@ class MinimalDocument(
     main_text: Optional[list[Union[Ref, BaseText]]] = Field(
         default=None, alias="main-text"
     )
-    figures: Optional[list[BaseCell]] = None
+    figures: Optional[list[Figure]] = None
     tables: Optional[list[Table]] = None
 
 
@@ -399,38 +399,53 @@ class DocumentToken(Enum):
     END_GROUP = "</group>"
 
     @classmethod
-    def get_special_tokens(cls):
+    def get_special_tokens(
+        cls,
+        max_rows: int = 100,
+        max_cols: int = 100,
+        max_pages: int = 1000,
+        page_dimension: Tuple[int, int] = (100, 100),
+    ):
         """Function to get all special document tokens."""
         special_tokens = [token.value for token in cls]
 
         # Adding dynamically generated row and col tokens
-        for i in range(100):
-            special_tokens += [f"<row_{i}>", f"</row_{i}>", f"<col_{i}>", f"</col_{i}>"]
+        for i in range(0, max_rows):
+            special_tokens += [f"<row_{i}>", f"</row_{i}>"]
+
+        for i in range(0, max_cols):
+            special_tokens += [f"<col_{i}>", f"</col_{i}>"]
 
         for i in range(6):
             special_tokens += [f"<section-header-{i}>", f"</section-header-{i}>"]
+
+        # Adding dynamically generated page-tokens
+        for i in range(0, max_pages):
+            special_tokens.append(f"<page_{i}>")
+
+        # Adding dynamically generated location-tokens
+        for i in range(0, max(page_dimension[0], page_dimension[1])):
+            special_tokens.append(f"<loc_{i}>")
 
         return special_tokens
 
     @staticmethod
     def get_page_token(page: int):
         """Function to get page tokens."""
-        return f"__page_{page}/"
+        return f"<page_{page}>"
 
     @staticmethod
     def get_location_token(val: float, rnorm: int = 100):
         """Function to get location tokens."""
-        assert 0 <= val and val <= 1.0, "0<=val and val<=1.0"
-
         val_ = round(rnorm * val)
 
         if val_ < 0:
-            return "__loc_0/"
+            return "<loc_0>"
 
         if val_ > rnorm:
-            return f"__loc_{rnorm}/"
+            return f"<loc_{rnorm}>"
 
-        return f"__loc_{val_}/"
+        return f"<loc_{val_}>"
 
 
 class ExportedCCSDocument(
@@ -621,7 +636,7 @@ class ExportedCCSDocument(
         result = delim.join(md_texts)
         return result
 
-    def export_to_xml(
+    def export_to_document_tokens(
         self,
         delim: str = "\n\n",
         main_text_start: int = 0,
@@ -636,10 +651,10 @@ class ExportedCCSDocument(
         ],
         page_tagging: bool = True,
         location_tagging: bool = True,
-        location_dimensions: list[int] = [500, 500],
+        location_dimensions: Tuple[int, int] = (100, 100),
         add_new_line: bool = True,
     ) -> str:
-        r"""Exports the document content to an XML format.
+        r"""Exports the document content to an DocumentToken format.
 
         Operates on a slice of the document's main_text as defined through arguments
         main_text_start and main_text_stop; defaulting to the whole main_text.
@@ -660,9 +675,9 @@ class ExportedCCSDocument(
                 location-based tagging in the XML. If True, the exported XML will
                 contain information about the locations of the text elements.
                 Default is True.
-            location_dimensions (list[int], optional): Specifies the dimensions
+            location_dimensions (Tuple[int, int], optional): Specifies the dimensions
                 (width and height) for the location tagging, if enabled.
-                Default is [500, 500].
+                Default is [100, 100].
             add_new_line (bool, optional): Whether to add new line characters after
                 each text block. If True, a new line is added after each block of
                 text in the XML. Default is True.
