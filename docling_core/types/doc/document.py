@@ -44,7 +44,7 @@ from docling_core.types.doc.base import (
 from docling_core.utils.alias import AliasModel
 
 
-class CCSFileInfoDescription(BaseModel, extra="forbid"):
+class FileInfoDescription(BaseModel, extra="forbid"):
     """File info description."""
 
     author: Optional[list[StrictStr]] = None
@@ -54,7 +54,7 @@ class CCSFileInfoDescription(BaseModel, extra="forbid"):
     creation_date: Optional[str] = None  # datetime
 
 
-class CCSFileInfoObject(FileInfoObject, extra="forbid"):
+class FileInfoObject(FileInfoObject, extra="forbid"):
     """File info object."""
 
     num_pages: Optional[int] = Field(default=None, alias="#-pages")
@@ -64,7 +64,7 @@ class CCSFileInfoObject(FileInfoObject, extra="forbid"):
         alias="collection-name",
         json_schema_extra=es_field(type="keyword", ignore_above=8191),
     )
-    description: Optional[CCSFileInfoDescription] = Field(
+    description: Optional[FileInfoDescription] = Field(
         default=None, json_schema_extra=es_field(suppress=True)
     )
     page_hashes: Optional[list[PageReference]] = Field(
@@ -175,7 +175,7 @@ class DescriptionLicense(BaseModel, extra="forbid"):
     text: Optional[StrictStr] = None
 
 
-class CCSDocumentDescription(
+class DocumentDescription(
     AliasModel,
     Generic[
         DescriptionAdvancedT,
@@ -250,7 +250,7 @@ class CCSDocumentDescription(
     )
 
 
-class MinimalDocument(
+class SimpleDocument(
     AliasModel,
     Generic[
         DescriptionAdvancedT,
@@ -264,7 +264,7 @@ class MinimalDocument(
 
     name: StrictStr = Field(alias="_name")
     obj_type: Optional[StrictStr] = Field("document", alias="type")
-    description: CCSDocumentDescription[
+    description: DocumentDescription[
         DescriptionAdvancedT,
         DescriptionAnalyticsT,
         IdentifierTypeT,
@@ -279,73 +279,7 @@ class MinimalDocument(
     tables: Optional[list[Table]] = None
 
 
-class CCSDocument(
-    MinimalDocument,
-    Generic[
-        DescriptionAdvancedT,
-        DescriptionAnalyticsT,
-        IdentifierTypeT,
-        LanguageT,
-        CollectionNameTypeT,
-    ],
-):
-    """Model for a CCS-generated document."""
-
-    obj_type: Optional[StrictStr] = Field("pdf-document", alias="type")
-    bitmaps: Optional[list[BitmapObject]] = None
-    equations: Optional[list[BaseCell]] = None
-    footnotes: Optional[list[BaseText]] = None
-    file_info: CCSFileInfoObject = Field(alias="file-info")
-    main_text: Optional[list[Union[Ref, BaseText]]] = Field(
-        default=None,
-        alias="main-text",
-    )
-    page_dimensions: Optional[list[PageDimensions]] = Field(
-        default=None, alias="page-dimensions"
-    )
-    page_footers: Optional[list[BaseText]] = Field(default=None, alias="page-footers")
-    page_headers: Optional[list[BaseText]] = Field(default=None, alias="page-headers")
-    s3_data: Optional[S3Data] = Field(default=None, alias="_s3_data")
-
-    @model_validator(mode="before")
-    @classmethod
-    def from_dict(cls, data):
-        """Validates and fixes the input data."""
-        if not isinstance(data, dict):
-            return data
-        description_collection = data["description"].get("collection")
-        if not description_collection:
-            data["description"].setdefault("collection", {})
-
-        data["description"]["collection"].setdefault("type", "Document")
-        logs = data["description"].get("logs")
-        if not logs:
-            data["description"].setdefault("logs", [])
-
-        abstract = data["description"].get("abstract")
-        if abstract is not None and not isinstance(abstract, list):
-            if isinstance(abstract, str):
-                data["description"]["abstract"] = [abstract]
-            else:
-                data["description"].pop("abstract")
-
-        for key in ["affiliations", "authors"]:
-            descr = data["description"].get(key)
-            if descr is not None and not isinstance(descr, list):
-                if isinstance(descr, dict):
-                    data["description"][key] = [descr]
-                else:
-                    data["description"].pop(key)
-
-        if data.get("main-text"):
-            for item in data["main-text"]:
-                if ref := item.pop("__ref", None):
-                    item["$ref"] = ref
-
-        return data
-
-
-class ExportedCCSDocument(
+class LayoutDocument(
     MinimalDocument,
     Generic[
         DescriptionAdvancedT,
@@ -365,14 +299,14 @@ class ExportedCCSDocument(
     bitmaps: Optional[list[BitmapObject]] = None
     equations: Optional[list[BaseCell]] = None
     footnotes: Optional[list[BaseText]] = None
-    description: CCSDocumentDescription[
+    description: DocumentDescription[
         DescriptionAdvancedT,
         DescriptionAnalyticsT,
         IdentifierTypeT,
         LanguageT,
         CollectionNameTypeT,
     ]
-    file_info: CCSFileInfoObject = Field(alias="file-info")
+    file_info: FileInfoObject = Field(alias="file-info")
     main_text: Optional[list[Union[Ref, BaseText]]] = Field(
         default=None, alias="main-text"
     )
@@ -427,6 +361,7 @@ class ExportedCCSDocument(
         delim: str = "\n\n",
         main_text_start: int = 0,
         main_text_stop: Optional[int] = None,
+        main_text_labels: Optional[List[str]] = ["title", "subtitle-level-1", "paragraph", "caption"]     
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -461,12 +396,7 @@ class ExportedCCSDocument(
                     continue
 
                 item_type = item.obj_type
-                if isinstance(item, BaseText) and item_type in {
-                    "title",
-                    "subtitle-level-1",
-                    "paragraph",
-                    "caption",
-                }:
+                if isinstance(item, BaseText) and (item_type in main_text_labels):
                     text = item.text
 
                     # ignore repeated text
