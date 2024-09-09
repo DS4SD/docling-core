@@ -6,6 +6,7 @@
 """Models for the Docling Document data type."""
 
 from datetime import datetime
+from enum import Enum
 from typing import Generic, Optional, Union
 
 from pydantic import (
@@ -344,6 +345,72 @@ class CCSDocument(
                     item["$ref"] = ref
 
         return data
+
+
+class DocumentToken(Enum):
+    """Class to represent an LLM friendly representation of a Document."""
+
+    BEG_DOCUMENT = "<document>"
+    END_DOCUMENT = "</document>"
+
+    BEG_TITLE = "<title>"
+    END_TITLE = "</title>"
+
+    BEG_ABSTRACT = "<abstract>"
+    END_ABSTRACT = "</abstract>"
+
+    BEG_DOI = "<doi>"
+    END_DOI = "</doi>"
+    BEG_DATE = "<date>"
+    END_DATE = "</date>"
+
+    BEG_AUTHORS = "<authors>"
+    END_AUTHORS = "</authors>"
+    BEG_AUTHOR = "<author>"
+    END_AUTHOR = "</author>"
+
+    BEG_AFFILIATIONS = "<affiliations>"
+    END_AFFILIATIONS = "</affiliations>"
+    BEG_AFFILIATION = "<affiliation>"
+    END_AFFILIATION = "</affiliation>"
+
+    BEG_HEADER = "<section-header>"
+    END_HEADER = "</section-header>"
+    BEG_TEXT = "<text>"
+    END_TEXT = "</text>"
+    BEG_PARAGRAPH = "<paragraph>"
+    END_PARAGRAPH = "</paragraph>"
+    BEG_TABLE = "<table>"
+    END_TABLE = "</table>"
+    BEG_FIGURE = "<figure>"
+    END_FIGURE = "</figure>"
+    BEG_CAPTION = "<caption>"
+    END_CAPTION = "</caption>"
+    BEG_EQUATION = "<equation>"
+    END_EQUATION = "</equation>"
+    BEG_LIST = "<list>"
+    END_LIST = "</list>"
+    BEG_LISTITEM = "<list-item>"
+    END_LISTITEM = "</list-item>"
+
+    BEG_LOCATION = "<location>"
+    END_LOCATION = "</location>"
+    BEG_GROUP = "<group>"
+    END_GROUP = "</group>"
+
+    @classmethod
+    def get_special_tokens(cls):
+        """Function to get all special document tokens."""
+        special_tokens = [token.value for token in cls]
+
+        # Adding dynamically generated row and col tokens
+        for i in range(100):
+            special_tokens += [f"<row_{i}>", f"</row_{i}>", f"<col_{i}>", f"</col_{i}>"]
+
+        for i in range(6):
+            special_tokens += [f"<section-header-{i}>", f"</section-header-{i}>"]
+
+        return special_tokens
 
 
 class ExportedCCSDocument(
