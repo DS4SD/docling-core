@@ -40,6 +40,7 @@ from docling_core.types.doc.base import (
     Ref,
     S3Data,
     Table,
+    Figure,
 )
 from docling_core.utils.alias import AliasModel
 
@@ -427,6 +428,10 @@ class ExportedCCSDocument(
         delim: str = "\n\n",
         main_text_start: int = 0,
         main_text_stop: Optional[int] = None,
+        main_text_labels: list[str] = ["title",
+                                       "subtitle-level-1",
+                                       "paragraph",
+                                       "caption",]
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -462,10 +467,7 @@ class ExportedCCSDocument(
 
                 item_type = item.obj_type
                 if isinstance(item, BaseText) and item_type in {
-                    "title",
-                    "subtitle-level-1",
-                    "paragraph",
-                    "caption",
+
                 }:
                     text = item.text
 
@@ -518,3 +520,91 @@ class ExportedCCSDocument(
 
         result = delim.join(md_texts)
         return result
+
+    def export_to_xml(
+        self,
+        delim: str = "\n\n",
+        main_text_start: int = 0,
+        main_text_stop: Optional[int] = None,
+        main_text_labels: list[str] = ["title",
+                                       "subtitle-level-1",
+                                       "paragraph",
+                                       "caption",],
+        location_tagging: bool = True,
+        location_dimensions: list[int] = [500, 500],
+        add_new_line: bool = True
+    ) -> str:
+        r"""Serialize to XML."""
+
+        xml_str="<document>"
+
+        new_line = ""
+        if add_new_line:
+            new_line = "\n"
+        
+        if self.main_text is not None:
+            for orig_item in self.main_text[main_text_start:main_text_stop]:
+
+                item = (
+                    self._resolve_ref(orig_item)
+                    if isinstance(orig_item, Ref)
+                    else orig_item
+                )
+                
+                if item is None:
+                    continue
+
+                prov = item.prov
+                
+                loc_str = ""
+                if location_tagging and (prov!=None) and (len(prov)>0):
+
+                    page = prov[0].page
+                    page_dim = self.page_dimensions[page-1]
+
+                    page_w = float(page_dim.width)/float(location_dimensions[0])
+                    page_h = float(page_dim.height)/float(location_dimensions[1])
+                    
+                    X0 = round(float(prov[0].bbox[0])/float(page_w))
+                    X1 = round(float(prov[0].bbox[2])/float(page_w))
+                    Y0 = round(float(prov[0].bbox[1])/float(page_h))
+                    Y1 = round(float(prov[0].bbox[3])/float(page_h))
+                    
+                    loc_str = f"<location>__loc_{X0}__loc_{Y0}__loc_{X1}__loc_{Y1}</location>"
+                
+                item_type = item.obj_type
+                if isinstance(item, BaseText) and (item_type in main_text_labels):
+                    text = item.text
+                        
+                    xml_str += f"<{item_type}>{loc_str}{text}</{item_type}>{new_line}"
+
+                elif isinstance(item, Table):
+
+                    xml_str += f"<{item_type}>{loc_str}"
+
+                    if item.text!=None and len(item.text)>0:
+                        xml_str += f"<caption>{item.text}</caption>{new_line}"
+
+                    if item.data!=None and len(item.data)>0:
+                        for i,row in enumerate(item.data):
+                            xml_str += f"<row_{i}>"
+                            for j,col in enumerate(row):
+                                text = col.text
+                                xml_str += f"<col_{j}>{text}</col_{j}>"
+                            
+                            xml_str += f"</row_{i}>{new_line}"
+                            
+                    xml_str += f"</{item_type}>{new_line}"                           
+
+                elif isinstance(item, Figure):
+
+                    xml_str += f"<{item_type}>{loc_str}"
+
+                    if item.text!=None and len(item.text)>0:
+                        xml_str += f"<caption>{item.text}</caption>{new_line}"
+                    
+                    xml_str += f"</{item_type}>{new_line}"                           
+
+        xml_str += "</document>"                    
+                    
+        return xml_str
