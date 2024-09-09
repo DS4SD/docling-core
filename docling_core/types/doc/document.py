@@ -413,19 +413,24 @@ class DocumentToken(Enum):
         return special_tokens
 
     @staticmethod
-    def get_loc_token(val: float, rnorm: int = 100):
+    def get_page_token(page: int):
+        """Function to get page tokens."""
+        return f"__page_{page}/"
+
+    @staticmethod
+    def get_location_token(val: float, rnorm: int = 100):
         """Function to get location tokens."""
         assert 0 <= val and val <= 1.0, "0<=val and val<=1.0"
 
         val_ = round(rnorm * val)
 
         if val_ < 0:
-            return "__loc_0"
+            return "__loc_0/"
 
         if val_ > rnorm:
-            return f"__loc_{rnorm}"
+            return f"__loc_{rnorm}/"
 
-        return f"__loc_{val_}"
+        return f"__loc_{val_}/"
 
 
 class ExportedCCSDocument(
@@ -629,6 +634,7 @@ class ExportedCCSDocument(
             "table",
             "figure",
         ],
+        page_tagging: bool = True,
         location_tagging: bool = True,
         location_dimensions: list[int] = [500, 500],
         add_new_line: bool = True,
@@ -703,21 +709,26 @@ class ExportedCCSDocument(
                     x1 = float(prov[0].bbox[2]) / float(page_w)
                     y1 = float(prov[0].bbox[3]) / float(page_h)
 
-                    x0_tok = DocumentToken.get_loc_token(
+                    page_tok = ""
+                    if page_tagging:
+                        page_tok = DocumentToken.get_page_token(page=page)
+
+                    x0_tok = DocumentToken.get_location_token(
                         val=min(x0, x1), rnorm=location_dimensions[0]
                     )
-                    y0_tok = DocumentToken.get_loc_token(
+                    y0_tok = DocumentToken.get_location_token(
                         val=min(y0, y1), rnorm=location_dimensions[1]
                     )
-                    x1_tok = DocumentToken.get_loc_token(
+                    x1_tok = DocumentToken.get_location_token(
                         val=max(x0, x1), rnorm=location_dimensions[0]
                     )
-                    y1_tok = DocumentToken.get_loc_token(
+                    y1_tok = DocumentToken.get_location_token(
                         val=max(y0, y1), rnorm=location_dimensions[1]
                     )
 
                     # update
                     loc_str = f"{DocumentToken.BEG_LOCATION.value}"
+                    loc_str += f"{page_tok}"
                     loc_str += f"{x0_tok}{y0_tok}{x1_tok}{y1_tok}"
                     loc_str += f"{DocumentToken.END_LOCATION.value}"
 
