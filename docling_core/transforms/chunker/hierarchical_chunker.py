@@ -14,7 +14,7 @@ from typing import Any, Iterator, Optional, Union
 import pandas as pd
 from pydantic import BaseModel, PositiveInt
 
-from docling_core.chunker.base import BaseChunker, Chunk, ChunkWithMetadata
+from docling_core.transforms.chunker import BaseChunker, Chunk, ChunkWithMetadata
 from docling_core.types import BaseText
 from docling_core.types import Document as DLDocument
 from docling_core.types import Ref, Table
@@ -260,12 +260,7 @@ class HierarchicalChunker(BaseChunker):
                 )
             else:
                 # if root, augment with title (if available and different)
-                return (
-                    text_entries
-                    # ([doc_map.glob.title.text] + texts)
-                    # if doc_map.glob.title and [doc_map.glob.title.text] != texts
-                    # else texts
-                )
+                return text_entries
         else:
             return []
 

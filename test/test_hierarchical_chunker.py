@@ -5,7 +5,7 @@
 
 import json
 
-from docling_core.chunker import HierarchicalChunker
+from docling_core.transforms.chunker import HierarchicalChunker
 from docling_core.types import Document as DLDocument
 
 
