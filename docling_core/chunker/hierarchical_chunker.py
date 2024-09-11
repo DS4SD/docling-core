@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import Any, Iterator
+from typing import Any, Iterator, Optional, Union
 
 import pandas as pd
 from pydantic import BaseModel, PositiveInt
@@ -53,11 +53,11 @@ class HierarchicalChunker(BaseChunker):
     }
 
     @classmethod
-    def _norm(cls, text: str | None) -> str | None:
+    def _norm(cls, text: Optional[str]) -> Optional[str]:
         return text.lower() if text is not None else None
 
     @classmethod
-    def _convert_table_to_dataframe(cls, table: Table) -> pd.DataFrame | None:
+    def _convert_table_to_dataframe(cls, table: Table) -> Optional[pd.DataFrame]:
         if table.data:
             table_content = [[cell.text for cell in row] for row in table.data]
             return pd.DataFrame(table_content)
@@ -65,8 +65,8 @@ class HierarchicalChunker(BaseChunker):
             return None
 
     @classmethod
-    def _triplet_serialize(cls, table) -> str | None:
-        output_text: str | None = None
+    def _triplet_serialize(cls, table) -> Optional[str]:
+        output_text: Optional[str] = None
         table_df = cls._convert_table_to_dataframe(table)
         if table_df is not None and table_df.shape[0] > 1 and table_df.shape[1] > 1:
             rows = [item.strip() for item in table_df.iloc[:, 0].to_list()]
@@ -87,7 +87,7 @@ class HierarchicalChunker(BaseChunker):
         return f"$.{path_prefix}[{pos}]"
 
     class _MainTextItemNode(BaseModel):
-        parent: int | None = None
+        parent: Optional[int] = None
         children: list[int] = []
 
     class _TitleInfo(BaseModel):
@@ -95,7 +95,7 @@ class HierarchicalChunker(BaseChunker):
         path_in_doc: str
 
     class _GlobalContext(BaseModel):
-        title: _HC._TitleInfo | None = None
+        title: Optional[_HC._TitleInfo] = None
 
     class _DocContext(BaseModel):
         dmap: dict[int, _HC._MainTextItemNode]  # main text element context
@@ -276,13 +276,13 @@ class HierarchicalChunker(BaseChunker):
         idx: int,
         delim: str,
         rec: bool = False,
-    ) -> Chunk | None:
+    ) -> Optional[Chunk]:
         texts = self._build_chunk_impl(doc=doc, doc_map=doc_map, idx=idx, rec=rec)
         concat = delim.join([t.text for t in texts if t.text])
         assert doc.main_text is not None
         if len(concat) >= self.min_chunk_len:
             orig_item = doc.main_text[idx]
-            item: BaseText | Table
+            item: Union[BaseText, Table]
             if isinstance(orig_item, Ref):
                 if _HC._norm(orig_item.obj_type) == _HC._NodeType.TABLE and doc.tables:
                     pos = int(orig_item.ref.split("/")[2])
