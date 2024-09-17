@@ -119,6 +119,7 @@ module = [
     "json_schema_for_humans.*",
     "pandas.*",
     "tabulate.*",
+    "yaml.*"
 ]
 ignore_missing_imports = true
 
