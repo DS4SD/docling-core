@@ -6,7 +6,7 @@ file_info: # FileInfoType - TBD
 furniture: # Headers, footers, framing, navigation elements, all other non-body text
   - $ref: "/texts/0"
 
-body: # All elements in other arrays, by-reference only
+body: # Top-level elements in other arrays, by-reference only, must not have parent.
   - $ref: "/texts/1"
   - $ref: "/figure/0"
   - $ref: "/texts/2"
@@ -20,7 +20,7 @@ texts: # All elements that have a text-string representation, with actual data
     hash: 132103230
     label: "page_header"
     parent: null
-    children: [ ]
+    children: []
     prov:
       - page_no: 1
         bbox:

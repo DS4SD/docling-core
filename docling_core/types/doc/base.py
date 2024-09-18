@@ -1,196 +1,120 @@
-#
-# Copyright IBM Corp. 2024 - 2024
-# SPDX-License-Identifier: MIT
-#
+import copy
+from enum import Enum
+from typing import Tuple
 
-"""Define common models across CCS objects."""
-from typing import Annotated, Literal, Optional, Union
-
-from pydantic import BaseModel, Field, PositiveInt, StrictStr
-
-from docling_core.search.mapping import es_field
-from docling_core.utils.alias import AliasModel
-
-CellData = tuple[float, float, float, float, str, str]
-
-CellHeader = tuple[
-    Literal["x0"],
-    Literal["y0"],
-    Literal["x1"],
-    Literal["y1"],
-    Literal["font"],
-    Literal["text"],
-]
-
-BoundingBox = Annotated[list[float], Field(min_length=4, max_length=4)]
-
-Span = Annotated[list[int], Field(min_length=2, max_length=2)]
+from pydantic import BaseModel
 
 
-class CellsContainer(BaseModel):
-    """Cell container."""
-
-    data: Optional[list[CellData]] = None
-    header: CellHeader = ("x0", "y0", "x1", "y1", "font", "text")
-
-
-class S3Resource(BaseModel):
-    """Resource in a cloud object storage."""
-
-    mime: str
-    path: str
-    page: Optional[PositiveInt] = None
+## All copied from docling
+class CoordOrigin(str, Enum):
+    TOPLEFT = "TOPLEFT"
+    BOTTOMLEFT = "BOTTOMLEFT"
 
 
-class S3Data(AliasModel):
-    """Data object in a cloud object storage."""
-
-    pdf_document: Optional[list[S3Resource]] = Field(default=None, alias="pdf-document")
-    pdf_pages: Optional[list[S3Resource]] = Field(default=None, alias="pdf-pages")
-    pdf_images: Optional[list[S3Resource]] = Field(default=None, alias="pdf-images")
-    json_document: Optional[S3Resource] = Field(default=None, alias="json-document")
-    json_meta: Optional[S3Resource] = Field(default=None, alias="json-meta")
-    glm_json_document: Optional[S3Resource] = Field(
-        default=None, alias="glm-json-document"
-    )
-    figures: Optional[list[S3Resource]] = None
+class Size(BaseModel):
+    width: float = 0.0
+    height: float = 0.0
 
 
-class S3Reference(AliasModel):
-    """References an s3 resource."""
+class BoundingBox(BaseModel):
+    l: float  # left
+    t: float  # top
+    r: float  # right
+    b: float  # bottom
 
-    ref_s3_data: StrictStr = Field(
-        alias="__ref_s3_data", examples=["#/_s3_data/figures/0"]
-    )
+    coord_origin: CoordOrigin = CoordOrigin.TOPLEFT
 
+    @property
+    def width(self):
+        return self.r - self.l
 
-class Prov(AliasModel):
-    """Provenance."""
+    @property
+    def height(self):
+        return abs(self.t - self.b)
 
-    bbox: BoundingBox
-    page: PositiveInt
-    span: Span
-    ref_s3_data: Optional[StrictStr] = Field(
-        default=None, alias="__ref_s3_data", json_schema_extra=es_field(suppress=True)
-    )
+    def scaled(self, scale: float) -> "BoundingBox":
+        out_bbox = copy.deepcopy(self)
+        out_bbox.l *= scale
+        out_bbox.r *= scale
+        out_bbox.t *= scale
+        out_bbox.b *= scale
 
+        return out_bbox
 
-class BoundingBoxContainer(BaseModel):
-    """Bounding box container."""
+    def normalized(self, page_size: Size) -> "BoundingBox":
+        out_bbox = copy.deepcopy(self)
+        out_bbox.l /= page_size.width
+        out_bbox.r /= page_size.width
+        out_bbox.t /= page_size.height
+        out_bbox.b /= page_size.height
 
-    min: BoundingBox
-    max: BoundingBox
+        return out_bbox
 
+    def as_tuple(self):
+        if self.coord_origin == CoordOrigin.TOPLEFT:
+            return (self.l, self.t, self.r, self.b)
+        elif self.coord_origin == CoordOrigin.BOTTOMLEFT:
+            return (self.l, self.b, self.r, self.t)
 
-class BitmapObject(AliasModel):
-    """Bitmap object."""
+    @classmethod
+    def from_tuple(cls, coord: Tuple[float, ...], origin: CoordOrigin):
+        if origin == CoordOrigin.TOPLEFT:
+            l, t, r, b = coord[0], coord[1], coord[2], coord[3]
+            if r < l:
+                l, r = r, l
+            if b < t:
+                b, t = t, b
 
-    obj_type: str = Field(alias="type")
-    bounding_box: BoundingBoxContainer = Field(
-        json_schema_extra=es_field(suppress=True)
-    )
-    prov: Prov
+            return BoundingBox(l=l, t=t, r=r, b=b, coord_origin=origin)
+        elif origin == CoordOrigin.BOTTOMLEFT:
+            l, b, r, t = coord[0], coord[1], coord[2], coord[3]
+            if r < l:
+                l, r = r, l
+            if b > t:
+                b, t = t, b
 
+            return BoundingBox(l=l, t=t, r=r, b=b, coord_origin=origin)
 
-class PageDimensions(BaseModel):
-    """Page dimensions."""
+    def area(self) -> float:
+        return (self.r - self.l) * (self.b - self.t)
 
-    height: float
-    page: PositiveInt
-    width: float
+    def intersection_area_with(self, other: "BoundingBox") -> float:
+        # Calculate intersection coordinates
+        left = max(self.l, other.l)
+        top = max(self.t, other.t)
+        right = min(self.r, other.r)
+        bottom = min(self.b, other.b)
 
+        # Calculate intersection dimensions
+        width = right - left
+        height = bottom - top
 
-class TableCell(AliasModel):
-    """Table cell."""
+        # If the bounding boxes do not overlap, width or height will be negative
+        if width <= 0 or height <= 0:
+            return 0.0
 
-    bbox: Optional[BoundingBox] = None
-    spans: Optional[list[Span]] = None
-    text: str = Field(json_schema_extra=es_field(term_vector="with_positions_offsets"))
-    obj_type: str = Field(alias="type")
+        return width * height
 
+    def to_bottom_left_origin(self, page_height) -> "BoundingBox":
+        if self.coord_origin == CoordOrigin.BOTTOMLEFT:
+            return self
+        elif self.coord_origin == CoordOrigin.TOPLEFT:
+            return BoundingBox(
+                l=self.l,
+                r=self.r,
+                t=page_height - self.t,
+                b=page_height - self.b,
+                coord_origin=CoordOrigin.BOTTOMLEFT,
+            )
 
-class GlmTableCell(TableCell):
-    """Glm Table cell."""
-
-    col: Optional[int] = Field(default=None, json_schema_extra=es_field(suppress=True))
-    col_header: bool = Field(
-        default=False, alias="col-header", json_schema_extra=es_field(suppress=True)
-    )
-    col_span: Optional[Span] = Field(
-        default=None, alias="col-span", json_schema_extra=es_field(suppress=True)
-    )
-    row: Optional[int] = Field(default=None, json_schema_extra=es_field(suppress=True))
-    row_header: bool = Field(
-        default=False, alias="row-header", json_schema_extra=es_field(suppress=True)
-    )
-    row_span: Optional[Span] = Field(
-        default=None, alias="row-span", json_schema_extra=es_field(suppress=True)
-    )
-
-
-class BaseCell(AliasModel):
-    """Base cell."""
-
-    # FIXME: we need to check why we have bounding_box (this should be in prov)
-    bounding_box: Optional[BoundingBoxContainer] = Field(
-        default=None, alias="bounding-box", json_schema_extra=es_field(suppress=True)
-    )
-    prov: Optional[list[Prov]] = None
-    text: Optional[str] = Field(
-        default=None, json_schema_extra=es_field(term_vector="with_positions_offsets")
-    )
-    obj_type: str = Field(
-        alias="type", json_schema_extra=es_field(type="keyword", ignore_above=8191)
-    )
-
-
-class Table(BaseCell):
-    """Table."""
-
-    num_cols: int = Field(alias="#-cols")
-    num_rows: int = Field(alias="#-rows")
-    data: Optional[list[list[Union[GlmTableCell, TableCell]]]] = None
-    model: Optional[str] = None
-
-
-# FIXME: let's add some figure specific data-types later
-class Figure(BaseCell):
-    """Figure."""
-
-
-class BaseText(AliasModel):
-    """Base model for text objects."""
-
-    text: StrictStr = Field(
-        json_schema_extra=es_field(term_vector="with_positions_offsets")
-    )
-    obj_type: StrictStr = Field(
-        alias="type", json_schema_extra=es_field(type="keyword", ignore_above=8191)
-    )
-    name: Optional[StrictStr] = Field(
-        default=None, json_schema_extra=es_field(type="keyword", ignore_above=8191)
-    )
-    font: Optional[str] = None
-    prov: Optional[list[Prov]] = None
-
-
-class ListItem(BaseText):
-    """List item."""
-
-    identifier: str
-
-
-class Ref(AliasModel):
-    """Reference."""
-
-    name: str
-    obj_type: str = Field(alias="type")
-    ref: str = Field(alias="$ref")
-
-
-class PageReference(BaseModel):
-    """Page reference."""
-
-    hash: str = Field(json_schema_extra=es_field(type="keyword", ignore_above=8191))
-    model: str = Field(json_schema_extra=es_field(suppress=True))
-    page: PositiveInt = Field(json_schema_extra=es_field(type="short"))
+    def to_top_left_origin(self, page_height):
+        if self.coord_origin == CoordOrigin.TOPLEFT:
+            return self
+        elif self.coord_origin == CoordOrigin.BOTTOMLEFT:
+            return BoundingBox(
+                l=self.l,
+                r=self.r,
+                t=page_height - self.t,  # self.b
+                b=page_height - self.b,  # self.t
+                coord_origin=CoordOrigin.TOPLEFT,
+            )
