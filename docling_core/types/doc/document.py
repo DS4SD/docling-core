@@ -6,10 +6,7 @@
 """Models for the Docling Document data type."""
 
 from datetime import datetime
-from enum import Enum
 from typing import Generic, Optional, Tuple, Union
-
-
 
 from pydantic import (
     AnyHttpUrl,
@@ -34,9 +31,6 @@ from docling_core.types.base import (
     LanguageT,
     Log,
 )
-
-from docling_core.types.doc.tokens import DocumentToken
-
 from docling_core.types.doc.base import (
     BaseCell,
     BaseText,
@@ -48,6 +42,7 @@ from docling_core.types.doc.base import (
     S3Data,
     Table,
 )
+from docling_core.types.doc.tokens import DocumentToken
 from docling_core.utils.alias import AliasModel
 
 

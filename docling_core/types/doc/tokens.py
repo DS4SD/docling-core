@@ -6,6 +6,8 @@
 """Tokens used in the docling document model."""
 
 from enum import Enum
+from typing import Tuple
+
 
 class DocumentToken(Enum):
     """Class to represent an LLM friendly representation of a Document."""
@@ -104,7 +106,7 @@ class DocumentToken(Enum):
             return f"<col_{col}>"
         else:
             return f"</col_{col}>"
-        
+
     @staticmethod
     def get_page_token(page: int):
         """Function to get page tokens."""
@@ -122,5 +124,3 @@ class DocumentToken(Enum):
             return f"<loc_{rnorm}>"
 
         return f"<loc_{val_}>"
-
-

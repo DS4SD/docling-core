@@ -21,6 +21,7 @@ from docling_core.types.base import (
 from docling_core.types.rec.attribute import Attribute
 from docling_core.types.rec.subject import Subject
 
+
 class StatementToken(Enum):
     """Class to represent an LLM friendly representation of statements."""
 
