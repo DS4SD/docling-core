@@ -124,3 +124,36 @@ class DocumentToken(Enum):
             return f"<loc_{rnorm}>"
 
         return f"<loc_{val_}>"
+
+    @staticmethod
+    def get_location(
+        bbox: Tuple[float, float, float, float],
+        page_w: float,
+        page_h: float,
+        xsize: int = 100,
+        ysize: int = 100,
+        page_i: int = None,
+    ):
+
+        assert bbox[0] <= bbox[2], f"bbox[0]<=bbox[2] => {bbox[0]}<={bbox[2]}"
+        assert bbox[1] <= bbox[3], f"bbox[1]<=bbox[3] => {bbox[1]}<={bbox[3]}"
+
+        x0 = bbox[0] / page_w
+        y0 = bbox[1] / page_h
+        x1 = bbox[2] / page_w
+        y1 = bbox[3] / page_h
+
+        page_tok = ""
+        if page_i is not None:
+            page_tok = DocumentToken.get_page_token(page=page_i)
+
+        x0_tok = DocumentToken.get_location_token(val=min(x0, x1), rnorm=xsize)
+        y0_tok = DocumentToken.get_location_token(val=min(y0, y1), rnorm=ysize)
+        x1_tok = DocumentToken.get_location_token(val=max(x0, x1), rnorm=xsize)
+        y1_tok = DocumentToken.get_location_token(val=max(y0, y1), rnorm=ysize)
+
+        loc_str = f"{DocumentToken.BEG_LOCATION.value}"
+        loc_str += f"{page_tok}{x0_tok}{y0_tok}{x1_tok}{y1_tok}"
+        loc_str += f"{DocumentToken.END_LOCATION.value}"
+
+        return loc_str

@@ -250,9 +250,26 @@ class Table(BaseCell):
 
         return body
 
-    def export_to_document_tokens(self, new_line: str = "\n", loc_str: str = ""):
+    def export_to_document_tokens(
+        self,
+        new_line: str = "\n",
+        page_w: float = None,
+        page_h: float = None,
+        xsize: int = 100,
+        ysize: int = 100,
+        add_table_location: bool = True,
+        add_cell_location: bool = False,
+        add_cell_label: bool = False,
+        add_cell_text: bool = True,
+    ):
         """Export table to document tokens format."""
         body = ""
+
+        loc_str = ""
+        if page_w is not None and page_h is not None:
+            loc_str = DocumentToken.get_location(
+                self.bbox, page_w, page_h, xsize, ysize, self.page
+            )
 
         body += f"{DocumentToken.BEG_TABLE.value}{loc_str}"
 
