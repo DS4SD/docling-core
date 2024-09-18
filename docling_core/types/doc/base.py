@@ -249,6 +249,31 @@ class Table(BaseCell):
 
         return body
 
+    def export_to_document_tokens(self, new_line:str="\n", loc_str:str=""):
+
+        body = ""
+        
+        body += f"{DocumentToken.BEG_TABLE.value}{loc_str}"
+
+        if self.text is not None and len(self.text) > 0:
+            body += f"{DocumentToken.BEG_CAPTION.value}"
+            body += (
+                f"{self.text}{DocumentToken.END_CAPTION.value}{new_line}"
+            )
+
+        if self.data is not None and len(self.data) > 0:
+            for i, row in enumerate(self.data):
+                body += f"<row_{i}>"
+                for j, col in enumerate(row):
+                    text = col.text
+                    body += f"<col_{j}>{text}</col_{j}>"
+                    
+                body += f"</row_{i}>{new_line}"
+
+        body += f"{DocumentToken.BEG_TABLE.value}{new_line}"
+
+        return body
+        
 
 # FIXME: let's add some figure specific data-types later
 class Figure(BaseCell):
