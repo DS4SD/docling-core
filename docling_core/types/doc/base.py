@@ -257,19 +257,20 @@ class Table(BaseCell):
         page_h: float = 0.0,
         xsize: int = 100,
         ysize: int = 100,
+        add_location: bool = True,
         add_caption: bool = True,
-        add_table_location: bool = True,
+        add_content: bool = True,
         add_cell_location: bool = True,
         add_cell_label: bool = True,
         add_cell_text: bool = True,
-        page_tagging: bool = True,
+        add_page_index: bool = True,
     ):
         """Export table to document tokens format."""
         body = f"{DocumentToken.BEG_TABLE.value}{new_line}"
 
         if (
-            add_table_location
-            and page_tagging
+            add_location
+            and add_page_index
             and self.prov is not None
             and len(self.prov) > 0
         ):
@@ -284,8 +285,8 @@ class Table(BaseCell):
             body += f"{loc_str}{new_line}"
 
         elif (
-            add_table_location
-            and not page_tagging
+            add_location
+            and not add_page_index
             and self.prov is not None
             and len(self.prov) > 0
         ):
@@ -300,9 +301,12 @@ class Table(BaseCell):
             body += f"{loc_str}{new_line}"
 
         if add_caption and self.text is not None and len(self.text) > 0:
-            body += f"{DocumentToken.BEG_CAPTION.value}{self.text.strip()}{DocumentToken.END_CAPTION.value}{new_line}"
+            body += f"{DocumentToken.BEG_CAPTION.value}"
+            body += f"{self.text.strip()}"
+            body += f"{DocumentToken.END_CAPTION.value}"
+            body += f"{new_line}"
 
-        if self.data is not None and len(self.data) > 0:
+        if add_content and self.data is not None and len(self.data) > 0:
             for i, row in enumerate(self.data):
                 body += f"<row_{i}>"
                 for j, col in enumerate(row):
@@ -315,7 +319,7 @@ class Table(BaseCell):
                     if (
                         col.bbox is not None
                         and add_cell_location
-                        and page_tagging
+                        and add_page_index
                         and self.prov is not None
                         and len(self.prov) > 0
                     ):
@@ -328,7 +332,9 @@ class Table(BaseCell):
                             page_i=self.prov[0].page,
                         )
                     elif (
-                        col.bbox is not None and add_cell_location and not page_tagging
+                        col.bbox is not None
+                        and add_cell_location
+                        and not add_page_index
                     ):
                         cell_loc = DocumentToken.get_location(
                             bbox=col.bbox,
@@ -367,16 +373,17 @@ class Figure(BaseCell):
         page_h: float = 0.0,
         xsize: int = 100,
         ysize: int = 100,
+        add_location: bool = True,
         add_caption: bool = True,
-        add_figure_location: bool = True,
-        page_tagging: bool = True,
+        add_content: bool = True,  # not used at the moment
+        add_page_index: bool = True,
     ):
         """Export figure to document tokens format."""
         body = f"{DocumentToken.BEG_FIGURE.value}{new_line}"
 
         if (
-            add_figure_location
-            and page_tagging
+            add_location
+            and add_page_index
             and self.prov is not None
             and len(self.prov) > 0
         ):
@@ -391,8 +398,8 @@ class Figure(BaseCell):
             body += f"{loc_str}{new_line}"
 
         elif (
-            add_figure_location
-            and not page_tagging
+            add_location
+            and not add_page_index
             and self.prov is not None
             and len(self.prov) > 0
         ):
@@ -407,7 +414,10 @@ class Figure(BaseCell):
             body += f"{loc_str}{new_line}"
 
         if add_caption and self.text is not None and len(self.text) > 0:
-            body += f"{DocumentToken.BEG_CAPTION.value}{self.text.strip()}{DocumentToken.END_CAPTION.value}{new_line}"
+            body += f"{DocumentToken.BEG_CAPTION.value}"
+            body += f"{self.text.strip()}"
+            body += f"{DocumentToken.END_CAPTION.value}"
+            body += f"{new_line}"
 
         body += f"{DocumentToken.END_FIGURE.value}{new_line}"
 
@@ -437,18 +447,19 @@ class BaseText(AliasModel):
         xsize: int = 100,
         ysize: int = 100,
         add_location: bool = True,
-        page_tagging: bool = True,
+        add_content: bool = True,
+        add_page_index: bool = True,
     ):
         """Export text element to document tokens format."""
-        body = f"<{obj_type}>"
+        body = f"<{self.obj_type}>"
 
         assert DocumentToken.is_known_token(
-            obj_type
-        ), f"failed DocumentToken.is_known_token({obj_type})"
+            self.obj_type
+        ), f"failed DocumentToken.is_known_token({self.obj_type})"
 
         if (
             add_location
-            and page_tagging
+            and add_page_index
             and self.prov is not None
             and len(self.prov) > 0
         ):
@@ -464,7 +475,7 @@ class BaseText(AliasModel):
 
         elif (
             add_location
-            and not page_tagging
+            and not add_page_index
             and self.prov is not None
             and len(self.prov) > 0
         ):
@@ -478,9 +489,10 @@ class BaseText(AliasModel):
             )
             body += f"{loc_str}"
 
-        body += text.strip()
+        if add_content:
+            body += self.text.strip()
 
-        body += f"</{obj_type}>{new_line}"
+        body += f"</{self.obj_type}>{new_line}"
 
         return body
 

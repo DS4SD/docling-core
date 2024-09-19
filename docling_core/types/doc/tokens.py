@@ -19,18 +19,23 @@ class TableToken(Enum):
     CELL_LABEL_SECTION_HEADERE = "<section_header>"
     CELL_LABEL_DATA = "<data>"
 
-    OTSL_EMPTY_CELL = "<EC>"
-    OTSL_FULL_CELL = "<FC>"
-    OTSL_LEFT_CELL = "<LC>"
-    OTSL_UP_CELL = "<UC>"
-    OTSL_UPLEFT_CELL = "<XC>"
-    OTSL_NEW_LINE = "<NL>"
+    OTSL_EMPTY_CELL = "<ec>"
+    OTSL_FULL_CELL = "<fc>"
+    OTSL_LEFT_CELL = "<lc>"
+    OTSL_UP_CELL = "<uc>"
+    OTSL_UPLEFT_CELL = "<xc>"
+    OTSL_NEW_LINE = "<nl>"
 
     @classmethod
-    def get_special_tokens():
+    def get_special_tokens(cls):
         """Function to get all special document tokens."""
         special_tokens = [token.value for token in cls]
         return special_tokens
+
+    @staticmethod
+    def is_known_token(label):
+        """Function to check if label is in tokens."""
+        return label in TableToken.get_special_tokens()
 
 
 class DocumentToken(Enum):
@@ -105,15 +110,25 @@ class DocumentToken(Enum):
         for i in range(6):
             special_tokens += [f"<section-header-{i}>", f"</section-header-{i}>"]
 
+        # FIXME: this is synonym of section header
+        for i in range(6):
+            special_tokens += [f"<subtitle-level-{i}>", f"</subtitle-level-{i}>"]
+
         # Adding dynamically generated page-tokens
         for i in range(0, max_pages + 1):
             special_tokens.append(f"<page_{i}>")
+            special_tokens.append(f"</page_{i}>")
 
         # Adding dynamically generated location-tokens
         for i in range(0, max(page_dimension[0] + 1, page_dimension[1] + 1)):
             special_tokens.append(f"<loc_{i}>")
 
         return special_tokens
+
+    @staticmethod
+    def is_known_token(label):
+        """Function to check if label is in tokens."""
+        return f"<{label}>" in DocumentToken.get_special_tokens()
 
     @staticmethod
     def get_row_token(row: int, beg=bool) -> str:
@@ -159,7 +174,7 @@ class DocumentToken(Enum):
         ysize: int = 100,
         page_i: int = -1,
     ):
-
+        """Get the location string give bbox and page-dim."""
         assert bbox[0] <= bbox[2], f"bbox[0]<=bbox[2] => {bbox[0]}<={bbox[2]}"
         assert bbox[1] <= bbox[3], f"bbox[1]<=bbox[3] => {bbox[1]}<={bbox[3]}"
 

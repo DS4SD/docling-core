@@ -425,7 +425,7 @@ class ExportedCCSDocument(
         return result
 
     def get_map_to_page_dimensions(self):
-
+        """Get a map from page-index (start at 1) to page-dim [width, height]."""
         pagedims = {}
 
         if self.page_dimensions is not None:
@@ -616,7 +616,7 @@ class ExportedCCSDocument(
 
                 prov = item.prov
 
-                loc_str = ""  # default is zero
+                page_i = -1
                 page_w = 0.0
                 page_h = 0.0
 
@@ -627,8 +627,8 @@ class ExportedCCSDocument(
                     and len(prov) > 0
                 ):
 
-                    prov[0].page
-                    page_dim = self.page_dimensions[page - 1]
+                    page_i = prov[0].page
+                    page_dim = self.page_dimensions[page_i - 1]
 
                     page_w = float(page_dim.width)
                     page_h = float(page_dim.height)
@@ -672,6 +672,9 @@ class ExportedCCSDocument(
                         page_h=page_h,
                         xsize=location_dimensions[0],
                         ysize=location_dimensions[1],
+                        add_location=True,
+                        add_content=True,
+                        add_page_index=page_tagging,
                     )
 
                     """
@@ -688,11 +691,12 @@ class ExportedCCSDocument(
                         xsize=location_dimensions[0],
                         ysize=location_dimensions[1],
                         add_caption=True,
-                        add_table_location=True,
+                        add_location=True,
+                        add_content=True,
                         add_cell_location=False,
                         add_cell_label=True,
                         add_cell_text=True,
-                        page_tagging=page_tagging,
+                        add_page_index=page_tagging,
                     )
 
                     """
@@ -725,8 +729,9 @@ class ExportedCCSDocument(
                         xsize=location_dimensions[0],
                         ysize=location_dimensions[1],
                         add_caption=True,
-                        add_figure_location=True,
-                        page_tagging=page_tagging,
+                        add_location=True,
+                        add_content=True,
+                        add_page_index=page_tagging,
                     )
 
                     """

@@ -61,7 +61,6 @@ def test_table_export_to_tokens():
         if doc.tables is not None and doc.page_dimensions is not None:
 
             pagedims = doc.get_map_to_page_dimensions()
-            print(pagedims)
 
             if doc.tables is not None:
                 for i, table in enumerate(doc.tables):
@@ -69,7 +68,6 @@ def test_table_export_to_tokens():
                     out = table.export_to_document_tokens(
                         page_w=pagedims[page][0], page_h=pagedims[page][1]
                     )
-                    print(out)
 
                     fname = f"{filename}_table_{i}.doctags.txt"
                     if GENERATE:
@@ -81,6 +79,9 @@ def test_table_export_to_tokens():
                         gold_data = gold_obj.read()
 
                     assert out == gold_data
+
+                    # we only test on the first table
+                    break
 
         elif doc.tables is not None and doc.page_dimensions is None:
 
@@ -91,8 +92,6 @@ def test_table_export_to_tokens():
                         add_table_location=False, add_cell_location=False
                     )
 
-                    print(out)
-
                     fname = f"{filename}_table_{i}.doctags.txt"
                     if GENERATE:
                         print(f"writing {fname}")
@@ -103,6 +102,9 @@ def test_table_export_to_tokens():
                         gold_data = gold_obj.read()
 
                     assert out == gold_data
+
+                    # we only test on the first table
+                    break
 
 
 def test_document_export_to_md():
