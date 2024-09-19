@@ -1,3 +1,15 @@
+## [v1.4.1](https://github.com/DS4SD/docling-core/releases/tag/v1.4.1) - 2024-09-18
+
+### Fix
+
+* Add export to xml and html ([#17](https://github.com/DS4SD/docling-core/issues/17)) ([`9bc256e`](https://github.com/DS4SD/docling-core/commit/9bc256e5bbbe02cc0a317bc2920c8e0becb3090c))
+
+## [v1.4.0](https://github.com/DS4SD/docling-core/releases/tag/v1.4.0) - 2024-09-18
+
+### Feature
+
+* Add table exporters ([#20](https://github.com/DS4SD/docling-core/issues/20)) ([`2cc2429`](https://github.com/DS4SD/docling-core/commit/2cc2429e2731998c3282ba133995439450f08574))
+
 ## [v1.3.0](https://github.com/DS4SD/docling-core/releases/tag/v1.3.0) - 2024-09-11
 
 ### Feature
