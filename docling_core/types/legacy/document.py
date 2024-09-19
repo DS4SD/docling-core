@@ -32,7 +32,7 @@ from docling_core.types.base import (
     LanguageT,
     Log,
 )
-from docling_core.types.doc.base import (
+from docling_core.types.legacy.base import (
     BaseCell,
     BaseText,
     BitmapObject,
