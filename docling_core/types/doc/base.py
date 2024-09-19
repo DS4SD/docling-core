@@ -253,40 +253,105 @@ class Table(BaseCell):
     def export_to_document_tokens(
         self,
         new_line: str = "\n",
-        page_w: float = None,
-        page_h: float = None,
+        page_w: float = 0.0,
+        page_h: float = 0.0,
         xsize: int = 100,
         ysize: int = 100,
+        add_caption: bool = True,
         add_table_location: bool = True,
-        add_cell_location: bool = False,
-        add_cell_label: bool = False,
+        add_cell_location: bool = True,
+        add_cell_label: bool = True,
         add_cell_text: bool = True,
+        page_tagging: bool = True,
     ):
         """Export table to document tokens format."""
-        body = ""
+        body = f"{DocumentToken.BEG_TABLE.value}{new_line}"
 
-        loc_str = ""
-        if page_w is not None and page_h is not None:
+        if (
+            add_table_location
+            and page_tagging
+            and self.prov is not None
+            and len(self.prov) > 0
+        ):
             loc_str = DocumentToken.get_location(
-                self.bbox, page_w, page_h, xsize, ysize, self.page
+                bbox=self.prov[0].bbox,
+                page_w=page_w,
+                page_h=page_h,
+                xsize=xsize,
+                ysize=ysize,
+                page_i=self.prov[0].page,
             )
+            body += f"{loc_str}{new_line}"
 
-        body += f"{DocumentToken.BEG_TABLE.value}{loc_str}"
+        elif (
+            add_table_location
+            and not page_tagging
+            and self.prov is not None
+            and len(self.prov) > 0
+        ):
+            loc_str = DocumentToken.get_location(
+                bbox=self.prov[0].bbox,
+                page_w=page_w,
+                page_h=page_h,
+                xsize=xsize,
+                ysize=ysize,
+                page_i=-1,
+            )
+            body += f"{loc_str}{new_line}"
 
-        if self.text is not None and len(self.text) > 0:
-            body += f"{DocumentToken.BEG_CAPTION.value}"
-            body += f"{self.text}{DocumentToken.END_CAPTION.value}{new_line}"
+        if add_caption and self.text is not None and len(self.text) > 0:
+            body += f"{DocumentToken.BEG_CAPTION.value}{self.text.strip()}{DocumentToken.END_CAPTION.value}{new_line}"
 
         if self.data is not None and len(self.data) > 0:
             for i, row in enumerate(self.data):
                 body += f"<row_{i}>"
                 for j, col in enumerate(row):
-                    text = col.text
-                    body += f"<col_{j}>{text}</col_{j}>"
+
+                    text = ""
+                    if add_cell_text:
+                        text = col.text.strip()
+
+                    cell_loc = ""
+                    if (
+                        col.bbox is not None
+                        and add_cell_location
+                        and page_tagging
+                        and self.prov is not None
+                        and len(self.prov) > 0
+                    ):
+                        cell_loc = DocumentToken.get_location(
+                            bbox=col.bbox,
+                            page_w=page_w,
+                            page_h=page_h,
+                            xsize=xsize,
+                            ysize=ysize,
+                            page_i=self.prov[0].page,
+                        )
+                    elif (
+                        col.bbox is not None and add_cell_location and not page_tagging
+                    ):
+                        cell_loc = DocumentToken.get_location(
+                            bbox=col.bbox,
+                            page_w=page_w,
+                            page_h=page_h,
+                            xsize=xsize,
+                            ysize=ysize,
+                            page_i=-1,
+                        )
+
+                    cell_label = ""
+                    if (
+                        add_cell_label
+                        and col.obj_type is not None
+                        and len(col.obj_type) > 0
+                    ):
+                        cell_label = f"<{col.obj_type}>"
+
+                    body += f"<col_{j}>{cell_loc}{cell_label}{text}</col_{j}>"
 
                 body += f"</row_{i}>{new_line}"
 
-        body += f"{DocumentToken.BEG_TABLE.value}{new_line}"
+        body += f"{DocumentToken.END_TABLE.value}{new_line}"
 
         return body
 
@@ -294,6 +359,59 @@ class Table(BaseCell):
 # FIXME: let's add some figure specific data-types later
 class Figure(BaseCell):
     """Figure."""
+
+    def export_to_document_tokens(
+        self,
+        new_line: str = "\n",
+        page_w: float = 0.0,
+        page_h: float = 0.0,
+        xsize: int = 100,
+        ysize: int = 100,
+        add_caption: bool = True,
+        add_figure_location: bool = True,
+        page_tagging: bool = True,
+    ):
+        """Export figure to document tokens format."""
+        body = f"{DocumentToken.BEG_FIGURE.value}{new_line}"
+
+        if (
+            add_figure_location
+            and page_tagging
+            and self.prov is not None
+            and len(self.prov) > 0
+        ):
+            loc_str = DocumentToken.get_location(
+                bbox=self.prov[0].bbox,
+                page_w=page_w,
+                page_h=page_h,
+                xsize=xsize,
+                ysize=ysize,
+                page_i=self.prov[0].page,
+            )
+            body += f"{loc_str}{new_line}"
+
+        elif (
+            add_figure_location
+            and not page_tagging
+            and self.prov is not None
+            and len(self.prov) > 0
+        ):
+            loc_str = DocumentToken.get_location(
+                bbox=self.prov[0].bbox,
+                page_w=page_w,
+                page_h=page_h,
+                xsize=xsize,
+                ysize=ysize,
+                page_i=-1,
+            )
+            body += f"{loc_str}{new_line}"
+
+        if add_caption and self.text is not None and len(self.text) > 0:
+            body += f"{DocumentToken.BEG_CAPTION.value}{self.text.strip()}{DocumentToken.END_CAPTION.value}{new_line}"
+
+        body += f"{DocumentToken.END_FIGURE.value}{new_line}"
+
+        return body
 
 
 class BaseText(AliasModel):
@@ -310,6 +428,61 @@ class BaseText(AliasModel):
     )
     font: Optional[str] = None
     prov: Optional[list[Prov]] = None
+
+    def export_to_document_tokens(
+        self,
+        new_line: str = "\n",
+        page_w: float = 0.0,
+        page_h: float = 0.0,
+        xsize: int = 100,
+        ysize: int = 100,
+        add_location: bool = True,
+        page_tagging: bool = True,
+    ):
+        """Export text element to document tokens format."""
+        body = f"<{obj_type}>"
+
+        assert DocumentToken.is_known_token(
+            obj_type
+        ), f"failed DocumentToken.is_known_token({obj_type})"
+
+        if (
+            add_location
+            and page_tagging
+            and self.prov is not None
+            and len(self.prov) > 0
+        ):
+            loc_str = DocumentToken.get_location(
+                bbox=self.prov[0].bbox,
+                page_w=page_w,
+                page_h=page_h,
+                xsize=xsize,
+                ysize=ysize,
+                page_i=self.prov[0].page,
+            )
+            body += f"{loc_str}"
+
+        elif (
+            add_location
+            and not page_tagging
+            and self.prov is not None
+            and len(self.prov) > 0
+        ):
+            loc_str = DocumentToken.get_location(
+                bbox=self.prov[0].bbox,
+                page_w=page_w,
+                page_h=page_h,
+                xsize=xsize,
+                ysize=ysize,
+                page_i=-1,
+            )
+            body += f"{loc_str}"
+
+        body += text.strip()
+
+        body += f"</{obj_type}>{new_line}"
+
+        return body
 
 
 class ListItem(BaseText):

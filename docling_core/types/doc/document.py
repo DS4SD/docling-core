@@ -424,6 +424,16 @@ class ExportedCCSDocument(
 
         return result
 
+    def get_map_to_page_dimensions(self):
+
+        pagedims = {}
+
+        if self.page_dimensions is not None:
+            for _ in self.page_dimensions:
+                pagedims[_.page] = [_.width, _.height]
+
+        return pagedims
+
     def export_to_markdown(
         self,
         delim: str = "\n\n",
@@ -584,11 +594,13 @@ class ExportedCCSDocument(
         Returns:
             str: The content of the document formatted as an XML string.
         """
-        xml_str = DocumentToken.BEG_DOCUMENT.value
-
         new_line = ""
         if add_new_line:
             new_line = "\n"
+
+        xml_str = f"{DocumentToken.BEG_DOCUMENT.value}{new_line}"
+
+        # pagedims = self.get_map_to_page_dimensions()
 
         if self.main_text is not None:
             for orig_item in self.main_text[main_text_start:main_text_stop]:
@@ -605,6 +617,9 @@ class ExportedCCSDocument(
                 prov = item.prov
 
                 loc_str = ""  # default is zero
+                page_w = 0.0
+                page_h = 0.0
+
                 if (
                     location_tagging
                     and self.page_dimensions is not None
@@ -612,12 +627,13 @@ class ExportedCCSDocument(
                     and len(prov) > 0
                 ):
 
-                    page = prov[0].page
+                    prov[0].page
                     page_dim = self.page_dimensions[page - 1]
 
                     page_w = float(page_dim.width)
                     page_h = float(page_dim.height)
 
+                    """
                     x0 = float(prov[0].bbox[0]) / float(page_w)
                     y0 = float(prov[0].bbox[1]) / float(page_h)
                     x1 = float(prov[0].bbox[2]) / float(page_w)
@@ -645,15 +661,41 @@ class ExportedCCSDocument(
                     loc_str += f"{page_tok}"
                     loc_str += f"{x0_tok}{y0_tok}{x1_tok}{y1_tok}"
                     loc_str += f"{DocumentToken.END_LOCATION.value}"
+                    """
 
                 item_type = item.obj_type
                 if isinstance(item, BaseText) and (item_type in main_text_labels):
-                    text = item.text
 
+                    xml_str += item.export_to_document_tokens(
+                        new_line=new_line,
+                        page_w=page_w,
+                        page_h=page_h,
+                        xsize=location_dimensions[0],
+                        ysize=location_dimensions[1],
+                    )
+
+                    """
+                    text = item.text
                     xml_str += f"<{item_type}>{loc_str}{text}</{item_type}>{new_line}"
+                    """
 
                 elif isinstance(item, Table) and (item_type in main_text_labels):
 
+                    xml_str += item.export_to_document_tokens(
+                        new_line=new_line,
+                        page_w=page_w,
+                        page_h=page_h,
+                        xsize=location_dimensions[0],
+                        ysize=location_dimensions[1],
+                        add_caption=True,
+                        add_table_location=True,
+                        add_cell_location=False,
+                        add_cell_label=True,
+                        add_cell_text=True,
+                        page_tagging=page_tagging,
+                    )
+
+                    """
                     xml_str += f"<{item_type}>{loc_str}"
 
                     if item.text is not None and len(item.text) > 0:
@@ -672,9 +714,22 @@ class ExportedCCSDocument(
                             xml_str += f"</row_{i}>{new_line}"
 
                     xml_str += f"</{item_type}>{new_line}"
+                    """
 
                 elif isinstance(item, Figure) and (item_type in main_text_labels):
 
+                    xml_str += item.export_to_document_tokens(
+                        new_line=new_line,
+                        page_w=page_w,
+                        page_h=page_h,
+                        xsize=location_dimensions[0],
+                        ysize=location_dimensions[1],
+                        add_caption=True,
+                        add_figure_location=True,
+                        page_tagging=page_tagging,
+                    )
+
+                    """
                     xml_str += f"<{item_type}>{loc_str}"
 
                     if item.text is not None and len(item.text) > 0:
@@ -684,6 +739,7 @@ class ExportedCCSDocument(
                         )
 
                     xml_str += f"</{item_type}>{new_line}"
+                    """
 
         xml_str += DocumentToken.END_DOCUMENT.value
 

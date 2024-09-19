@@ -6,7 +6,31 @@
 """Tokens used in the docling document model."""
 
 from enum import Enum
-from typing import Tuple
+from typing import Annotated, Tuple
+
+from pydantic import Field
+
+
+class TableToken(Enum):
+    """Class to represent an LLM friendly representation of a Table."""
+
+    CELL_LABEL_COLUMN_HEADER = "<column_header>"
+    CELL_LABEL_ROW_HEADER = "<row_header>"
+    CELL_LABEL_SECTION_HEADERE = "<section_header>"
+    CELL_LABEL_DATA = "<data>"
+
+    OTSL_EMPTY_CELL = "<EC>"
+    OTSL_FULL_CELL = "<FC>"
+    OTSL_LEFT_CELL = "<LC>"
+    OTSL_UP_CELL = "<UC>"
+    OTSL_UPLEFT_CELL = "<XC>"
+    OTSL_NEW_LINE = "<NL>"
+
+    @classmethod
+    def get_special_tokens():
+        """Function to get all special document tokens."""
+        special_tokens = [token.value for token in cls]
+        return special_tokens
 
 
 class DocumentToken(Enum):
@@ -127,12 +151,13 @@ class DocumentToken(Enum):
 
     @staticmethod
     def get_location(
-        bbox: Tuple[float, float, float, float],
+        # bbox: Tuple[float, float, float, float],
+        bbox: Annotated[list[float], Field(min_length=4, max_length=4)],
         page_w: float,
         page_h: float,
         xsize: int = 100,
         ysize: int = 100,
-        page_i: int = None,
+        page_i: int = -1,
     ):
 
         assert bbox[0] <= bbox[2], f"bbox[0]<=bbox[2] => {bbox[0]}<={bbox[2]}"
@@ -144,7 +169,7 @@ class DocumentToken(Enum):
         y1 = bbox[3] / page_h
 
         page_tok = ""
-        if page_i is not None:
+        if page_i != -1:
             page_tok = DocumentToken.get_page_token(page=page_i)
 
         x0_tok = DocumentToken.get_location_token(val=min(x0, x1), rnorm=xsize)
