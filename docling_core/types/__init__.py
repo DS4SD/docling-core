@@ -5,7 +5,7 @@
 
 """Define the main types."""
 
-from docling_core.types.doc.base import BoundingBox # noqa
+from docling_core.types.doc.base import BoundingBox  # noqa
 from docling_core.types.doc.base import Table  # noqa
 from docling_core.types.doc.base import TableCell  # noqa
 from docling_core.types.doc.base import (  # noqa
@@ -23,5 +23,3 @@ from docling_core.types.doc.document import CCSFileInfoObject as FileInfoObject 
 from docling_core.types.doc.document import ExportedCCSDocument as Document  # noqa
 from docling_core.types.gen.generic import Generic  # noqa
 from docling_core.types.rec.record import Record  # noqa
-
-from docling_core.types.experimental.document import DoclingDocument, DocItem, TextItem, FloatingItem, TableItem, FigureItem, TableData, FigureData, PageItem

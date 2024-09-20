@@ -1,7 +1,6 @@
 import yaml
-import pytest
-from docling_core.types import DoclingDocument, BoundingBox
-from docling_core.types.experimental.document import ProvenanceItem
+
+from docling_core.types.experimental.document import DoclingDocument, FileInfo
 
 
 def test_load_serialize_doc():
@@ -19,7 +18,7 @@ def test_load_serialize_doc():
     text_item.prov[0].page_no
 
     # Objects that are references need explicit resolution for now:
-    obj = doc.body[2].resolve(doc=doc)  # Text item with parent
+    obj = doc.body.children[2].resolve(doc=doc)  # Text item with parent
     parent = obj.parent.resolve(doc=doc)  # it is a figure
 
     obj2 = parent.children[0].resolve(
@@ -37,27 +36,43 @@ def test_load_serialize_doc():
     assert doc_reload == doc  # must be equal
     assert doc_reload is not doc  # can't be identical
 
+
 def test_construct_doc():
-    doc = DoclingDocument(description={}, file_info={})
+
+    doc = DoclingDocument(description={}, file_info=FileInfo(document_hash="xyz"))
 
     # group, heading, paragraph, table, figure, title, list, provenance
-    doc.add_title()
-    doc.add_paragraph(text="Author 1\nAffiliation 1").add_provenance(ProvenanceItem(page_no=1, bbox=BoundingBox(t=12, l=5, r=230, b=40), charspan=(0,22)))
-    doc.add_paragraph(text="Author 2\nAffiliation 2")
+    doc.add_paragraph(label="text", text="Author 1\nAffiliation 1")
+    doc.add_paragraph(label="text", text="Author 2\nAffiliation 2")
 
-    chapter1 = doc.add_group(name="Introduction")
-    chapter1.add_heading(text="1. Introduction", level=2)
-    chapter1.add_paragraph(text="This paper introduces the biggest invention ever made. ...")
-    mylist = chapter1.add_group()
-    mylist.add_item(text="Cooks your favourite meal before you know you want it.")
-    mylist.add_item(text="Cleans up all your dishes.")
-    mylist.add_item(text="Drains your bank account without consent.")
+    chapter1 = doc.add_group(
+        name="Introduction"
+    )  # can be done if such information is present, or ommitted.
+    doc.add_heading(
+        parent=chapter1, label="section_header", text="1. Introduction", level=1
+    )
+    doc.add_paragraph(
+        parent=chapter1,
+        label="text",
+        text="This paper introduces the biggest invention ever made. ...",
+    )
+    mylist = doc.add_group(parent=chapter1, name="whateverlist")
+    doc.add_paragraph(
+        parent=mylist,
+        label="list_item",
+        text="Cooks your favourite meal before you know you want it.",
+    )
+    doc.add_paragraph(
+        parent=mylist, label="list_item", text="Cleans up all your dishes."
+    )
+    doc.add_paragraph(
+        parent=mylist,
+        label="list_item",
+        text="Drains your bank account without consent.",
+    )
 
+    yaml_dump = yaml.safe_dump(doc.model_dump(mode="json", by_alias=True))
 
+    print(f"\n\n{yaml_dump}")
 
-    sec = doc.add_section(text="1. Introduction")
-
-    list = sec.add_child(label="container")
-    list.add_child()
-    list.add_child()
-
+    DoclingDocument.model_validate(yaml.safe_load(yaml_dump))
