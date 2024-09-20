@@ -5,7 +5,7 @@ from docling_core.types.experimental.document import DoclingDocument, FileInfo
 
 def test_load_serialize_doc():
     # Read YAML file
-    with open("test/data/newdoc/dummy_doc.yaml", "r") as fp:
+    with open("test/data/experimental/dummy_doc.yaml", "r") as fp:
         dict_from_yaml = yaml.safe_load(fp)
 
     doc = DoclingDocument.model_validate(dict_from_yaml)

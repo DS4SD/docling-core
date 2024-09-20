@@ -1,29 +1,34 @@
 ---
-## Document with content + layout info
+## Document with content + optional layout info
 description: { } # DescriptionType - TBD
-file_info: # FileInfoType - TBD
+file_info: # FileInfo type
   document_hash: e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5
 
-furniture: # Top level element for any headers, footers, framing, navigation elements, all other non-body text
+# Root element for any headers, footers, framing, navigation elements, all other non-body text, type GroupItem
+furniture:
   name: "_root_"
   dloc: "#/furniture"
-  parent: null
-  children:
+  parent: null # Only root elements have no parent.
+  children: # only the first-level children appear here, as references (RefItem)
     - $ref: "/texts/0"
 
-body: # Top-level element for anything in the document body
+# Root element for anything in the document body, type GroupItem
+body:
   name: "_root_"
   dloc: "#/body"
-  parent: null
-  children:
+  parent: null # Only root elements have no parent.
+  children: # only the first-level children appear here, as references (RefItem)
     - $ref: "/texts/1"
     - $ref: "/figure/0"
     - $ref: "/texts/2"
     - $ref: "/tables/0"
 
-groups: [] # Any group that is nested deeper in either body or furniture children
+# All groups of items nested deeper in body or furniture roots, type List[GroupItem]
+groups: [] # The parent + children relations capture nesting and reading-order.
 
-texts: # All elements that have a text-string representation, with actual data
+# All elements that have a text-string representation, type TextItem.
+# This is a flat list of all elements without implied order.
+texts:
   - orig: "arXiv:2206.01062v1 [cs.CV] 2 Jun 2022"
     text: "arXiv:2206.01062v1 [cs.CV] 2 Jun 2022"
     dloc: "e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5#/texts/0"
@@ -153,7 +158,7 @@ figures: # All figures...
       uri: "file:///e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5/figures/0.png"
       #alternatives: base64 encoded striong
     children:
-      - $ref: "/texts/2"
+      - $ref: "/texts/2" # This text element appears inside the figure, hence it is a child.
     prov:
       - page_no: 1
         bbox:
