@@ -580,7 +580,7 @@ class ExportedCCSDocument(
         if delim:
             new_line = "\n"
 
-        xml_str = f"{DocumentToken.BEG_DOCUMENT.value}{new_line}"
+        doctags = f"{DocumentToken.BEG_DOCUMENT.value}{new_line}"
 
         # pagedims = self.get_map_to_page_dimensions()
 
@@ -618,7 +618,7 @@ class ExportedCCSDocument(
                 item_type = item.obj_type
                 if isinstance(item, BaseText) and (item_type in main_text_labels):
 
-                    xml_str += item.export_to_document_tokens(
+                    doctags += item.export_to_document_tokens(
                         new_line=new_line,
                         page_w=page_w,
                         page_h=page_h,
@@ -631,7 +631,7 @@ class ExportedCCSDocument(
 
                 elif isinstance(item, Table) and (item_type in main_text_labels):
 
-                    xml_str += item.export_to_document_tokens(
+                    doctags += item.export_to_document_tokens(
                         new_line=new_line,
                         page_w=page_w,
                         page_h=page_h,
@@ -648,7 +648,7 @@ class ExportedCCSDocument(
 
                 elif isinstance(item, Figure) and (item_type in main_text_labels):
 
-                    xml_str += item.export_to_document_tokens(
+                    doctags += item.export_to_document_tokens(
                         new_line=new_line,
                         page_w=page_w,
                         page_h=page_h,
@@ -660,6 +660,6 @@ class ExportedCCSDocument(
                         add_page_index=add_page_index,
                     )
 
-        xml_str += DocumentToken.END_DOCUMENT.value
+        doctags += DocumentToken.END_DOCUMENT.value
 
-        return xml_str
+        return doctags
