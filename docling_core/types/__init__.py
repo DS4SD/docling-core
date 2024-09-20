@@ -5,10 +5,10 @@
 
 """Define the main types."""
 
-from docling_core.types.legacy.base import BoundingBox as LegacyBoundingBox # noqa
-from docling_core.types.legacy.base import Table  # noqa
-from docling_core.types.legacy.base import TableCell  # noqa
-from docling_core.types.legacy.base import (  # noqa
+from docling_core.types.doc.base import BoundingBox # noqa
+from docling_core.types.doc.base import Table  # noqa
+from docling_core.types.doc.base import TableCell  # noqa
+from docling_core.types.doc.base import (  # noqa
     BaseCell,
     BaseText,
     PageDimensions,
@@ -16,13 +16,12 @@ from docling_core.types.legacy.base import (  # noqa
     Prov,
     Ref,
 )
-from docling_core.types.legacy.document import (  # noqa
+from docling_core.types.doc.document import (  # noqa
     CCSDocumentDescription as DocumentDescription,
 )
-from docling_core.types.legacy.document import CCSFileInfoObject as FileInfoObject  # noqa
-from docling_core.types.legacy.document import ExportedCCSDocument as Document  # noqa
+from docling_core.types.doc.document import CCSFileInfoObject as FileInfoObject  # noqa
+from docling_core.types.doc.document import ExportedCCSDocument as Document  # noqa
 from docling_core.types.gen.generic import Generic  # noqa
 from docling_core.types.rec.record import Record  # noqa
 
-from docling_core.types.doc.document import DoclingDocument, DocItem, TextItem, FloatingItem, TableItem, FigureItem, TableData, FigureData, PageItem
-from docling_core.types.doc.base import CoordOrigin, BoundingBox
+from docling_core.types.experimental.document import DoclingDocument, DocItem, TextItem, FloatingItem, TableItem, FigureItem, TableData, FigureData, PageItem

@@ -1,7 +1,7 @@
 import yaml
 import pytest
 from docling_core.types import DoclingDocument, BoundingBox
-from docling_core.types.doc.document import ProvenanceItem
+from docling_core.types.experimental.document import ProvenanceItem
 
 
 def test_load_serialize_doc():

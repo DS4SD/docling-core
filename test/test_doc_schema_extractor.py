@@ -8,7 +8,7 @@ import json
 
 from pydantic import ValidationError
 
-from docling_core.types.legacy.document import CCSDocument
+from docling_core.types.doc.document import CCSDocument
 
 
 def test_ccs_document_update():

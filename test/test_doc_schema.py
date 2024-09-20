@@ -17,7 +17,7 @@ from docling_core.types.base import (
     IdentifierTypeT,
     LanguageT,
 )
-from docling_core.types.legacy.document import (
+from docling_core.types.doc.document import (
     CCSDocument,
     CCSDocumentDescription,
     Publication,
