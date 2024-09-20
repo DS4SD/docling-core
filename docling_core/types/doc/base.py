@@ -157,8 +157,9 @@ class BaseCell(AliasModel):
         location = ""
         for prov in self.prov:
 
+            page_i=-1
             if add_page_index:
-                prov.page
+                page_i = prov.page
 
             loc_str = DocumentToken.get_location(
                 bbox=prov.bbox,
@@ -166,7 +167,7 @@ class BaseCell(AliasModel):
                 page_h=page_h,
                 xsize=xsize,
                 ysize=ysize,
-                page_i=prov.page,
+                page_i=page_i,
             )
             location += f"{loc_str}{new_line}"
 

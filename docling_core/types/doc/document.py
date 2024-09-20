@@ -178,14 +178,14 @@ class DescriptionLicense(BaseModel, extra="forbid"):
 
 
 class CCSDocumentDescription(
-    AliasModel,
-    Generic[
-        DescriptionAdvancedT,
-        DescriptionAnalyticsT,
-        IdentifierTypeT,
-        LanguageT,
-        CollectionNameTypeT,
-    ],
+        AliasModel,
+        Generic[
+            DescriptionAdvancedT,
+            DescriptionAnalyticsT,
+            IdentifierTypeT,
+            LanguageT,
+            CollectionNameTypeT,
+        ],
 ):
     """Description in document."""
 
@@ -253,14 +253,14 @@ class CCSDocumentDescription(
 
 
 class MinimalDocument(
-    AliasModel,
-    Generic[
-        DescriptionAdvancedT,
-        DescriptionAnalyticsT,
-        IdentifierTypeT,
-        LanguageT,
-        CollectionNameTypeT,
-    ],
+        AliasModel,
+        Generic[
+            DescriptionAdvancedT,
+            DescriptionAnalyticsT,
+            IdentifierTypeT,
+            LanguageT,
+            CollectionNameTypeT,
+        ],
 ):
     """Minimal model for a document."""
 
@@ -282,14 +282,14 @@ class MinimalDocument(
 
 
 class CCSDocument(
-    MinimalDocument,
-    Generic[
-        DescriptionAdvancedT,
-        DescriptionAnalyticsT,
-        IdentifierTypeT,
-        LanguageT,
-        CollectionNameTypeT,
-    ],
+        MinimalDocument,
+        Generic[
+            DescriptionAdvancedT,
+            DescriptionAnalyticsT,
+            IdentifierTypeT,
+            LanguageT,
+            CollectionNameTypeT,
+        ],
 ):
     """Model for a CCS-generated document."""
 
@@ -348,14 +348,14 @@ class CCSDocument(
 
 
 class ExportedCCSDocument(
-    MinimalDocument,
-    Generic[
-        DescriptionAdvancedT,
-        DescriptionAnalyticsT,
-        IdentifierTypeT,
-        LanguageT,
-        CollectionNameTypeT,
-    ],
+        MinimalDocument,
+        Generic[
+            DescriptionAdvancedT,
+            DescriptionAnalyticsT,
+            IdentifierTypeT,
+            LanguageT,
+            CollectionNameTypeT,
+        ],
 ):
     """Document model for Docling."""
 
@@ -435,18 +435,18 @@ class ExportedCCSDocument(
         return pagedims
 
     def export_to_markdown(
-        self,
-        delim: str = "\n\n",
-        main_text_start: int = 0,
-        main_text_stop: Optional[int] = None,
-        main_text_labels: list[str] = [
-            "title",
-            "subtitle-level-1",
-            "paragraph",
-            "caption",
-            "table",
-        ],
-        strict_text: bool = False,
+            self,
+            delim: str = "\n\n",
+            main_text_start: int = 0,
+            main_text_stop: Optional[int] = None,
+            main_text_labels: list[str] = [
+                "title",
+                "subtitle-level-1",
+                "paragraph",
+                "caption",
+                "table",
+            ],
+            strict_text: bool = False,
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -496,11 +496,11 @@ class ExportedCCSDocument(
                             markdown_text = f"{text}"
                         else:
                             markdown_text = f"# {text}"
-                        has_title = True
+                            has_title = True
 
                     # secondary titles
                     elif item_type in {"title", "subtitle-level-1"} or (
-                        has_title and item_type == "title"
+                            has_title and item_type == "title"
                     ):
                         if strict_text:
                             markdown_text = f"{text}"
@@ -512,17 +512,17 @@ class ExportedCCSDocument(
                         markdown_text = text
 
                 elif (
-                    isinstance(item, Table)
-                    and item.data
-                    and item_type in main_text_labels
-                    and not strict_text
+                        isinstance(item, Table)
+                        and item.data
+                        and item_type in main_text_labels
+                        and not strict_text
                 ):
                     table = []
                     for row in item.data:
                         tmp = []
                         for col in row:
                             tmp.append(col.text)
-                        table.append(tmp)
+                            table.append(tmp)
 
                     if len(table) > 1 and len(table[0]) > 0:
                         try:
@@ -546,27 +546,27 @@ class ExportedCCSDocument(
         return result
 
     def export_to_document_tokens(
-        self,
-        delim: str = "\n\n",
-        main_text_start: int = 0,
-        main_text_stop: Optional[int] = None,
-        main_text_labels: list[str] = [
-            "title",
-            "subtitle-level-1",
-            "paragraph",
-            "caption",
-            "table",
-            "figure",
-        ],
-        xsize: int = 100,
-        ysize: int = 100,
-        add_location: bool = True,
-        add_content: bool = True,
-        add_page_index: bool = True,
-        # table specific flags
+            self,
+            delim: str = "\n\n",
+            main_text_start: int = 0,
+            main_text_stop: Optional[int] = None,
+            main_text_labels: list[str] = [
+                "title",
+                "subtitle-level-1",
+                "paragraph",
+                "caption",
+                "table",
+                "figure",
+            ],
+            xsize: int = 100,
+            ysize: int = 100,
+            add_location: bool = True,
+            add_content: bool = True,
+            add_page_index: bool = True,
+            # table specific flags
         add_table_cell_location: bool = False,
-        add_table_cell_label: bool = True,
-        add_table_cell_text: bool = True,
+            add_table_cell_label: bool = True,
+            add_table_cell_text: bool = True,
     ) -> str:
         r"""Exports the document content to an DocumentToken format.
 
@@ -580,7 +580,7 @@ class ExportedCCSDocument(
         if delim:
             new_line = "\n"
 
-        xml_str = f"{DocumentToken.BEG_DOCUMENT.value}{new_line}"
+        doctags = f"{DocumentToken.BEG_DOCUMENT.value}{new_line}"
 
         # pagedims = self.get_map_to_page_dimensions()
 
@@ -603,10 +603,10 @@ class ExportedCCSDocument(
                 page_h = 0.0
 
                 if (
-                    add_location
-                    and self.page_dimensions is not None
-                    and prov is not None
-                    and len(prov) > 0
+                        add_location
+                        and self.page_dimensions is not None
+                        and prov is not None
+                        and len(prov) > 0
                 ):
 
                     page_i = prov[0].page
@@ -618,7 +618,7 @@ class ExportedCCSDocument(
                 item_type = item.obj_type
                 if isinstance(item, BaseText) and (item_type in main_text_labels):
 
-                    xml_str += item.export_to_document_tokens(
+                    doctags += item.export_to_document_tokens(
                         new_line=new_line,
                         page_w=page_w,
                         page_h=page_h,
@@ -631,7 +631,7 @@ class ExportedCCSDocument(
 
                 elif isinstance(item, Table) and (item_type in main_text_labels):
 
-                    xml_str += item.export_to_document_tokens(
+                    doctags += item.export_to_document_tokens(
                         new_line=new_line,
                         page_w=page_w,
                         page_h=page_h,
@@ -648,7 +648,7 @@ class ExportedCCSDocument(
 
                 elif isinstance(item, Figure) and (item_type in main_text_labels):
 
-                    xml_str += item.export_to_document_tokens(
+                    doctags += item.export_to_document_tokens(
                         new_line=new_line,
                         page_w=page_w,
                         page_h=page_h,
@@ -660,6 +660,6 @@ class ExportedCCSDocument(
                         add_page_index=add_page_index,
                     )
 
-        xml_str += DocumentToken.END_DOCUMENT.value
+        doctags += DocumentToken.END_DOCUMENT.value
 
-        return xml_str
+        return doctags
