@@ -109,17 +109,17 @@ def test_table_export_to_tokens():
 
 def test_document_export_to_md():
     """Test the Document Markdown export."""
-    with open("test/data/doc/md-export.json") as src_obj:
+    with open("test/data/doc/doc-export.json") as src_obj:
         src_data = src_obj.read()
     doc = Document.model_validate_json(src_data)
 
     md = doc.export_to_markdown()
 
     if GENERATE:
-        with open("test/data/doc/md-export.md", "w") as gold_obj:
+        with open("test/data/doc/doc-export.md", "w") as gold_obj:
             gold_obj.write(md)
 
-    with open("test/data/doc/md-export.md") as gold_obj:
+    with open("test/data/doc/doc-export.md") as gold_obj:
         gold_data = gold_obj.read().strip()
 
     assert md == gold_data
@@ -127,17 +127,17 @@ def test_document_export_to_md():
 
 def test_document_export_to_tokens():
     """Test the Document Tokens export."""
-    with open("test/data/doc/md-export.json") as src_obj:
+    with open("test/data/doc/doc-export.json") as src_obj:
         src_data = src_obj.read()
 
     doc = Document.model_validate_json(src_data)
     xml = doc.export_to_document_tokens(add_new_line=True)
 
     if GENERATE:
-        with open("test/data/doc/md-export.xml", "w") as gold_obj:
+        with open("test/data/doc/doc-export.doctags.txt", "w") as gold_obj:
             gold_obj.write(xml)
 
-    with open("test/data/doc/md-export.xml", "r") as gold_obj:
+    with open("test/data/doc/doc-export.doctags.txt", "r") as gold_obj:
         gold_data = gold_obj.read().strip()
 
     assert xml == gold_data
