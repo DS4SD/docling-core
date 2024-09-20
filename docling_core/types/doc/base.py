@@ -141,11 +141,6 @@ class BaseCell(AliasModel):
         alias="type", json_schema_extra=es_field(type="keyword", ignore_above=8191)
     )
 
-    # FIXME: we need to check why we have bounding_box (this should be in prov)
-    bounding_box: Optional[BoundingBoxContainer] = Field(
-        default=None, alias="bounding-box", json_schema_extra=es_field(suppress=True)
-    )
-
     def get_location_tokens(
         self,
         new_line: str,
@@ -185,6 +180,11 @@ class Table(BaseCell):
     num_rows: int = Field(alias="#-rows")
     data: Optional[list[list[Union[GlmTableCell, TableCell]]]] = None
     model: Optional[str] = None
+
+    # FIXME: we need to check why we have bounding_box (this should be in prov)
+    bounding_box: Optional[BoundingBoxContainer] = Field(
+        default=None, alias="bounding-box", json_schema_extra=es_field(suppress=True)
+    )
 
     def _get_tablecell_span(self, cell: TableCell, ix: int):
         if cell.spans is None:
@@ -408,6 +408,11 @@ class Table(BaseCell):
 # FIXME: let's add some figure specific data-types later
 class Figure(BaseCell):
     """Figure."""
+
+    # FIXME: we need to check why we have bounding_box (this should be in prov)
+    bounding_box: Optional[BoundingBoxContainer] = Field(
+        default=None, alias="bounding-box", json_schema_extra=es_field(suppress=True)
+    )
 
     def export_to_document_tokens(
         self,

@@ -232,18 +232,6 @@
           "type": "string",
           "x-es-ignore_above": 8191,
           "x-es-type": "keyword"
-        },
-        "bounding-box": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/BoundingBoxContainer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "x-es-suppress": true
         }
       },
       "required": [
@@ -1662,18 +1650,6 @@
           "x-es-ignore_above": 8191,
           "x-es-type": "keyword"
         },
-        "bounding-box": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/BoundingBoxContainer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "x-es-suppress": true
-        },
         "#-cols": {
           "title": "#-Cols",
           "type": "integer"
@@ -1718,6 +1694,18 @@
           ],
           "default": null,
           "title": "Model"
+        },
+        "bounding-box": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBoxContainer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "x-es-suppress": true
         }
       },
       "required": [
