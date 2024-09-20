@@ -300,48 +300,15 @@ class Table(BaseCell):
         """Export table to document tokens format."""
         body = f"{DocumentToken.BEG_TABLE.value}{new_line}"
 
-        """
-        if (
-            add_location
-            and add_page_index
-            and self.prov is not None
-            and len(self.prov) > 0
-        ):
-            loc_str = DocumentToken.get_location(
-                bbox=self.prov[0].bbox,
+        if add_location:
+            body += self.get_location_tokens(
+                new_line=new_line,
                 page_w=page_w,
                 page_h=page_h,
                 xsize=xsize,
                 ysize=ysize,
-                page_i=self.prov[0].page,
+                add_page_index=add_page_index,
             )
-            body += f"{loc_str}{new_line}"
-
-        elif (
-            add_location
-            and not add_page_index
-            and self.prov is not None
-            and len(self.prov) > 0
-        ):
-            loc_str = DocumentToken.get_location(
-                bbox=self.prov[0].bbox,
-                page_w=page_w,
-                page_h=page_h,
-                xsize=xsize,
-                ysize=ysize,
-                page_i=-1,
-            )
-            body += f"{loc_str}{new_line}"
-        """
-
-        body += self.get_location_tokens(
-            new_line=new_line,
-            page_w=page_w,
-            page_h=page_h,
-            xsize=xsize,
-            ysize=ysize,
-            add_page_index=add_page_index,
-        )
 
         if add_caption and self.text is not None and len(self.text) > 0:
             body += f"{DocumentToken.BEG_CAPTION.value}"
@@ -429,48 +396,15 @@ class Figure(BaseCell):
         """Export figure to document tokens format."""
         body = f"{DocumentToken.BEG_FIGURE.value}{new_line}"
 
-        """
-        if (
-            add_location
-            and add_page_index
-            and self.prov is not None
-            and len(self.prov) > 0
-        ):
-            loc_str = DocumentToken.get_location(
-                bbox=self.prov[0].bbox,
+        if add_location:
+            body += self.get_location_tokens(
+                new_line=new_line,
                 page_w=page_w,
                 page_h=page_h,
                 xsize=xsize,
                 ysize=ysize,
-                page_i=self.prov[0].page,
+                add_page_index=add_page_index,
             )
-            body += f"{loc_str}{new_line}"
-
-        elif (
-            add_location
-            and not add_page_index
-            and self.prov is not None
-            and len(self.prov) > 0
-        ):
-            loc_str = DocumentToken.get_location(
-                bbox=self.prov[0].bbox,
-                page_w=page_w,
-                page_h=page_h,
-                xsize=xsize,
-                ysize=ysize,
-                page_i=-1,
-            )
-            body += f"{loc_str}{new_line}"
-        """
-
-        body += self.get_location_tokens(
-            new_line=new_line,
-            page_w=page_w,
-            page_h=page_h,
-            xsize=xsize,
-            ysize=ysize,
-            add_page_index=add_page_index,
-        )
 
         if add_caption and self.text is not None and len(self.text) > 0:
             body += f"{DocumentToken.BEG_CAPTION.value}"
@@ -485,16 +419,6 @@ class Figure(BaseCell):
 
 class BaseText(BaseCell):
     """Base model for text objects."""
-
-    """
-    prov: Optional[list[Prov]] = None
-    text: StrictStr = Field(
-        json_schema_extra=es_field(term_vector="with_positions_offsets")
-    )
-    obj_type: StrictStr = Field(
-        alias="type", json_schema_extra=es_field(type="keyword", ignore_above=8191)
-    )
-    """
 
     # FIXME: do we need these ???
     name: Optional[StrictStr] = Field(
@@ -521,37 +445,15 @@ class BaseText(BaseCell):
             body
         ), f"failed DocumentToken.is_known_token({body})"
 
-        if (
-            add_location
-            and add_page_index
-            and self.prov is not None
-            and len(self.prov) > 0
-        ):
-            loc_str = DocumentToken.get_location(
-                bbox=self.prov[0].bbox,
+        if add_location:
+            body += self.get_location_tokens(
+                new_line="",
                 page_w=page_w,
                 page_h=page_h,
                 xsize=xsize,
                 ysize=ysize,
-                page_i=self.prov[0].page,
+                add_page_index=add_page_index,
             )
-            body += f"{loc_str}"
-
-        elif (
-            add_location
-            and not add_page_index
-            and self.prov is not None
-            and len(self.prov) > 0
-        ):
-            loc_str = DocumentToken.get_location(
-                bbox=self.prov[0].bbox,
-                page_w=page_w,
-                page_h=page_h,
-                xsize=xsize,
-                ysize=ysize,
-                page_i=-1,
-            )
-            body += f"{loc_str}"
 
         if add_content and self.text is not None:
             body += self.text.strip()
