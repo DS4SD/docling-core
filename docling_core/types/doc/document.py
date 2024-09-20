@@ -485,7 +485,7 @@ class ExportedCCSDocument(
                     text = item.text
 
                     # ignore repeated text
-                    if prev_text == text:
+                    if prev_text == text or text is None:
                         continue
                     else:
                         prev_text = text

@@ -3978,17 +3978,49 @@ Must be one of:
 
 <details>
 <summary>
-<strong> <a name="main-text_anyOf_i0_items_anyOf_i1_text"></a>5.1.1.2.2. [Required] Property ExportedCCSDocument > main-text > anyOf > item 0 > item 0 items > anyOf > BaseText > text</strong>  
+<strong> <a name="main-text_anyOf_i0_items_anyOf_i1_text"></a>5.1.1.2.2. [Optional] Property ExportedCCSDocument > main-text > anyOf > item 0 > item 0 items > anyOf > BaseText > text</strong>  
 
 </summary>
 <blockquote>
 
 **Title:** Text
 
+|                           |                                                                           |
+| ------------------------- | ------------------------------------------------------------------------- |
+| **Type**                  | `combining`                                                               |
+| **Required**              | No                                                                        |
+| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+| **Default**               | `null`                                                                    |
+
+<blockquote>
+
+| Any of(Option)                                             |
+| ---------------------------------------------------------- |
+| [item 0](#main-text_anyOf_i0_items_anyOf_i1_text_anyOf_i0) |
+| [item 1](#main-text_anyOf_i0_items_anyOf_i1_text_anyOf_i1) |
+
+<blockquote>
+
+###### <a name="main-text_anyOf_i0_items_anyOf_i1_text_anyOf_i0"></a>5.1.1.2.2.1. Property `ExportedCCSDocument > main-text > anyOf > item 0 > item 0 items > anyOf > BaseText > text > anyOf > item 0`
+
 |              |          |
 | ------------ | -------- |
 | **Type**     | `string` |
-| **Required** | Yes      |
+| **Required** | No       |
+
+</blockquote>
+<blockquote>
+
+###### <a name="main-text_anyOf_i0_items_anyOf_i1_text_anyOf_i1"></a>5.1.1.2.2.2. Property `ExportedCCSDocument > main-text > anyOf > item 0 > item 0 items > anyOf > BaseText > text > anyOf > item 1`
+
+|              |        |
+| ------------ | ------ |
+| **Type**     | `null` |
+| **Required** | No     |
+
+</blockquote>
+
+</blockquote>
 
 </blockquote>
 </details>
@@ -6900,17 +6932,49 @@ Must be one of:
 
 <details>
 <summary>
-<strong> <a name="footnotes_anyOf_i0_items_text"></a>10.1.1.2. [Required] Property ExportedCCSDocument > footnotes > anyOf > item 0 > BaseText > text</strong>  
+<strong> <a name="footnotes_anyOf_i0_items_text"></a>10.1.1.2. [Optional] Property ExportedCCSDocument > footnotes > anyOf > item 0 > BaseText > text</strong>  
 
 </summary>
 <blockquote>
 
 **Title:** Text
 
+|                           |                                                                           |
+| ------------------------- | ------------------------------------------------------------------------- |
+| **Type**                  | `combining`                                                               |
+| **Required**              | No                                                                        |
+| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+| **Default**               | `null`                                                                    |
+
+<blockquote>
+
+| Any of(Option)                                    |
+| ------------------------------------------------- |
+| [item 0](#footnotes_anyOf_i0_items_text_anyOf_i0) |
+| [item 1](#footnotes_anyOf_i0_items_text_anyOf_i1) |
+
+<blockquote>
+
+###### <a name="footnotes_anyOf_i0_items_text_anyOf_i0"></a>10.1.1.2.1. Property `ExportedCCSDocument > footnotes > anyOf > item 0 > BaseText > text > anyOf > item 0`
+
 |              |          |
 | ------------ | -------- |
 | **Type**     | `string` |
-| **Required** | Yes      |
+| **Required** | No       |
+
+</blockquote>
+<blockquote>
+
+###### <a name="footnotes_anyOf_i0_items_text_anyOf_i1"></a>10.1.1.2.2. Property `ExportedCCSDocument > footnotes > anyOf > item 0 > BaseText > text > anyOf > item 1`
+
+|              |        |
+| ------------ | ------ |
+| **Type**     | `null` |
+| **Required** | No     |
+
+</blockquote>
+
+</blockquote>
 
 </blockquote>
 </details>
@@ -7445,17 +7509,49 @@ Must be one of:
 
 <details>
 <summary>
-<strong> <a name="page-footers_anyOf_i0_items_text"></a>12.1.1.2. [Required] Property ExportedCCSDocument > page-footers > anyOf > item 0 > BaseText > text</strong>  
+<strong> <a name="page-footers_anyOf_i0_items_text"></a>12.1.1.2. [Optional] Property ExportedCCSDocument > page-footers > anyOf > item 0 > BaseText > text</strong>  
 
 </summary>
 <blockquote>
 
 **Title:** Text
 
+|                           |                                                                           |
+| ------------------------- | ------------------------------------------------------------------------- |
+| **Type**                  | `combining`                                                               |
+| **Required**              | No                                                                        |
+| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+| **Default**               | `null`                                                                    |
+
+<blockquote>
+
+| Any of(Option)                                       |
+| ---------------------------------------------------- |
+| [item 0](#page-footers_anyOf_i0_items_text_anyOf_i0) |
+| [item 1](#page-footers_anyOf_i0_items_text_anyOf_i1) |
+
+<blockquote>
+
+###### <a name="page-footers_anyOf_i0_items_text_anyOf_i0"></a>12.1.1.2.1. Property `ExportedCCSDocument > page-footers > anyOf > item 0 > BaseText > text > anyOf > item 0`
+
 |              |          |
 | ------------ | -------- |
 | **Type**     | `string` |
-| **Required** | Yes      |
+| **Required** | No       |
+
+</blockquote>
+<blockquote>
+
+###### <a name="page-footers_anyOf_i0_items_text_anyOf_i1"></a>12.1.1.2.2. Property `ExportedCCSDocument > page-footers > anyOf > item 0 > BaseText > text > anyOf > item 1`
+
+|              |        |
+| ------------ | ------ |
+| **Type**     | `null` |
+| **Required** | No     |
+
+</blockquote>
+
+</blockquote>
 
 </blockquote>
 </details>
@@ -7863,17 +7959,49 @@ Must be one of:
 
 <details>
 <summary>
-<strong> <a name="page-headers_anyOf_i0_items_text"></a>13.1.1.2. [Required] Property ExportedCCSDocument > page-headers > anyOf > item 0 > BaseText > text</strong>  
+<strong> <a name="page-headers_anyOf_i0_items_text"></a>13.1.1.2. [Optional] Property ExportedCCSDocument > page-headers > anyOf > item 0 > BaseText > text</strong>  
 
 </summary>
 <blockquote>
 
 **Title:** Text
 
+|                           |                                                                           |
+| ------------------------- | ------------------------------------------------------------------------- |
+| **Type**                  | `combining`                                                               |
+| **Required**              | No                                                                        |
+| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+| **Default**               | `null`                                                                    |
+
+<blockquote>
+
+| Any of(Option)                                       |
+| ---------------------------------------------------- |
+| [item 0](#page-headers_anyOf_i0_items_text_anyOf_i0) |
+| [item 1](#page-headers_anyOf_i0_items_text_anyOf_i1) |
+
+<blockquote>
+
+###### <a name="page-headers_anyOf_i0_items_text_anyOf_i0"></a>13.1.1.2.1. Property `ExportedCCSDocument > page-headers > anyOf > item 0 > BaseText > text > anyOf > item 0`
+
 |              |          |
 | ------------ | -------- |
 | **Type**     | `string` |
-| **Required** | Yes      |
+| **Required** | No       |
+
+</blockquote>
+<blockquote>
+
+###### <a name="page-headers_anyOf_i0_items_text_anyOf_i1"></a>13.1.1.2.2. Property `ExportedCCSDocument > page-headers > anyOf > item 0 > BaseText > text > anyOf > item 1`
+
+|              |        |
+| ------------ | ------ |
+| **Type**     | `null` |
+| **Required** | No     |
+
+</blockquote>
+
+</blockquote>
 
 </blockquote>
 </details>

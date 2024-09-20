@@ -483,9 +483,10 @@ class Figure(BaseCell):
         return body
 
 
-class BaseText(AliasModel):
+class BaseText(BaseCell):
     """Base model for text objects."""
 
+    """
     prov: Optional[list[Prov]] = None
     text: StrictStr = Field(
         json_schema_extra=es_field(term_vector="with_positions_offsets")
@@ -493,6 +494,7 @@ class BaseText(AliasModel):
     obj_type: StrictStr = Field(
         alias="type", json_schema_extra=es_field(type="keyword", ignore_above=8191)
     )
+    """
 
     # FIXME: do we need these ???
     name: Optional[StrictStr] = Field(
@@ -551,7 +553,7 @@ class BaseText(AliasModel):
             )
             body += f"{loc_str}"
 
-        if add_content:
+        if add_content and self.text is not None:
             body += self.text.strip()
 
         body += f"</{self.obj_type}>{new_line}"
