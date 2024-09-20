@@ -131,7 +131,7 @@ def test_document_export_to_tokens():
         src_data = src_obj.read()
 
     doc = Document.model_validate_json(src_data)
-    xml = doc.export_to_document_tokens(add_new_line=True)
+    xml = doc.export_to_document_tokens(delim=True)
 
     if GENERATE:
         with open("test/data/doc/doc-export.doctags.txt", "w") as gold_obj:

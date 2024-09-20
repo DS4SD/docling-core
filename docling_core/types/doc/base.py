@@ -133,10 +133,6 @@ class GlmTableCell(TableCell):
 class BaseCell(AliasModel):
     """Base cell."""
 
-    # FIXME: we need to check why we have bounding_box (this should be in prov)
-    bounding_box: Optional[BoundingBoxContainer] = Field(
-        default=None, alias="bounding-box", json_schema_extra=es_field(suppress=True)
-    )
     prov: Optional[list[Prov]] = None
     text: Optional[str] = Field(
         default=None, json_schema_extra=es_field(term_vector="with_positions_offsets")
@@ -144,6 +140,42 @@ class BaseCell(AliasModel):
     obj_type: str = Field(
         alias="type", json_schema_extra=es_field(type="keyword", ignore_above=8191)
     )
+
+    # FIXME: we need to check why we have bounding_box (this should be in prov)
+    bounding_box: Optional[BoundingBoxContainer] = Field(
+        default=None, alias="bounding-box", json_schema_extra=es_field(suppress=True)
+    )
+
+    def get_location_tokens(
+        self,
+        new_line: str,
+        page_w: float,
+        page_h: float,
+        xsize: int = 100,
+        ysize: int = 100,
+        add_page_index: bool = True,
+    ) -> str:
+        """Get the location string for the BaseCell."""
+        if self.prov is None:
+            return ""
+
+        location = ""
+        for prov in self.prov:
+
+            if add_page_index:
+                prov.page
+
+            loc_str = DocumentToken.get_location(
+                bbox=prov.bbox,
+                page_w=page_w,
+                page_h=page_h,
+                xsize=xsize,
+                ysize=ysize,
+                page_i=prov.page,
+            )
+            location += f"{loc_str}{new_line}"
+
+        return location
 
 
 class Table(BaseCell):
@@ -268,6 +300,7 @@ class Table(BaseCell):
         """Export table to document tokens format."""
         body = f"{DocumentToken.BEG_TABLE.value}{new_line}"
 
+        """
         if (
             add_location
             and add_page_index
@@ -299,6 +332,16 @@ class Table(BaseCell):
                 page_i=-1,
             )
             body += f"{loc_str}{new_line}"
+        """
+
+        body += self.get_location_tokens(
+            new_line=new_line,
+            page_w=page_w,
+            page_h=page_h,
+            xsize=xsize,
+            ysize=ysize,
+            add_page_index=add_page_index,
+        )
 
         if add_caption and self.text is not None and len(self.text) > 0:
             body += f"{DocumentToken.BEG_CAPTION.value}"
@@ -381,6 +424,7 @@ class Figure(BaseCell):
         """Export figure to document tokens format."""
         body = f"{DocumentToken.BEG_FIGURE.value}{new_line}"
 
+        """
         if (
             add_location
             and add_page_index
@@ -412,6 +456,16 @@ class Figure(BaseCell):
                 page_i=-1,
             )
             body += f"{loc_str}{new_line}"
+        """
+
+        body += self.get_location_tokens(
+            new_line=new_line,
+            page_w=page_w,
+            page_h=page_h,
+            xsize=xsize,
+            ysize=ysize,
+            add_page_index=add_page_index,
+        )
 
         if add_caption and self.text is not None and len(self.text) > 0:
             body += f"{DocumentToken.BEG_CAPTION.value}"
@@ -427,17 +481,19 @@ class Figure(BaseCell):
 class BaseText(AliasModel):
     """Base model for text objects."""
 
+    prov: Optional[list[Prov]] = None
     text: StrictStr = Field(
         json_schema_extra=es_field(term_vector="with_positions_offsets")
     )
     obj_type: StrictStr = Field(
         alias="type", json_schema_extra=es_field(type="keyword", ignore_above=8191)
     )
+
+    # FIXME: do we need these ???
     name: Optional[StrictStr] = Field(
         default=None, json_schema_extra=es_field(type="keyword", ignore_above=8191)
     )
     font: Optional[str] = None
-    prov: Optional[list[Prov]] = None
 
     def export_to_document_tokens(
         self,
@@ -452,10 +508,11 @@ class BaseText(AliasModel):
     ):
         """Export text element to document tokens format."""
         body = f"<{self.obj_type}>"
+        # body = f"<{self.name}>"
 
         assert DocumentToken.is_known_token(
-            self.obj_type
-        ), f"failed DocumentToken.is_known_token({self.obj_type})"
+            body
+        ), f"failed DocumentToken.is_known_token({body})"
 
         if (
             add_location

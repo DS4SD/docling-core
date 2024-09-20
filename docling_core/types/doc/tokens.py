@@ -19,12 +19,15 @@ class TableToken(Enum):
     CELL_LABEL_SECTION_HEADERE = "<section_header>"
     CELL_LABEL_DATA = "<data>"
 
-    OTSL_EMPTY_CELL = "<ec>"
-    OTSL_FULL_CELL = "<fc>"
-    OTSL_LEFT_CELL = "<lc>"
-    OTSL_UP_CELL = "<uc>"
-    OTSL_UPLEFT_CELL = "<xc>"
-    OTSL_NEW_LINE = "<nl>"
+    OTSL_ECEL = "<ecel>"  # empty cell
+    OTSL_FCEL = "<fcel>"  # cell with content
+    OTSL_LCEL = "<lcel>"  # left looking cell,
+    OTSL_UCEL = "<ucel>"  # up looking cell,
+    OTSL_XCEL = "<xcel>"  # 2d extension cell (cross cell),
+    OTSL_NL = "<nl>"  # new line,
+    OTSL_CHED = "<ched>"  # - column header cell,
+    OTSL_RHED = "<rhed>"  # - row header cell,
+    OTSL_SROW = "<srow>"  # - section row cell
 
     @classmethod
     def get_special_tokens(cls):
@@ -128,7 +131,7 @@ class DocumentToken(Enum):
     @staticmethod
     def is_known_token(label):
         """Function to check if label is in tokens."""
-        return f"<{label}>" in DocumentToken.get_special_tokens()
+        return label in DocumentToken.get_special_tokens()
 
     @staticmethod
     def get_row_token(row: int, beg=bool) -> str:
