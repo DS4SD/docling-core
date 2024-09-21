@@ -54,6 +54,7 @@ json-schema-for-humans = "^1.0.0"
 pyproject-toml = "^0.0.10"
 tabulate = "^0.9.0"
 pandas = "^2.2.2"
+pydantic-extra-types = "^2.9.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"

@@ -1,6 +1,6 @@
 import yaml
 
-from docling_core.types.experimental.document import DoclingDocument, FileInfo
+from docling_core.types.experimental.document import DoclingDocument, FileInfo, TableCell, BaseTableData
 
 
 def test_load_serialize_doc():
@@ -70,6 +70,61 @@ def test_construct_doc():
         label="list_item",
         text="Drains your bank account without consent.",
     )
+    # Make some table cells
+    table_cells = []
+    table_cells.append(TableCell(
+        row_span=2,
+        start_row_offset_idx=0,
+        end_row_offset_idx=1,
+        start_col_offset_idx=0,
+        end_col_offset_idx=1,
+        text="Product"
+    ))
+    table_cells.append(TableCell(
+        col_span=2,
+        start_row_offset_idx=0,
+        end_row_offset_idx=1,
+        start_col_offset_idx=1,
+        end_col_offset_idx=3,
+        text="Years"
+    ))
+    table_cells.append(TableCell(
+        start_row_offset_idx=1,
+        end_row_offset_idx=2,
+        start_col_offset_idx=1,
+        end_col_offset_idx=2,
+        text="2016"
+    ))
+    table_cells.append(TableCell(
+        start_row_offset_idx=1,
+        end_row_offset_idx=2,
+        start_col_offset_idx=2,
+        end_col_offset_idx=3,
+        text="2017"
+    ))
+    table_cells.append(TableCell(
+        start_row_offset_idx=2,
+        end_row_offset_idx=3,
+        start_col_offset_idx=0,
+        end_col_offset_idx=1,
+        text="Apple"
+    ))
+    table_cells.append(TableCell(
+        start_row_offset_idx=2,
+        end_row_offset_idx=3,
+        start_col_offset_idx=1,
+        end_col_offset_idx=2,
+        text="49823"
+    ))
+    table_cells.append(TableCell(
+        start_row_offset_idx=2,
+        end_row_offset_idx=3,
+        start_col_offset_idx=2,
+        end_col_offset_idx=3,
+        text="695944"
+    ))
+    table_el = BaseTableData(num_rows=3, num_cols=3, table_cells=table_cells)
+    doc.add_table(data=table_el)
 
     yaml_dump = yaml.safe_dump(doc.model_dump(mode="json", by_alias=True))
 
