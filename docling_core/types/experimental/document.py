@@ -54,7 +54,7 @@ class TableCell(BaseModel):
 
 
 class BaseTableData(BaseModel):  # TBD
-    table_cells: List[TableCell]
+    table_cells: List[TableCell] = []
     num_rows: int = 0
     num_cols: int = 0
 
@@ -184,7 +184,7 @@ class Section(TextItem):
 
 
 class FloatingItem(DocItem):
-    caption: Optional[RefItem] = None
+    captions: List[RefItem] = []
     references: List[RefItem] = []
     footnotes: List[RefItem] = []
     image: Optional[ImageRef] = None
@@ -306,7 +306,7 @@ class DoclingDocument(DocumentTrees):
         if prov:
             tbl_item.prov.append(prov)
         if caption:
-            tbl_item.caption = caption.get_ref()
+            tbl_item.captions.append(caption.get_ref())
 
         self.tables.append(tbl_item)
         parent.children.append(RefItem(cref=cref))
@@ -333,7 +333,7 @@ class DoclingDocument(DocumentTrees):
         if prov:
             fig_item.prov.append(prov)
         if caption:
-            fig_item.caption = caption.get_ref()
+            fig_item.captions.append(caption.get_ref())
 
         self.figures.append(fig_item)
         parent.children.append(RefItem(cref=cref))

@@ -132,8 +132,8 @@ figures: # All figures...
     label: "figure"
     parent:
       $ref: "#/body"
-    caption:
-      $ref: "/texts/3"
+    captions:
+      - $ref: "/texts/3"
     data: # BaseFigureData Type
       classification: "illustration"
       confidence: 0.78
