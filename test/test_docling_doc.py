@@ -1,6 +1,12 @@
 import yaml
 
-from docling_core.types.experimental.document import DoclingDocument, FileInfo, TableCell, BaseTableData
+from docling_core.types.experimental.document import (
+    BaseFigureData,
+    BaseTableData,
+    DoclingDocument,
+    FileInfo,
+    TableCell,
+)
 
 
 def test_load_serialize_doc():
@@ -18,7 +24,7 @@ def test_load_serialize_doc():
     text_item.prov[0].page_no
 
     # Objects that are references need explicit resolution for now:
-    obj = doc.body.children[2].resolve(doc=doc)  # Text item with parent
+    obj = doc.texts[2]  # Text item with parent
     parent = obj.parent.resolve(doc=doc)  # it is a figure
 
     obj2 = parent.children[0].resolve(
@@ -35,6 +41,11 @@ def test_load_serialize_doc():
 
     assert doc_reload == doc  # must be equal
     assert doc_reload is not doc  # can't be identical
+
+    ### Iterate all elements
+
+    for item in doc.iterate_elements():
+        print(f"Item: {item}")
 
 
 def test_construct_doc():
@@ -72,62 +83,88 @@ def test_construct_doc():
     )
     # Make some table cells
     table_cells = []
-    table_cells.append(TableCell(
-        row_span=2,
-        start_row_offset_idx=0,
-        end_row_offset_idx=1,
-        start_col_offset_idx=0,
-        end_col_offset_idx=1,
-        text="Product"
-    ))
-    table_cells.append(TableCell(
-        col_span=2,
-        start_row_offset_idx=0,
-        end_row_offset_idx=1,
-        start_col_offset_idx=1,
-        end_col_offset_idx=3,
-        text="Years"
-    ))
-    table_cells.append(TableCell(
-        start_row_offset_idx=1,
-        end_row_offset_idx=2,
-        start_col_offset_idx=1,
-        end_col_offset_idx=2,
-        text="2016"
-    ))
-    table_cells.append(TableCell(
-        start_row_offset_idx=1,
-        end_row_offset_idx=2,
-        start_col_offset_idx=2,
-        end_col_offset_idx=3,
-        text="2017"
-    ))
-    table_cells.append(TableCell(
-        start_row_offset_idx=2,
-        end_row_offset_idx=3,
-        start_col_offset_idx=0,
-        end_col_offset_idx=1,
-        text="Apple"
-    ))
-    table_cells.append(TableCell(
-        start_row_offset_idx=2,
-        end_row_offset_idx=3,
-        start_col_offset_idx=1,
-        end_col_offset_idx=2,
-        text="49823"
-    ))
-    table_cells.append(TableCell(
-        start_row_offset_idx=2,
-        end_row_offset_idx=3,
-        start_col_offset_idx=2,
-        end_col_offset_idx=3,
-        text="695944"
-    ))
+    table_cells.append(
+        TableCell(
+            row_span=2,
+            start_row_offset_idx=0,
+            end_row_offset_idx=1,
+            start_col_offset_idx=0,
+            end_col_offset_idx=1,
+            text="Product",
+        )
+    )
+    table_cells.append(
+        TableCell(
+            col_span=2,
+            start_row_offset_idx=0,
+            end_row_offset_idx=1,
+            start_col_offset_idx=1,
+            end_col_offset_idx=3,
+            text="Years",
+        )
+    )
+    table_cells.append(
+        TableCell(
+            start_row_offset_idx=1,
+            end_row_offset_idx=2,
+            start_col_offset_idx=1,
+            end_col_offset_idx=2,
+            text="2016",
+        )
+    )
+    table_cells.append(
+        TableCell(
+            start_row_offset_idx=1,
+            end_row_offset_idx=2,
+            start_col_offset_idx=2,
+            end_col_offset_idx=3,
+            text="2017",
+        )
+    )
+    table_cells.append(
+        TableCell(
+            start_row_offset_idx=2,
+            end_row_offset_idx=3,
+            start_col_offset_idx=0,
+            end_col_offset_idx=1,
+            text="Apple",
+        )
+    )
+    table_cells.append(
+        TableCell(
+            start_row_offset_idx=2,
+            end_row_offset_idx=3,
+            start_col_offset_idx=1,
+            end_col_offset_idx=2,
+            text="49823",
+        )
+    )
+    table_cells.append(
+        TableCell(
+            start_row_offset_idx=2,
+            end_row_offset_idx=3,
+            start_col_offset_idx=2,
+            end_col_offset_idx=3,
+            text="695944",
+        )
+    )
     table_el = BaseTableData(num_rows=3, num_cols=3, table_cells=table_cells)
     doc.add_table(data=table_el)
 
+    fig_caption = doc.add_paragraph(
+        label="caption", text="This is the caption of figure 1."
+    )
+    doc.add_figure(data=BaseFigureData(), caption=fig_caption.get_ref())
+
+    ### Iterate all elements
+
+    for item in doc.iterate_elements():
+        print(f"Item: {item}")
+
+    ### Serialize and deserialize stuff
+
     yaml_dump = yaml.safe_dump(doc.model_dump(mode="json", by_alias=True))
 
-    print(f"\n\n{yaml_dump}")
+    # print(f"\n\n{yaml_dump}")
 
     DoclingDocument.model_validate(yaml.safe_load(yaml_dump))

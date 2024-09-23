@@ -19,8 +19,8 @@ body:
   parent: null # Only root elements have no parent.
   children: # only the first-level children appear here, as references (RefItem)
     - $ref: "/texts/1"
-    - $ref: "/figure/0"
-    - $ref: "/texts/2"
+    - $ref: "/figures/0"
+    - $ref: "/texts/3"
     - $ref: "/tables/0"
 
 # All groups of items nested deeper in body or furniture roots, type List[GroupItem]
@@ -83,7 +83,7 @@ texts:
     hash: 6978483
     label: "caption"
     parent:
-      $ref: "/figures/0"
+      $ref: "#/body"
     children: [ ]
     prov:
       - page_no: 1
@@ -103,12 +103,6 @@ tables: # All tables...
     parent:
       $ref: "#/body"
     children: [ ]
-    caption:
-      $ref: "/texts/3"
-    references:
-      - $ref: "/text/??"
-    footnotes:
-      - $ref: "/text/??"
     image:
       format: png
       dpi: 72
@@ -139,13 +133,8 @@ figures: # All figures...
     parent:
       $ref: "#/body"
     caption:
-      $ref: "/texts/2"
-    references:
-      - $ref: "/text/??"
-    footnotes:
-      - $ref: "/text/??"
-
-    data: # FigureData Type
+      $ref: "/texts/3"
+    data: # BaseFigureData Type
       classification: "illustration"
       confidence: 0.78
       description: "...."

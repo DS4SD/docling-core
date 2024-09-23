@@ -2,8 +2,14 @@ import hashlib
 import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import AnyUrl, BaseModel, ConfigDict, Field, computed_field, model_validator
-from pydantic_extra_types.semantic_version import SemanticVersion
+from pydantic import (
+    AnyUrl,
+    BaseModel,
+    ConfigDict,
+    Field,
+    computed_field,
+    model_validator,
+)
 
 from docling_core.types.experimental.base import BoundingBox, Size
 
@@ -46,14 +52,19 @@ class TableCell(BaseModel):
 
         return data
 
+
 class BaseTableData(BaseModel):  # TBD
     table_cells: List[TableCell]
     num_rows: int = 0
     num_cols: int = 0
 
-    @computed_field
+    @computed_field  # type: ignore
     @property
-    def grid(self) -> List[List[TableCell]]:         # TODO compute grid representation on the fly from table_cells
+    def grid(
+        self,
+    ) -> List[
+        List[TableCell]
+    ]:  # TODO compute grid representation on the fly from table_cells
 
         # Initialise empty table data grid (only empty cells)
         table_data = [
@@ -61,9 +72,9 @@ class BaseTableData(BaseModel):  # TBD
                 TableCell(
                     text="",
                     start_row_offset_idx=i,
-                    end_row_offset_idx=i+1,
+                    end_row_offset_idx=i + 1,
                     start_col_offset_idx=j,
-                    end_col_offset_idx=j+1
+                    end_col_offset_idx=j + 1,
                 )
                 for j in range(self.num_cols)
             ]
@@ -73,17 +84,16 @@ class BaseTableData(BaseModel):  # TBD
         # Overwrite cells in table data for which there is actual cell content.
         for cell in self.table_cells:
             for i in range(
-                    min(cell.start_row_offset_idx, self.num_rows),
-                    min(cell.end_row_offset_idx, self.num_rows),
+                min(cell.start_row_offset_idx, self.num_rows),
+                min(cell.end_row_offset_idx, self.num_rows),
             ):
                 for j in range(
-                        min(cell.start_col_offset_idx, self.num_cols),
-                        min(cell.end_col_offset_idx, self.num_cols),
+                    min(cell.start_col_offset_idx, self.num_cols),
+                    min(cell.end_col_offset_idx, self.num_cols),
                 ):
                     table_data[i][j] = cell
 
         return table_data
-
 
 
 class FileInfo(BaseModel):
@@ -93,14 +103,28 @@ class FileInfo(BaseModel):
 class RefItem(BaseModel):
     cref: str = Field(alias="$ref")
 
+    # This method makes RefItem compatible with DocItem
+    def get_ref(self):
+        return self
+
     model_config = ConfigDict(
         populate_by_name=True,
     )
 
     def resolve(self, doc: "DoclingDocument"):
-        _, path, index_str = self.cref.split("/")
-        index = int(index_str)
-        obj = doc.__getattribute__(path)[index]
+        path_components = self.cref.split("/")
+        if len(path_components) > 2:
+            _, path, index_str = path_components
+        else:
+            _, path = path_components
+            index_str = None
+
+        if index_str:
+            index = int(index_str)
+            obj = doc.__getattribute__(path)[index]
+        else:
+            obj = doc.__getattribute__(path)
+
         return obj
 
 
@@ -121,6 +145,9 @@ class NodeItem(BaseModel):
     dloc: str  # format spec ({document_hash}{json-path})
     parent: Optional[RefItem] = None
     children: List[RefItem] = []
+
+    def get_ref(self):
+        return RefItem(cref=f"#{self.dloc.split('#')[1]}")
 
     @computed_field  # type: ignore
     @property
@@ -163,7 +190,6 @@ class FloatingItem(DocItem):
     image: Optional[ImageRef] = None
 
 
-
 class FigureItem(FloatingItem):
     data: BaseFigureData
 
@@ -196,7 +222,7 @@ class PageItem(DocumentTrees):
 
 
 class DoclingDocument(DocumentTrees):
-    version: str = "0.0.1" #= SemanticVersion(version="0.0.1")
+    version: str = "0.0.1"  # = SemanticVersion(version="0.0.1")
     description: Any
     file_info: FileInfo
 
@@ -212,22 +238,16 @@ class DoclingDocument(DocumentTrees):
     #    group = GroupItem(name=name)
     #    self.furniture.children.append(group)
     #    return group
-    def resolve_cref(self, obj):
-        path = obj.dloc.split("#")[1]
-        return path
 
     def add_group(self, name: str, parent: Optional[GroupItem] = None) -> GroupItem:
         if not parent:
             parent = self.body
-            parent_cref = "#/body"
-        else:
-            parent_cref = self.resolve_cref(parent)
 
         group_index = len(self.groups)
         cref = f"#/groups/{group_index}"
         dloc = f"{self.file_info.document_hash}{cref}"
 
-        group = GroupItem(name=name, dloc=dloc, parent=RefItem(cref=parent_cref))
+        group = GroupItem(name=name, dloc=dloc, parent=parent.get_ref())
         self.groups.append(group)
         parent.children.append(RefItem(cref=cref))
 
@@ -244,9 +264,6 @@ class DoclingDocument(DocumentTrees):
     ):
         if not parent:
             parent = self.body
-            parent_cref = "#/body"
-        else:
-            parent_cref = self.resolve_cref(parent)
 
         if not orig:
             orig = text
@@ -259,7 +276,7 @@ class DoclingDocument(DocumentTrees):
             text=text,
             orig=orig,
             dloc=dloc,
-            parent=RefItem(cref=parent_cref),
+            parent=parent.get_ref(),
         )
         if prov:
             text_item.prov.append(prov)
@@ -272,25 +289,24 @@ class DoclingDocument(DocumentTrees):
     def add_table(
         self,
         data: BaseTableData,
-        caption: Optional[RefItem] = None, # This is not cool yet.
+        caption: Optional[Union[TextItem, RefItem]] = None,  # This is not cool yet.
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
     ):
         if not parent:
             parent = self.body
-            parent_cref = "#/body"
-        else:
-            parent_cref = self.resolve_cref(parent)
 
         table_index = len(self.tables)
         cref = f"#/tables/{table_index}"
         dloc = f"{self.file_info.document_hash}{cref}"
 
-        tbl_item = TableItem(label="table", data=data, dloc=dloc, parent=RefItem(cref=parent_cref))
+        tbl_item = TableItem(
+            label="table", data=data, dloc=dloc, parent=parent.get_ref()
+        )
         if prov:
             tbl_item.prov.append(prov)
         if caption:
-            tbl_item.caption = caption
+            tbl_item.caption = caption.get_ref()
 
         self.tables.append(tbl_item)
         parent.children.append(RefItem(cref=cref))
@@ -300,7 +316,7 @@ class DoclingDocument(DocumentTrees):
     def add_figure(
         self,
         data: BaseFigureData,
-        caption: Optional[RefItem] = None,
+        caption: Optional[Union[TextItem, RefItem]] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
     ):
@@ -311,11 +327,13 @@ class DoclingDocument(DocumentTrees):
         cref = f"#/figures/{figure_index}"
         dloc = f"{self.file_info.document_hash}{cref}"
 
-        fig_item = FigureItem(label="figure", data=data, dloc=dloc, parent=parent)
+        fig_item = FigureItem(
+            label="figure", data=data, dloc=dloc, parent=parent.get_ref()
+        )
         if prov:
             fig_item.prov.append(prov)
         if caption:
-            fig_item.caption = caption
+            fig_item.caption = caption.get_ref()
 
         self.figures.append(fig_item)
         parent.children.append(RefItem(cref=cref))
@@ -337,10 +355,33 @@ class DoclingDocument(DocumentTrees):
         item.level = level
         return item
 
-
     def num_pages(self):
         return len(self.pages.values())
 
     def build_page_trees(self):
         # TODO: For every PageItem, update the furniture and body trees from the main doc.
         pass
+
+    def iterate_elements(
+        self,
+        root: Optional[NodeItem] = None,
+        omit_groups: bool = True,
+        traverse_figures: bool = True,
+    ) -> typing.Iterable[NodeItem]:
+        # Yield the current node
+        if not root:
+            root = self.body
+
+        if omit_groups and not isinstance(root, GroupItem):
+            yield root
+
+        # Traverse children
+        for child_ref in root.children:
+            child = child_ref.resolve(self)
+
+            if isinstance(child, NodeItem):
+                # If the child is a NodeItem, recursively traverse it
+                if isinstance(child, FigureItem) and traverse_figures:
+                    yield from self.iterate_elements(child)
+            else:  # leaf
+                yield child
