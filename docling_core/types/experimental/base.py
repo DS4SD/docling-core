@@ -15,6 +15,9 @@ class Size(BaseModel):
     width: float = 0.0
     height: float = 0.0
 
+    def as_tuple(self):
+        return (self.width, self.height)
+
 
 class BoundingBox(BaseModel):
     l: float  # left

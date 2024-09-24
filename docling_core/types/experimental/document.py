@@ -15,6 +15,7 @@ from tabulate import tabulate
 
 from docling_core.types.doc.tokens import DocumentToken
 from docling_core.types.experimental.base import BoundingBox, Size
+from docling_core.types.experimental.labels import PageLabel
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
@@ -173,14 +174,13 @@ class GroupItem(NodeItem):  # Container type, can't be a leaf node
 class DocItem(
     NodeItem
 ):  # Base type for any element that carries content, can be a leaf node
-    label: str
+    label: PageLabel
     prov: List[ProvenanceItem] = []
 
     def get_location_tokens(
         self,
+        doc: "DoclingDocument",
         new_line: str,
-        page_w: float,
-        page_h: float,
         xsize: int = 100,
         ysize: int = 100,
         add_page_index: bool = True,
@@ -191,6 +191,7 @@ class DocItem(
 
         location = ""
         for prov in self.prov:
+            page_w, page_h = doc.pages[prov.page_no].size.as_tuple()
 
             page_i = -1
             if add_page_index:
@@ -215,9 +216,8 @@ class TextItem(DocItem):
 
     def export_to_document_tokens(
         self,
+        doc: "DoclingDocument",
         new_line: str = "\n",
-        page_w: float = 0.0,
-        page_h: float = 0.0,
         xsize: int = 100,
         ysize: int = 100,
         add_location: bool = True,
@@ -225,7 +225,7 @@ class TextItem(DocItem):
         add_page_index: bool = True,
     ):
         """Export text element to document tokens format."""
-        body = f"<{self.label}>"
+        body = f"<{self.label.value}>"
         # body = f"<{self.name}>"
 
         assert DocumentToken.is_known_token(
@@ -234,9 +234,8 @@ class TextItem(DocItem):
 
         if add_location:
             body += self.get_location_tokens(
+                doc=doc,
                 new_line="",
-                page_w=page_w,
-                page_h=page_h,
                 xsize=xsize,
                 ysize=ysize,
                 add_page_index=add_page_index,
@@ -282,9 +281,8 @@ class FigureItem(FloatingItem):
 
         if add_location:
             body += self.get_location_tokens(
+                doc=doc,
                 new_line=new_line,
-                page_w=page_w,
-                page_h=page_h,
                 xsize=xsize,
                 ysize=ysize,
                 add_page_index=add_page_index,
@@ -404,8 +402,6 @@ class TableItem(FloatingItem):
         self,
         doc: "DoclingDocument",
         new_line: str = "\n",
-        page_w: float = 0.0,
-        page_h: float = 0.0,
         xsize: int = 100,
         ysize: int = 100,
         add_location: bool = True,
@@ -421,9 +417,8 @@ class TableItem(FloatingItem):
 
         if add_location:
             body += self.get_location_tokens(
+                doc=doc,
                 new_line=new_line,
-                page_w=page_w,
-                page_h=page_h,
                 xsize=xsize,
                 ysize=ysize,
                 add_page_index=add_page_index,
@@ -454,9 +449,9 @@ class TableItem(FloatingItem):
                         col.bbox is not None
                         and add_cell_location
                         and add_page_index
-                        and self.prov is not None
                         and len(self.prov) > 0
                     ):
+                        page_w, page_h = doc.pages[self.prov[0].page_no].size.as_tuple()
                         cell_loc = DocumentToken.get_location(
                             bbox=col.bbox.to_bottom_left_origin(page_h).as_tuple(),
                             page_w=page_w,
@@ -469,7 +464,10 @@ class TableItem(FloatingItem):
                         col.bbox is not None
                         and add_cell_location
                         and not add_page_index
+                        and len(self.prov) > 0
                     ):
+                        page_w, page_h = doc.pages[self.prov[0].page_no].size.as_tuple()
+
                         cell_loc = DocumentToken.get_location(
                             bbox=col.bbox.to_bottom_left_origin(page_h).as_tuple(),
                             page_w=page_w,
@@ -506,12 +504,11 @@ class DocumentTrees(BaseModel):
     body: GroupItem = GroupItem(name="_root_", dloc="#/body")  # List[RefItem] = []
 
 
-class PageItem(DocumentTrees):
+class PageItem(BaseModel):
     # A page carries separate root items for furniture and body, only referencing items on the page
     hash: str  # page hash
     size: Size
-    image: Optional[ImageRef]
-    num_elements: int
+    image: Optional[ImageRef] = None
     page_no: int
 
 
@@ -595,7 +592,7 @@ class DoclingDocument(DocumentTrees):
         dloc = f"{self.file_info.document_hash}{cref}"
 
         tbl_item = TableItem(
-            label="table", data=data, dloc=dloc, parent=parent.get_ref()
+            label=PageLabel.TABLE, data=data, dloc=dloc, parent=parent.get_ref()
         )
         if prov:
             tbl_item.prov.append(prov)
@@ -622,7 +619,7 @@ class DoclingDocument(DocumentTrees):
         dloc = f"{self.file_info.document_hash}{cref}"
 
         fig_item = FigureItem(
-            label="figure", data=data, dloc=dloc, parent=parent.get_ref()
+            label=PageLabel.PICTURE, data=data, dloc=dloc, parent=parent.get_ref()
         )
         if prov:
             fig_item.prov.append(prov)
@@ -636,7 +633,7 @@ class DoclingDocument(DocumentTrees):
 
     def add_heading(
         self,
-        label: str,
+        label: PageLabel,
         text: str,
         orig: Optional[str] = None,
         level: LevelNumber = 1,
@@ -661,14 +658,23 @@ class DoclingDocument(DocumentTrees):
         root: Optional[NodeItem] = None,
         with_groups: bool = False,
         traverse_figures: bool = True,
-        level=0,
+        page_no: Optional[int] = None,
+        _level=0,  # fixed parameter, carries through the node nesting level
     ) -> typing.Iterable[Tuple[NodeItem, int]]:  # tuple of node and level
         # Yield the current node
         if not root:
             root = self.body
 
         if not isinstance(root, GroupItem) or with_groups:
-            yield root, level
+            if isinstance(root, DocItem):
+                if page_no is not None:
+                    for prov in root.prov:
+                        if prov.page_no == page_no:
+                            yield root, _level
+                else:
+                    yield root, _level
+            else:
+                yield root, _level
 
         # Traverse children
         for child_ref in root.children:
@@ -677,9 +683,7 @@ class DoclingDocument(DocumentTrees):
             if isinstance(child, NodeItem):
                 # If the child is a NodeItem, recursively traverse it
                 if not isinstance(child, FigureItem) or traverse_figures:
-                    yield from self.iterate_elements(child, level=level + 1)
-            else:  # leaf
-                yield child, level
+                    yield from self.iterate_elements(child, _level=_level + 1)
 
     def print_element_tree(self):
         for ix, (item, level) in enumerate(self.iterate_elements(with_groups=True)):
@@ -811,11 +815,12 @@ class DoclingDocument(DocumentTrees):
         labels: list[str] = [
             "title",
             "subtitle-level-1",
-            "paragraph",
+            "Section-header" "paragraph",
             "caption",
             "table",
             "figure",
             "text",
+            "Text",
         ],
         xsize: int = 100,
         ysize: int = 100,
@@ -857,24 +862,21 @@ class DoclingDocument(DocumentTrees):
                 prov = item.prov
 
                 page_i = -1
-                page_w = 0.0
-                page_h = 0.0
 
                 if add_location and len(self.pages) and len(prov) > 0:
 
-                    page_i = prov[0].page
-                    page_dim = self.pages[page_i - 1].size
+                    page_i = prov[0].page_no
+                    page_dim = self.pages[page_i].size
 
-                    page_w = float(page_dim.width)
-                    page_h = float(page_dim.height)
+                    float(page_dim.width)
+                    float(page_dim.height)
 
                 item_type = item.label
                 if isinstance(item, TextItem) and (item_type in labels):
 
                     doctags += item.export_to_document_tokens(
+                        doc=self,
                         new_line=new_line,
-                        page_w=page_w,
-                        page_h=page_h,
                         xsize=xsize,
                         ysize=ysize,
                         add_location=add_location,
@@ -887,8 +889,6 @@ class DoclingDocument(DocumentTrees):
                     doctags += item.export_to_document_tokens(
                         doc=self,
                         new_line=new_line,
-                        page_w=page_w,
-                        page_h=page_h,
                         xsize=xsize,
                         ysize=ysize,
                         add_caption=True,
@@ -905,8 +905,6 @@ class DoclingDocument(DocumentTrees):
                     doctags += item.export_to_document_tokens(
                         doc=self,
                         new_line=new_line,
-                        page_w=page_w,
-                        page_h=page_h,
                         xsize=xsize,
                         ysize=ysize,
                         add_caption=True,
@@ -918,3 +916,9 @@ class DoclingDocument(DocumentTrees):
         doctags += DocumentToken.END_DOCUMENT.value
 
         return doctags
+
+    def add_page(self, page_no: int, size: Size, hash: str) -> PageItem:
+        pitem = PageItem(page_no=page_no, size=size, hash=hash)
+
+        self.pages[page_no] = pitem
+        return pitem

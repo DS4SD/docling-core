@@ -7,9 +7,10 @@ from docling_core.types.experimental.document import (
     FileInfo,
     TableCell,
 )
+from docling_core.types.experimental.labels import PageLabel
 
 
-def test_load_serialize_doc():
+def test_reference_doc():
     # Read YAML file
     with open("test/data/experimental/dummy_doc.yaml", "r") as fp:
         dict_from_yaml = yaml.safe_load(fp)
@@ -48,19 +49,58 @@ def test_load_serialize_doc():
         print(f"Item: {item} at level {level}")
 
 
+def test_parse_doc():
+    with open(
+        "test/data/experimental/2206.01062.experimental.yaml",
+        "r",
+    ) as fp:
+        dict_from_yaml = yaml.safe_load(fp)
+
+    doc = DoclingDocument.model_validate(dict_from_yaml)
+
+    _test_export_methods(doc)
+    _test_serialize_and_reload(doc)
+
+
 def test_construct_doc():
 
-    doc = DoclingDocument(description={}, file_info=FileInfo(document_hash="xyz"))
+    doc = _construct_doc()
+    _test_export_methods(doc)
+    _test_serialize_and_reload(doc)
 
+
+def _test_serialize_and_reload(doc):
+    ### Serialize and deserialize stuff
+    yaml_dump = yaml.safe_dump(doc.model_dump(mode="json", by_alias=True))
+    # print(f"\n\n{yaml_dump}")
+    DoclingDocument.model_validate(yaml.safe_load(yaml_dump))
+
+
+def _test_export_methods(doc):
+    ### Iterate all elements
+    doc.print_element_tree()
+    ## Export stuff
+    print(doc.export_to_markdown())
+    print(doc.export_to_document_tokens())
+    for table in doc.tables:
+        table.export_to_html()
+        table.export_to_dataframe()
+        table.export_to_document_tokens(doc)
+    for fig in doc.figures:
+        fig.export_to_document_tokens(doc)
+    doc.print_element_tree()
+
+
+def _construct_doc() -> DoclingDocument:
+    doc = DoclingDocument(description={}, file_info=FileInfo(document_hash="xyz"))
     # group, heading, paragraph, table, figure, title, list, provenance
     doc.add_paragraph(label="text", text="Author 1\nAffiliation 1")
     doc.add_paragraph(label="text", text="Author 2\nAffiliation 2")
-
     chapter1 = doc.add_group(
         name="Introduction"
     )  # can be done if such information is present, or ommitted.
     doc.add_heading(
-        parent=chapter1, label="section_header", text="1. Introduction", level=1
+        parent=chapter1, label=PageLabel.SECTION_HEADER, text="1. Introduction", level=1
     )
     doc.add_paragraph(
         parent=chapter1,
@@ -74,11 +114,11 @@ def test_construct_doc():
         text="Cooks your favourite meal before you know you want it.",
     )
     doc.add_paragraph(
-        parent=mylist, label="list_item", text="Cleans up all your dishes."
+        parent=mylist, label=PageLabel.LIST_ITEM, text="Cleans up all your dishes."
     )
     doc.add_paragraph(
         parent=mylist,
-        label="list_item",
+        label=PageLabel.LIST_ITEM,
         text="Drains your bank account without consent.",
     )
     # Make some table cells
@@ -150,36 +190,8 @@ def test_construct_doc():
     )
     table_el = BaseTableData(num_rows=3, num_cols=3, table_cells=table_cells)
     doc.add_table(data=table_el)
-
     fig_caption = doc.add_paragraph(
         label="caption", text="This is the caption of figure 1."
     )
     doc.add_figure(data=BaseFigureData(), caption=fig_caption.get_ref())
-
-    ### Iterate all elements
-
-    for item, level in doc.iterate_elements():
-        print(f"Item: {item}")
-
-    ## Export stuff
-
-    print(doc.export_to_markdown())
-    print(doc.export_to_document_tokens())
-
-    for table in doc.tables:
-        table.export_to_html()
-        table.export_to_dataframe()
-        table.export_to_document_tokens(doc)
-
-    for fig in doc.figures:
-        fig.export_to_document_tokens(doc)
-
-    doc.print_element_tree()
-
-    ### Serialize and deserialize stuff
-
-    yaml_dump = yaml.safe_dump(doc.model_dump(mode="json", by_alias=True))
-
-    # print(f"\n\n{yaml_dump}")
-
-    DoclingDocument.model_validate(yaml.safe_load(yaml_dump))
+    return doc

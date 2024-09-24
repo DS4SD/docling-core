@@ -129,7 +129,7 @@ tables: # All tables...
 figures: # All figures...
   - dloc: "e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5#/figures/0"
     hash: 7782482
-    label: "figure"
+    label: "picture"
     parent:
       $ref: "#/body"
     captions:
