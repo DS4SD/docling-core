@@ -87,7 +87,7 @@ def test_construct_doc():
         TableCell(
             row_span=2,
             start_row_offset_idx=0,
-            end_row_offset_idx=1,
+            end_row_offset_idx=2,
             start_col_offset_idx=0,
             end_col_offset_idx=1,
             text="Product",
@@ -160,6 +160,20 @@ def test_construct_doc():
 
     for item in doc.iterate_elements():
         print(f"Item: {item}")
+
+    ## Export stuff
+
+    print(doc.export_to_markdown())
+    print(doc.export_to_document_tokens())
+
+    for table in doc.tables:
+        table.export_to_html()
+        table.export_to_dataframe()
+        table.export_to_document_tokens(doc)
+        1 == 1
+
+    for fig in doc.figures:
+        fig.export_to_document_tokens(doc)
 
     ### Serialize and deserialize stuff
 
