@@ -44,8 +44,8 @@ def test_load_serialize_doc():
 
     ### Iterate all elements
 
-    for item in doc.iterate_elements():
-        print(f"Item: {item}")
+    for item, level in doc.iterate_elements():
+        print(f"Item: {item} at level {level}")
 
 
 def test_construct_doc():
@@ -158,7 +158,7 @@ def test_construct_doc():
 
     ### Iterate all elements
 
-    for item in doc.iterate_elements():
+    for item, level in doc.iterate_elements():
         print(f"Item: {item}")
 
     ## Export stuff
@@ -170,10 +170,11 @@ def test_construct_doc():
         table.export_to_html()
         table.export_to_dataframe()
         table.export_to_document_tokens(doc)
-        1 == 1
 
     for fig in doc.figures:
         fig.export_to_document_tokens(doc)
+
+    doc.print_element_tree()
 
     ### Serialize and deserialize stuff
 

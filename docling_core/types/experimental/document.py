@@ -659,15 +659,16 @@ class DoclingDocument(DocumentTrees):
     def iterate_elements(
         self,
         root: Optional[NodeItem] = None,
-        omit_groups: bool = True,
+        with_groups: bool = False,
         traverse_figures: bool = True,
-    ) -> typing.Iterable[NodeItem]:
+        level=0,
+    ) -> typing.Iterable[Tuple[NodeItem, int]]:  # tuple of node and level
         # Yield the current node
         if not root:
             root = self.body
 
-        if omit_groups and not isinstance(root, GroupItem):
-            yield root
+        if not isinstance(root, GroupItem) or with_groups:
+            yield root, level
 
         # Traverse children
         for child_ref in root.children:
@@ -676,9 +677,16 @@ class DoclingDocument(DocumentTrees):
             if isinstance(child, NodeItem):
                 # If the child is a NodeItem, recursively traverse it
                 if not isinstance(child, FigureItem) or traverse_figures:
-                    yield from self.iterate_elements(child)
+                    yield from self.iterate_elements(child, level=level + 1)
             else:  # leaf
-                yield child
+                yield child, level
+
+    def print_element_tree(self):
+        for ix, (item, level) in enumerate(self.iterate_elements(with_groups=True)):
+            if isinstance(item, GroupItem):
+                print(" " * level, f"{ix}: {item.name}")
+            elif isinstance(item, DocItem):
+                print(" " * level, f"{ix}: {item.label}")
 
     def export_to_markdown(
         self,
@@ -718,7 +726,7 @@ class DoclingDocument(DocumentTrees):
 
         skip_count = 0
         if len(self.body.children):
-            for ix, item in enumerate(self.iterate_elements(self.body)):
+            for ix, (item, level) in enumerate(self.iterate_elements(self.body)):
                 if skip_count < from_element:
                     skip_count += 1
                     continue  # skip as many items as you want
@@ -837,7 +845,7 @@ class DoclingDocument(DocumentTrees):
 
         skip_count = 0
         if len(self.body.children):
-            for ix, item in enumerate(self.iterate_elements(self.body)):
+            for ix, (item, level) in enumerate(self.iterate_elements(self.body)):
 
                 if skip_count < from_element:
                     skip_count += 1
