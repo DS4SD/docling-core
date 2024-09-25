@@ -91,7 +91,9 @@ def _test_export_methods(doc):
 
 
 def _construct_doc() -> DoclingDocument:
-    doc = DoclingDocument(description={}, file_info=FileInfo(filename="dummy", document_hash="xyz"))
+    doc = DoclingDocument(
+        description={}, file_info=FileInfo(filename="dummy", document_hash="xyz")
+    )
     # group, heading, paragraph, table, figure, title, list, provenance
     doc.add_paragraph(label=DocItemLabel.TEXT, text="Author 1\nAffiliation 1")
     doc.add_paragraph(label=DocItemLabel.TEXT, text="Author 2\nAffiliation 2")
