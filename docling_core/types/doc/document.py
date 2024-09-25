@@ -434,7 +434,7 @@ class ExportedCCSDocument(
 
         return pagedims
 
-    def export_to_markdown(
+    def export_to_markdown(  # noqa: C901
         self,
         delim: str = "\n\n",
         main_text_start: int = 0,
@@ -445,8 +445,10 @@ class ExportedCCSDocument(
             "paragraph",
             "caption",
             "table",
+            "figure",
         ],
         strict_text: bool = False,
+        image_placeholder: str = "<!-- image -->",
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -460,6 +462,12 @@ class ExportedCCSDocument(
                 Defaults to 0.
             main_text_end (Optional[int], optional): Main-text slicing stop index
                 (exclusive). Defaults to None.
+            main_text_labels (list[str], optional): The labels to include in the
+                markdown.
+            strict_text (bool, optional): if true, the output will be only plain text
+                without any markdown styling. Defaults to False.
+            image_placeholder (str, optional): the placeholder to include to position
+                images in the markdown. Defaults to a markdown comment "<!-- image -->".
 
         Returns:
             str: The exported Markdown representation.
@@ -469,6 +477,26 @@ class ExportedCCSDocument(
         md_texts: list[str] = []
 
         if self.main_text is not None:
+            # collect all captions embedded in table and figure objects
+            # to avoid repeating them
+            embedded_captions = set()
+            for orig_item in self.main_text[main_text_start:main_text_stop]:
+                item = (
+                    self._resolve_ref(orig_item)
+                    if isinstance(orig_item, Ref)
+                    else orig_item
+                )
+                if item is None:
+                    continue
+
+                if (
+                    isinstance(item, (Table, Figure))
+                    and item.text
+                    and item.obj_type in main_text_labels
+                ):
+                    embedded_captions.add(item.text)
+
+            # serialize document to markdown
             for orig_item in self.main_text[main_text_start:main_text_stop]:
                 markdown_text = ""
 
@@ -483,6 +511,11 @@ class ExportedCCSDocument(
                 item_type = item.obj_type
                 if isinstance(item, BaseText) and item_type in main_text_labels:
                     text = item.text
+
+                    # skip captions of they are embedded in the actual
+                    # floating object
+                    if item_type == "caption" and text in embedded_captions:
+                        continue
 
                     # ignore repeated text
                     if prev_text == text or text is None:
@@ -515,8 +548,9 @@ class ExportedCCSDocument(
                     isinstance(item, Table)
                     and item.data
                     and item_type in main_text_labels
-                    and not strict_text
                 ):
+
+                    md_table = ""
                     table = []
                     for row in item.data:
                         tmp = []
@@ -537,7 +571,19 @@ class ExportedCCSDocument(
                                 disable_numparse=True,
                             )
 
-                        markdown_text = md_table
+                    markdown_text = ""
+                    if item.text:
+                        markdown_text = item.text
+                    if not strict_text:
+                        markdown_text += "\n" + md_table
+
+                elif isinstance(item, Figure) and item_type in main_text_labels:
+
+                    markdown_text = ""
+                    if item.text:
+                        markdown_text = item.text
+                    if not strict_text:
+                        markdown_text += f"\n{image_placeholder}"
 
                 if markdown_text:
                     md_texts.append(markdown_text)

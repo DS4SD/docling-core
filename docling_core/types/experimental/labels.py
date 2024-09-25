@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class PageLabel(str, Enum):
+class PageLabel(str, Enum): # Don't call it that. ItemLabel, DocItemLabel...
     # DocLayNet v2
     CAPTION = "caption"
     FOOTNOTE = "footnote"
@@ -22,12 +22,18 @@ class PageLabel(str, Enum):
     KEY_VALUE_REGION = "key_value_region"
 
     # Additional labels for markup-based formats (e.g. HTML, Word)
-    LIST = "list"  # group label for list container (not the list-items)
     PARAGRAPH = "paragraph"  # explicitly a paragraph and not arbitrary text
     REFERENCE = "reference"
 
     # To be completed...
 
+class GroupLabel(str, Enum):
+    UNSPECIFIED = "unspecified"
+    LIST = "list"  # group label for list container (not the list-items)
+    CHAPTER = "chapter"
+    SECTION = "section"
+
+    #...
 
 class TableLabel(str, Enum):
     COLUMN_HEADER = "col_header"

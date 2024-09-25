@@ -7,7 +7,7 @@ from docling_core.types.experimental.document import (
     FileInfo,
     TableCell,
 )
-from docling_core.types.experimental.labels import PageLabel
+from docling_core.types.experimental.labels import PageLabel, GroupLabel
 
 
 def test_reference_doc():
@@ -88,7 +88,6 @@ def _test_export_methods(doc):
         table.export_to_document_tokens(doc)
     for fig in doc.figures:
         fig.export_to_document_tokens(doc)
-    doc.print_element_tree()
 
 
 def _construct_doc() -> DoclingDocument:
@@ -97,6 +96,7 @@ def _construct_doc() -> DoclingDocument:
     doc.add_paragraph(label="text", text="Author 1\nAffiliation 1")
     doc.add_paragraph(label="text", text="Author 2\nAffiliation 2")
     chapter1 = doc.add_group(
+        label=GroupLabel.CHAPTER,
         name="Introduction"
     )  # can be done if such information is present, or ommitted.
     doc.add_heading(
@@ -107,7 +107,7 @@ def _construct_doc() -> DoclingDocument:
         label="text",
         text="This paper introduces the biggest invention ever made. ...",
     )
-    mylist = doc.add_group(parent=chapter1, name="whateverlist")
+    mylist = doc.add_group(parent=chapter1, label=GroupLabel.LIST)
     doc.add_paragraph(
         parent=mylist,
         label="list_item",

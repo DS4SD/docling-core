@@ -15,7 +15,7 @@ from tabulate import tabulate
 
 from docling_core.types.doc.tokens import DocumentToken
 from docling_core.types.experimental.base import BoundingBox, Size
-from docling_core.types.experimental.labels import PageLabel
+from docling_core.types.experimental.labels import PageLabel, GroupLabel
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
@@ -168,7 +168,8 @@ class NodeItem(BaseModel):
 
 
 class GroupItem(NodeItem):  # Container type, can't be a leaf node
-    name: str
+    name: Optional[str] = None
+    label: GroupLabel = GroupLabel.UNSPECIFIED
 
 
 class DocItem(
@@ -530,7 +531,7 @@ class DoclingDocument(DocumentTrees):
     #    self.furniture.children.append(group)
     #    return group
 
-    def add_group(self, name: str, parent: Optional[GroupItem] = None) -> GroupItem:
+    def add_group(self, label: Optional[GroupLabel] = None, name: Optional[str] = None, parent: Optional[GroupItem] = None) -> GroupItem:
         if not parent:
             parent = self.body
 
@@ -538,7 +539,12 @@ class DoclingDocument(DocumentTrees):
         cref = f"#/groups/{group_index}"
         dloc = f"{self.file_info.document_hash}{cref}"
 
-        group = GroupItem(name=name, dloc=dloc, parent=parent.get_ref())
+        group = GroupItem(dloc=dloc, parent=parent.get_ref())
+        if name:
+            group.name = name
+        if label:
+            group.label = label
+
         self.groups.append(group)
         parent.children.append(RefItem(cref=cref))
 
@@ -683,14 +689,14 @@ class DoclingDocument(DocumentTrees):
             if isinstance(child, NodeItem):
                 # If the child is a NodeItem, recursively traverse it
                 if not isinstance(child, FigureItem) or traverse_figures:
-                    yield from self.iterate_elements(child, _level=_level + 1)
+                    yield from self.iterate_elements(child, _level=_level + 1, with_groups=with_groups)
 
     def print_element_tree(self):
         for ix, (item, level) in enumerate(self.iterate_elements(with_groups=True)):
             if isinstance(item, GroupItem):
-                print(" " * level, f"{ix}: {item.name}")
+                print(" " * level, f"{ix}: {item.label.value} with name={item.name}")
             elif isinstance(item, DocItem):
-                print(" " * level, f"{ix}: {item.label}")
+                print(" " * level, f"{ix}: {item.label.value}")
 
     def export_to_markdown(
         self,
@@ -729,80 +735,79 @@ class DoclingDocument(DocumentTrees):
         md_texts: list[str] = []
 
         skip_count = 0
-        if len(self.body.children):
-            for ix, (item, level) in enumerate(self.iterate_elements(self.body)):
-                if skip_count < from_element:
-                    skip_count += 1
-                    continue  # skip as many items as you want
+        for ix, (item, level) in enumerate(self.iterate_elements(self.body)):
+            if skip_count < from_element:
+                skip_count += 1
+                continue  # skip as many items as you want
 
-                if to_element and ix >= to_element:
-                    break
+            if to_element and ix >= to_element:
+                break
 
-                markdown_text = ""
+            markdown_text = ""
 
-                if isinstance(item, DocItem):
-                    item_type = item.label
+            if isinstance(item, DocItem):
+                item_type = item.label
 
-                    if isinstance(item, TextItem) and item_type in labels:
-                        text = item.text
+                if isinstance(item, TextItem) and item_type in labels:
+                    text = item.text
 
-                        # ignore repeated text
-                        if prev_text == text or text is None:
-                            continue
+                    # ignore repeated text
+                    if prev_text == text or text is None:
+                        continue
+                    else:
+                        prev_text = text
+
+                    # first title match
+                    if item_type == "title" and not has_title:
+                        if strict_text:
+                            markdown_text = f"{text}"
                         else:
-                            prev_text = text
+                            markdown_text = f"# {text}"
+                        has_title = True
 
-                        # first title match
-                        if item_type == "title" and not has_title:
-                            if strict_text:
-                                markdown_text = f"{text}"
-                            else:
-                                markdown_text = f"# {text}"
-                            has_title = True
-
-                        # secondary titles
-                        elif item_type in {"title", "subtitle-level-1"} or (
-                            has_title and item_type == "title"
-                        ):
-                            if strict_text:
-                                markdown_text = f"{text}"
-                            else:
-                                markdown_text = f"## {text}"
-
-                        # normal text
-                        else:
-                            markdown_text = text
-
-                    elif (
-                        isinstance(item, TableItem)
-                        and item.data
-                        and item_type in labels
-                        and not strict_text
+                    # secondary titles
+                    elif item_type in {"title", "subtitle-level-1"} or (
+                        has_title and item_type == "title"
                     ):
-                        table = []
-                        for row in item.data.grid:
-                            tmp = []
-                            for col in row:
-                                tmp.append(col.text)
-                            table.append(tmp)
+                        if strict_text:
+                            markdown_text = f"{text}"
+                        else:
+                            markdown_text = f"## {text}"
 
-                        if len(table) > 1 and len(table[0]) > 0:
-                            try:
-                                md_table = tabulate(
-                                    table[1:], headers=table[0], tablefmt="github"
-                                )
-                            except ValueError:
-                                md_table = tabulate(
-                                    table[1:],
-                                    headers=table[0],
-                                    tablefmt="github",
-                                    disable_numparse=True,
-                                )
+                    # normal text
+                    else:
+                        markdown_text = text
 
-                            markdown_text = md_table
+                elif (
+                    isinstance(item, TableItem)
+                    and item.data
+                    and item_type in labels
+                    and not strict_text
+                ):
+                    table = []
+                    for row in item.data.grid:
+                        tmp = []
+                        for col in row:
+                            tmp.append(col.text)
+                        table.append(tmp)
 
-                if markdown_text:
-                    md_texts.append(markdown_text)
+                    if len(table) > 1 and len(table[0]) > 0:
+                        try:
+                            md_table = tabulate(
+                                table[1:], headers=table[0], tablefmt="github"
+                            )
+                        except ValueError:
+                            md_table = tabulate(
+                                table[1:],
+                                headers=table[0],
+                                tablefmt="github",
+                                disable_numparse=True,
+                            )
+
+                        markdown_text = md_table
+
+            if markdown_text:
+                md_texts.append(markdown_text)
 
         result = delim.join(md_texts)
         return result
@@ -849,69 +854,68 @@ class DoclingDocument(DocumentTrees):
         # pagedims = self.get_map_to_page_dimensions()
 
         skip_count = 0
-        if len(self.body.children):
-            for ix, (item, level) in enumerate(self.iterate_elements(self.body)):
+        for ix, (item, level) in enumerate(self.iterate_elements(self.body)):
 
-                if skip_count < from_element:
-                    skip_count += 1
-                    continue  # skip as many items as you want
+            if skip_count < from_element:
+                skip_count += 1
+                continue  # skip as many items as you want
 
-                if to_element and ix >= to_element:
-                    break
+            if to_element and ix >= to_element:
+                break
 
-                prov = item.prov
+            prov = item.prov
 
-                page_i = -1
+            page_i = -1
 
-                if add_location and len(self.pages) and len(prov) > 0:
+            if add_location and len(self.pages) and len(prov) > 0:
 
-                    page_i = prov[0].page_no
-                    page_dim = self.pages[page_i].size
+                page_i = prov[0].page_no
+                page_dim = self.pages[page_i].size
 
-                    float(page_dim.width)
-                    float(page_dim.height)
+                float(page_dim.width)
+                float(page_dim.height)
 
-                item_type = item.label
-                if isinstance(item, TextItem) and (item_type in labels):
+            item_type = item.label
+            if isinstance(item, TextItem) and (item_type in labels):
 
-                    doctags += item.export_to_document_tokens(
-                        doc=self,
-                        new_line=new_line,
-                        xsize=xsize,
-                        ysize=ysize,
-                        add_location=add_location,
-                        add_content=add_content,
-                        add_page_index=add_page_index,
-                    )
+                doctags += item.export_to_document_tokens(
+                    doc=self,
+                    new_line=new_line,
+                    xsize=xsize,
+                    ysize=ysize,
+                    add_location=add_location,
+                    add_content=add_content,
+                    add_page_index=add_page_index,
+                )
 
-                elif isinstance(item, TableItem) and (item_type in labels):
+            elif isinstance(item, TableItem) and (item_type in labels):
 
-                    doctags += item.export_to_document_tokens(
-                        doc=self,
-                        new_line=new_line,
-                        xsize=xsize,
-                        ysize=ysize,
-                        add_caption=True,
-                        add_location=add_location,
-                        add_content=add_content,
-                        add_cell_location=add_table_cell_location,
-                        add_cell_label=add_table_cell_label,
-                        add_cell_text=add_table_cell_text,
-                        add_page_index=add_page_index,
-                    )
+                doctags += item.export_to_document_tokens(
+                    doc=self,
+                    new_line=new_line,
+                    xsize=xsize,
+                    ysize=ysize,
+                    add_caption=True,
+                    add_location=add_location,
+                    add_content=add_content,
+                    add_cell_location=add_table_cell_location,
+                    add_cell_label=add_table_cell_label,
+                    add_cell_text=add_table_cell_text,
+                    add_page_index=add_page_index,
+                )
 
-                elif isinstance(item, FigureItem) and (item_type in labels):
+            elif isinstance(item, FigureItem) and (item_type in labels):
 
-                    doctags += item.export_to_document_tokens(
-                        doc=self,
-                        new_line=new_line,
-                        xsize=xsize,
-                        ysize=ysize,
-                        add_caption=True,
-                        add_location=add_location,
-                        add_content=add_content,
-                        add_page_index=add_page_index,
-                    )
+                doctags += item.export_to_document_tokens(
+                    doc=self,
+                    new_line=new_line,
+                    xsize=xsize,
+                    ysize=ysize,
+                    add_caption=True,
+                    add_location=add_location,
+                    add_content=add_content,
+                    add_page_index=add_page_index,
+                )
 
         doctags += DocumentToken.END_DOCUMENT.value
 
