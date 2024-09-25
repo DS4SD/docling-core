@@ -92,7 +92,7 @@ texts:
           t: 354.3
           b: 334.4
           r: 376.0
-          coord_origin: "BOTTOMLEFT"
+          coord_origin: BOTTOMLEFT
         charspan: [ 1,423 ] # 2-tuple, references to "orig"
 
 
@@ -123,7 +123,7 @@ tables: # All tables...
           t: 354.3
           b: 334.4
           r: 376.0
-          coord_origin: "BOTTOMLEFT"
+          coord_origin: BOTTOMLEFT
         charspan: [ 1,423 ] # 2-tuple, references to "orig"
 
 figures: # All figures...

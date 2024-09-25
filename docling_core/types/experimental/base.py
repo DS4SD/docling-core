@@ -1,3 +1,5 @@
+"""Models for the base data types."""
+
 import copy
 from enum import Enum
 from typing import Tuple
@@ -5,21 +7,27 @@ from typing import Tuple
 from pydantic import BaseModel
 
 
-## All copied from docling
 class CoordOrigin(str, Enum):
+    """CoordOrigin."""
+
     TOPLEFT = "TOPLEFT"
     BOTTOMLEFT = "BOTTOMLEFT"
 
 
 class Size(BaseModel):
+    """Size."""
+
     width: float = 0.0
     height: float = 0.0
 
     def as_tuple(self):
+        """as_tuple."""
         return (self.width, self.height)
 
 
 class BoundingBox(BaseModel):
+    """BoundingBox."""
+
     l: float  # left
     t: float  # top
     r: float  # right
@@ -29,13 +37,20 @@ class BoundingBox(BaseModel):
 
     @property
     def width(self):
+        """width."""
         return self.r - self.l
 
     @property
     def height(self):
+        """height."""
         return abs(self.t - self.b)
 
     def scaled(self, scale: float) -> "BoundingBox":
+        """scaled.
+
+        :param scale: float:
+
+        """
         out_bbox = copy.deepcopy(self)
         out_bbox.l *= scale
         out_bbox.r *= scale
@@ -45,6 +60,11 @@ class BoundingBox(BaseModel):
         return out_bbox
 
     def normalized(self, page_size: Size) -> "BoundingBox":
+        """normalized.
+
+        :param page_size: Size:
+
+        """
         out_bbox = copy.deepcopy(self)
         out_bbox.l /= page_size.width
         out_bbox.r /= page_size.width
@@ -54,6 +74,7 @@ class BoundingBox(BaseModel):
         return out_bbox
 
     def as_tuple(self):
+        """as_tuple."""
         if self.coord_origin == CoordOrigin.TOPLEFT:
             return (self.l, self.t, self.r, self.b)
         elif self.coord_origin == CoordOrigin.BOTTOMLEFT:
@@ -61,6 +82,13 @@ class BoundingBox(BaseModel):
 
     @classmethod
     def from_tuple(cls, coord: Tuple[float, ...], origin: CoordOrigin):
+        """from_tuple.
+
+        :param coord: Tuple[float:
+        :param ...]:
+        :param origin: CoordOrigin:
+
+        """
         if origin == CoordOrigin.TOPLEFT:
             l, t, r, b = coord[0], coord[1], coord[2], coord[3]
             if r < l:
@@ -79,9 +107,15 @@ class BoundingBox(BaseModel):
             return BoundingBox(l=l, t=t, r=r, b=b, coord_origin=origin)
 
     def area(self) -> float:
+        """area."""
         return (self.r - self.l) * (self.b - self.t)
 
     def intersection_area_with(self, other: "BoundingBox") -> float:
+        """intersection_area_with.
+
+        :param other: "BoundingBox":
+
+        """
         # Calculate intersection coordinates
         left = max(self.l, other.l)
         top = max(self.t, other.t)
@@ -99,6 +133,11 @@ class BoundingBox(BaseModel):
         return width * height
 
     def to_bottom_left_origin(self, page_height) -> "BoundingBox":
+        """to_bottom_left_origin.
+
+        :param page_height:
+
+        """
         if self.coord_origin == CoordOrigin.BOTTOMLEFT:
             return self
         elif self.coord_origin == CoordOrigin.TOPLEFT:
@@ -111,6 +150,11 @@ class BoundingBox(BaseModel):
             )
 
     def to_top_left_origin(self, page_height):
+        """to_top_left_origin.
+
+        :param page_height:
+
+        """
         if self.coord_origin == CoordOrigin.TOPLEFT:
             return self
         elif self.coord_origin == CoordOrigin.BOTTOMLEFT:

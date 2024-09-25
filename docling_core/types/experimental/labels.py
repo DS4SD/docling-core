@@ -1,7 +1,11 @@
+"""Models for the labels types."""
+
 from enum import Enum
 
 
 class DocItemLabel(str, Enum):
+    """DocItemLabel."""
+
     # DocLayNet v2
     CAPTION = "caption"
     FOOTNOTE = "footnote"
@@ -29,6 +33,8 @@ class DocItemLabel(str, Enum):
 
 
 class GroupLabel(str, Enum):
+    """GroupLabel."""
+
     UNSPECIFIED = "unspecified"
     LIST = "list"  # group label for list container (not the list-items)
     CHAPTER = "chapter"
@@ -38,6 +44,8 @@ class GroupLabel(str, Enum):
 
 
 class TableCellLabel(str, Enum):
+    """TableCellLabel."""
+
     COLUMN_HEADER = "col_header"
     ROW_HEADER = "row_header"
     SECTION = "row_section"

@@ -140,6 +140,7 @@ body:
   - $ref: '#/texts/127'
   dloc: '#/body'
   hash: 1876595454579351028
+  label: unspecified
   name: _root_
   parent: null
 description: {}
@@ -215,6 +216,7 @@ furniture:
   children: []
   dloc: '#/furniture'
   hash: 5280524054814059340
+  label: unspecified
   name: _root_
   parent: null
 groups: []

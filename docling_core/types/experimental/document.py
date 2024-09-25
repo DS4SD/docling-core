@@ -1,3 +1,5 @@
+"""Models for the Docling Document data type."""
+
 import hashlib
 import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -22,10 +24,12 @@ LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
 
 
 class BaseFigureData(BaseModel):  # TBD
-    pass
+    """BaseFigureData."""
 
 
 class TableCell(BaseModel):
+    """TableCell."""
+
     bbox: Optional[BoundingBox] = None
     row_span: int = 1
     col_span: int = 1
@@ -41,8 +45,9 @@ class TableCell(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def from_dict_format(cls, data: Any) -> Any:
+        """from_dict_format."""
         if isinstance(data, Dict):
-            if not "bbox" in data or data["bbox"] == None:
+            if "bbox" not in data or data["bbox"] is None:
                 return data
             text = data["bbox"].get("token", "")
             if not len(text):
@@ -58,6 +63,8 @@ class TableCell(BaseModel):
 
 
 class BaseTableData(BaseModel):  # TBD
+    """BaseTableData."""
+
     table_cells: List[TableCell] = []
     num_rows: int = 0
     num_cols: int = 0
@@ -69,7 +76,7 @@ class BaseTableData(BaseModel):  # TBD
     ) -> List[
         List[TableCell]
     ]:  # TODO compute grid representation on the fly from table_cells
-
+        """grid."""
         # Initialise empty table data grid (only empty cells)
         table_data = [
             [
@@ -101,14 +108,19 @@ class BaseTableData(BaseModel):  # TBD
 
 
 class FileInfo(BaseModel):
+    """FileInfo."""
+
     document_hash: str
 
 
 class RefItem(BaseModel):
+    """RefItem."""
+
     cref: str = Field(alias="$ref")
 
     # This method makes RefItem compatible with DocItem
     def get_ref(self):
+        """get_ref."""
         return self
 
     model_config = ConfigDict(
@@ -116,6 +128,7 @@ class RefItem(BaseModel):
     )
 
     def resolve(self, doc: "DoclingDocument"):
+        """resolve."""
         path_components = self.cref.split("/")
         if len(path_components) > 2:
             _, path, index_str = path_components
@@ -133,6 +146,8 @@ class RefItem(BaseModel):
 
 
 class ImageRef(BaseModel):
+    """ImageRef."""
+
     format: str  # png, etc.
     dpi: int  # ...
     size: Size
@@ -140,22 +155,28 @@ class ImageRef(BaseModel):
 
 
 class ProvenanceItem(BaseModel):
+    """ProvenanceItem."""
+
     page_no: int
     bbox: BoundingBox
     charspan: Tuple[int, int]
 
 
 class NodeItem(BaseModel):
+    """NodeItem."""
+
     dloc: str  # format spec ({document_hash}{json-path})
     parent: Optional[RefItem] = None
     children: List[RefItem] = []
 
     def get_ref(self):
+        """get_ref."""
         return RefItem(cref=f"#{self.dloc.split('#')[1]}")
 
     @computed_field  # type: ignore
     @property
     def hash(self) -> Uint64:  # TODO align with hasher on deepsearch-glm
+        """hash."""
         if not len(self.dloc):
             return 0
         hash_object = hashlib.sha256(self.dloc.encode("utf-8"))
@@ -168,6 +189,8 @@ class NodeItem(BaseModel):
 
 
 class GroupItem(NodeItem):  # Container type, can't be a leaf node
+    """GroupItem."""
+
     name: Optional[str] = None
     label: GroupLabel = GroupLabel.UNSPECIFIED
 
@@ -175,6 +198,8 @@ class GroupItem(NodeItem):  # Container type, can't be a leaf node
 class DocItem(
     NodeItem
 ):  # Base type for any element that carries content, can be a leaf node
+    """DocItem."""
+
     label: DocItemLabel
     prov: List[ProvenanceItem] = []
 
@@ -212,6 +237,8 @@ class DocItem(
 
 
 class TextItem(DocItem):
+    """TextItem."""
+
     orig: str  # untreated representation
     text: str  # sanitized representation
 
@@ -225,7 +252,17 @@ class TextItem(DocItem):
         add_content: bool = True,
         add_page_index: bool = True,
     ):
-        """Export text element to document tokens format."""
+        r"""Export text element to document tokens format.
+
+        :param doc: "DoclingDocument":
+        :param new_line: str:  (Default value = "\n")
+        :param xsize: int:  (Default value = 100)
+        :param ysize: int:  (Default value = 100)
+        :param add_location: bool:  (Default value = True)
+        :param add_content: bool:  (Default value = True)
+        :param add_page_index: bool:  (Default value = True)
+
+        """
         body = f"<{self.label.value}>"
         # body = f"<{self.name}>"
 
@@ -251,10 +288,14 @@ class TextItem(DocItem):
 
 
 class Section(TextItem):
+    """Section."""
+
     level: LevelNumber = 1
 
 
 class FloatingItem(DocItem):
+    """FloatingItem."""
+
     captions: List[RefItem] = []
     references: List[RefItem] = []
     footnotes: List[RefItem] = []
@@ -262,6 +303,8 @@ class FloatingItem(DocItem):
 
 
 class FigureItem(FloatingItem):
+    """FigureItem."""
+
     data: BaseFigureData
 
     def export_to_document_tokens(
@@ -277,7 +320,20 @@ class FigureItem(FloatingItem):
         add_content: bool = True,  # not used at the moment
         add_page_index: bool = True,
     ):
-        """Export figure to document tokens format."""
+        r"""Export figure to document tokens format.
+
+        :param doc: "DoclingDocument":
+        :param new_line: str:  (Default value = "\n")
+        :param page_w: float:  (Default value = 0.0)
+        :param page_h: float:  (Default value = 0.0)
+        :param xsize: int:  (Default value = 100)
+        :param ysize: int:  (Default value = 100)
+        :param add_location: bool:  (Default value = True)
+        :param add_caption: bool:  (Default value = True)
+        :param add_content: bool:  (Default value = True)
+        :param # not used at the momentadd_page_index: bool:  (Default value = True)
+
+        """
         body = f"{DocumentToken.BEG_FIGURE.value}{new_line}"
 
         if add_location:
@@ -306,6 +362,8 @@ class FigureItem(FloatingItem):
 
 
 class TableItem(FloatingItem):
+    """TableItem."""
+
     data: BaseTableData
 
     def export_to_dataframe(self) -> pd.DataFrame:
@@ -366,15 +424,13 @@ class TableItem(FloatingItem):
             for j in range(ncols):
                 cell: TableCell = self.data.grid[i][j]
 
-                rowspan, rowstart, rowend = (
+                rowspan, rowstart = (
                     cell.row_span,
                     cell.start_row_offset_idx,
-                    cell.end_row_offset_idx,
                 )
-                colspan, colstart, colend = (
+                colspan, colstart = (
                     cell.col_span,
                     cell.start_col_offset_idx,
-                    cell.end_col_offset_idx,
                 )
 
                 if rowstart != i:
@@ -413,7 +469,21 @@ class TableItem(FloatingItem):
         add_cell_text: bool = True,
         add_page_index: bool = True,
     ):
-        """Export table to document tokens format."""
+        r"""Export table to document tokens format.
+
+        :param doc: "DoclingDocument":
+        :param new_line: str:  (Default value = "\n")
+        :param xsize: int:  (Default value = 100)
+        :param ysize: int:  (Default value = 100)
+        :param add_location: bool:  (Default value = True)
+        :param add_caption: bool:  (Default value = True)
+        :param add_content: bool:  (Default value = True)
+        :param add_cell_location: bool:  (Default value = True)
+        :param add_cell_label: bool:  (Default value = True)
+        :param add_cell_text: bool:  (Default value = True)
+        :param add_page_index: bool:  (Default value = True)
+
+        """
         body = f"{DocumentToken.BEG_TABLE.value}{new_line}"
 
         if add_location:
@@ -480,7 +550,14 @@ class TableItem(FloatingItem):
 
                     cell_label = ""
                     if add_cell_label:
-                        cell_label = f"<{'col_header' if col.column_header else 'row_header' if col.row_header else 'row_section' if col.row_section else 'body'}>"
+                        if col.column_header:
+                            cell_label = "<col_header>"
+                        elif col.row_header:
+                            cell_label = "<row_header>"
+                        elif col.row_section:
+                            cell_label = "<row_section>"
+                        else:
+                            cell_label = "<body>"
 
                     body += f"<col_{j}>{cell_loc}{cell_label}{text}</col_{j}>"
 
@@ -492,13 +569,15 @@ class TableItem(FloatingItem):
 
 
 class KeyValueItem(DocItem):
-    pass
+    """KeyValueItem."""
 
 
 ContentItem = Union[TextItem, FigureItem, TableItem, KeyValueItem]
 
 
 class DocumentTrees(BaseModel):
+    """DocumentTrees."""
+
     furniture: GroupItem = GroupItem(
         name="_root_", dloc="#/furniture"
     )  # List[RefItem] = []
@@ -506,7 +585,10 @@ class DocumentTrees(BaseModel):
 
 
 class PageItem(BaseModel):
-    # A page carries separate root items for furniture and body, only referencing items on the page
+    """PageItem."""
+
+    # A page carries separate root items for furniture and body,
+    # only referencing items on the page
     hash: str  # page hash
     size: Size
     image: Optional[ImageRef] = None
@@ -514,6 +596,8 @@ class PageItem(BaseModel):
 
 
 class DoclingDocument(DocumentTrees):
+    """DoclingDocument."""
+
     version: str = "0.0.1"  # = SemanticVersion(version="0.0.1")
     description: Any
     file_info: FileInfo
@@ -537,6 +621,13 @@ class DoclingDocument(DocumentTrees):
         name: Optional[str] = None,
         parent: Optional[GroupItem] = None,
     ) -> GroupItem:
+        """add_group.
+
+        :param label: Optional[GroupLabel]:  (Default value = None)
+        :param name: Optional[str]:  (Default value = None)
+        :param parent: Optional[GroupItem]:  (Default value = None)
+
+        """
         if not parent:
             parent = self.body
 
@@ -564,6 +655,16 @@ class DoclingDocument(DocumentTrees):
         parent: Optional[GroupItem] = None,
         item_cls=TextItem,
     ):
+        """add_paragraph.
+
+        :param label: str:
+        :param text: str:
+        :param orig: Optional[str]:  (Default value = None)
+        :param prov: Optional[ProvenanceItem]:  (Default value = None)
+        :param parent: Optional[GroupItem]:  (Default value = None)
+        :param item_cls:  (Default value = TextItem)
+
+        """
         if not parent:
             parent = self.body
 
@@ -595,6 +696,15 @@ class DoclingDocument(DocumentTrees):
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
     ):
+        """add_table.
+
+        :param data: BaseTableData:
+        :param caption: Optional[Union[TextItem:
+        :param RefItem]]:  (Default value = None)
+        :param # This is not cool yet.prov: Optional[ProvenanceItem]
+        :param parent: Optional[GroupItem]:  (Default value = None)
+
+        """
         if not parent:
             parent = self.body
 
@@ -622,6 +732,15 @@ class DoclingDocument(DocumentTrees):
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
     ):
+        """add_figure.
+
+        :param data: BaseFigureData:
+        :param caption: Optional[Union[TextItem:
+        :param RefItem]]:  (Default value = None)
+        :param prov: Optional[ProvenanceItem]:  (Default value = None)
+        :param parent: Optional[GroupItem]:  (Default value = None)
+
+        """
         if not parent:
             parent = self.body
 
@@ -651,6 +770,16 @@ class DoclingDocument(DocumentTrees):
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
     ):
+        """add_heading.
+
+        :param label: DocItemLabel:
+        :param text: str:
+        :param orig: Optional[str]:  (Default value = None)
+        :param level: LevelNumber:  (Default value = 1)
+        :param prov: Optional[ProvenanceItem]:  (Default value = None)
+        :param parent: Optional[GroupItem]:  (Default value = None)
+
+        """
         item: Section = self.add_paragraph(
             label, text, orig, prov, parent, item_cls=Section
         )
@@ -658,11 +787,13 @@ class DoclingDocument(DocumentTrees):
         return item
 
     def num_pages(self):
+        """num_pages."""
         return len(self.pages.values())
 
     def build_page_trees(self):
-        # TODO: For every PageItem, update the furniture and body trees from the main doc.
-        pass
+        """build_page_trees."""
+        # TODO: For every PageItem, update the furniture and body trees
+        # from the main doc.
 
     def iterate_elements(
         self,
@@ -672,7 +803,16 @@ class DoclingDocument(DocumentTrees):
         page_no: Optional[int] = None,
         _level=0,  # fixed parameter, carries through the node nesting level
     ) -> typing.Iterable[Tuple[NodeItem, int]]:  # tuple of node and level
-        # Yield the current node
+        """iterate_elements.
+
+        :param root: Optional[NodeItem]:  (Default value = None)
+        :param with_groups: bool:  (Default value = False)
+        :param traverse_figures: bool:  (Default value = True)
+        :param page_no: Optional[int]:  (Default value = None)
+        :param _level:  (Default value = 0)
+        :param # fixed parameter:
+        :param carries through the node nesting level:
+        """
         if not root:
             root = self.body
 
@@ -699,6 +839,7 @@ class DoclingDocument(DocumentTrees):
                     )
 
     def print_element_tree(self):
+        """print_element_tree."""
         for ix, (item, level) in enumerate(self.iterate_elements(with_groups=True)):
             if isinstance(item, GroupItem):
                 print(" " * level, f"{ix}: {item.label.value} with name={item.name}")
@@ -726,16 +867,29 @@ class DoclingDocument(DocumentTrees):
         Operates on a slice of the document's main_text as defined through arguments
         main_text_start and main_text_stop; defaulting to the whole main_text.
 
-        Args:
-            delim (str, optional): Delimiter to use when concatenating the various
+        :param delim: Delimiter to use when concatenating the various
                 Markdown parts. Defaults to "\n\n".
-            from_element (int, optional): Body slicing start index (inclusive).
+        :type delim: str
+        :param from_element: Body slicing start index (inclusive).
                 Defaults to 0.
-            to_element (Optional[int], optional): Body slicing stop index
+        :type from_element: int
+        :param to_element: Body slicing stop index
                 (exclusive). Defaults to None.
-
-        Returns:
-            str: The exported Markdown representation.
+        :type to_element: Optional[int]
+        :param delim: str:  (Default value = "\n\n")
+        :param from_element: int:  (Default value = 0)
+        :param to_element: Optional[int]:  (Default value = None)
+        :param labels: list[str]:  (Default value = ["title")
+        :param "subtitle-level-1":
+        :param "paragraph":
+        :param "caption":
+        :param "table":
+        :param "Text":
+        :param "text":
+        :param ]:
+        :param strict_text: bool:  (Default value = False)
+        :returns: The exported Markdown representation.
+        :rtype: str
         """
         has_title = False
         prev_text = ""
@@ -849,8 +1003,28 @@ class DoclingDocument(DocumentTrees):
         Operates on a slice of the document's body as defined through arguments
         from_element and to_element; defaulting to the whole main_text.
 
-        Returns:
-            str: The content of the document formatted as a DocTags string.
+        :param delim: str:  (Default value = "\n\n")
+        :param from_element: int:  (Default value = 0)
+        :param to_element: Optional[int]:  (Default value = None)
+        :param labels: list[str]:  (Default value = ["title")
+        :param "subtitle-level-1":
+        :param "Section-header" "paragraph":
+        :param "caption":
+        :param "table":
+        :param "figure":
+        :param "text":
+        :param "Text":
+        :param ]:
+        :param xsize: int:  (Default value = 100)
+        :param ysize: int:  (Default value = 100)
+        :param add_location: bool:  (Default value = True)
+        :param add_content: bool:  (Default value = True)
+        :param add_page_index: bool:  (Default value = True)
+        :param # table specific flagsadd_table_cell_location: bool
+        :param add_table_cell_label: bool:  (Default value = True)
+        :param add_table_cell_text: bool:  (Default value = True)
+        :returns: The content of the document formatted as a DocTags string.
+        :rtype: str
         """
         new_line = ""
         if delim:
@@ -931,6 +1105,13 @@ class DoclingDocument(DocumentTrees):
         return doctags
 
     def add_page(self, page_no: int, size: Size, hash: str) -> PageItem:
+        """add_page.
+
+        :param page_no: int:
+        :param size: Size:
+        :param hash: str:
+
+        """
         pitem = PageItem(page_no=page_no, size=size, hash=hash)
 
         self.pages[page_no] = pitem
