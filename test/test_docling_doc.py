@@ -7,7 +7,7 @@ from docling_core.types.experimental.document import (
     FileInfo,
     TableCell,
 )
-from docling_core.types.experimental.labels import PageLabel, GroupLabel
+from docling_core.types.experimental.labels import DocItemLabel, GroupLabel
 
 
 def test_reference_doc():
@@ -96,11 +96,13 @@ def _construct_doc() -> DoclingDocument:
     doc.add_paragraph(label="text", text="Author 1\nAffiliation 1")
     doc.add_paragraph(label="text", text="Author 2\nAffiliation 2")
     chapter1 = doc.add_group(
-        label=GroupLabel.CHAPTER,
-        name="Introduction"
+        label=GroupLabel.CHAPTER, name="Introduction"
     )  # can be done if such information is present, or ommitted.
     doc.add_heading(
-        parent=chapter1, label=PageLabel.SECTION_HEADER, text="1. Introduction", level=1
+        parent=chapter1,
+        label=DocItemLabel.SECTION_HEADER,
+        text="1. Introduction",
+        level=1,
     )
     doc.add_paragraph(
         parent=chapter1,
@@ -114,11 +116,11 @@ def _construct_doc() -> DoclingDocument:
         text="Cooks your favourite meal before you know you want it.",
     )
     doc.add_paragraph(
-        parent=mylist, label=PageLabel.LIST_ITEM, text="Cleans up all your dishes."
+        parent=mylist, label=DocItemLabel.LIST_ITEM, text="Cleans up all your dishes."
     )
     doc.add_paragraph(
         parent=mylist,
-        label=PageLabel.LIST_ITEM,
+        label=DocItemLabel.LIST_ITEM,
         text="Drains your bank account without consent.",
     )
     # Make some table cells

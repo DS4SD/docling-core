@@ -15,7 +15,7 @@ from tabulate import tabulate
 
 from docling_core.types.doc.tokens import DocumentToken
 from docling_core.types.experimental.base import BoundingBox, Size
-from docling_core.types.experimental.labels import PageLabel, GroupLabel
+from docling_core.types.experimental.labels import DocItemLabel, GroupLabel
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
@@ -175,7 +175,7 @@ class GroupItem(NodeItem):  # Container type, can't be a leaf node
 class DocItem(
     NodeItem
 ):  # Base type for any element that carries content, can be a leaf node
-    label: PageLabel
+    label: DocItemLabel
     prov: List[ProvenanceItem] = []
 
     def get_location_tokens(
@@ -531,7 +531,12 @@ class DoclingDocument(DocumentTrees):
     #    self.furniture.children.append(group)
     #    return group
 
-    def add_group(self, label: Optional[GroupLabel] = None, name: Optional[str] = None, parent: Optional[GroupItem] = None) -> GroupItem:
+    def add_group(
+        self,
+        label: Optional[GroupLabel] = None,
+        name: Optional[str] = None,
+        parent: Optional[GroupItem] = None,
+    ) -> GroupItem:
         if not parent:
             parent = self.body
 
@@ -598,7 +603,7 @@ class DoclingDocument(DocumentTrees):
         dloc = f"{self.file_info.document_hash}{cref}"
 
         tbl_item = TableItem(
-            label=PageLabel.TABLE, data=data, dloc=dloc, parent=parent.get_ref()
+            label=DocItemLabel.TABLE, data=data, dloc=dloc, parent=parent.get_ref()
         )
         if prov:
             tbl_item.prov.append(prov)
@@ -625,7 +630,7 @@ class DoclingDocument(DocumentTrees):
         dloc = f"{self.file_info.document_hash}{cref}"
 
         fig_item = FigureItem(
-            label=PageLabel.PICTURE, data=data, dloc=dloc, parent=parent.get_ref()
+            label=DocItemLabel.PICTURE, data=data, dloc=dloc, parent=parent.get_ref()
         )
         if prov:
             fig_item.prov.append(prov)
@@ -639,7 +644,7 @@ class DoclingDocument(DocumentTrees):
 
     def add_heading(
         self,
-        label: PageLabel,
+        label: DocItemLabel,
         text: str,
         orig: Optional[str] = None,
         level: LevelNumber = 1,
@@ -689,7 +694,9 @@ class DoclingDocument(DocumentTrees):
             if isinstance(child, NodeItem):
                 # If the child is a NodeItem, recursively traverse it
                 if not isinstance(child, FigureItem) or traverse_figures:
-                    yield from self.iterate_elements(child, _level=_level + 1, with_groups=with_groups)
+                    yield from self.iterate_elements(
+                        child, _level=_level + 1, with_groups=with_groups
+                    )
 
     def print_element_tree(self):
         for ix, (item, level) in enumerate(self.iterate_elements(with_groups=True)):
@@ -855,13 +862,15 @@ class DoclingDocument(DocumentTrees):
 
         skip_count = 0
         for ix, (item, level) in enumerate(self.iterate_elements(self.body)):
-
             if skip_count < from_element:
                 skip_count += 1
                 continue  # skip as many items as you want
 
             if to_element and ix >= to_element:
                 break
+
+            if not isinstance(item, DocItem):
+                continue
 
             prov = item.prov
 
