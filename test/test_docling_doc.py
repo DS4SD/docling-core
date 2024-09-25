@@ -91,10 +91,10 @@ def _test_export_methods(doc):
 
 
 def _construct_doc() -> DoclingDocument:
-    doc = DoclingDocument(description={}, file_info=FileInfo(document_hash="xyz"))
+    doc = DoclingDocument(description={}, file_info=FileInfo(filename="dummy", document_hash="xyz"))
     # group, heading, paragraph, table, figure, title, list, provenance
-    doc.add_paragraph(label="text", text="Author 1\nAffiliation 1")
-    doc.add_paragraph(label="text", text="Author 2\nAffiliation 2")
+    doc.add_paragraph(label=DocItemLabel.TEXT, text="Author 1\nAffiliation 1")
+    doc.add_paragraph(label=DocItemLabel.TEXT, text="Author 2\nAffiliation 2")
     chapter1 = doc.add_group(
         label=GroupLabel.CHAPTER, name="Introduction"
     )  # can be done if such information is present, or ommitted.
@@ -106,13 +106,13 @@ def _construct_doc() -> DoclingDocument:
     )
     doc.add_paragraph(
         parent=chapter1,
-        label="text",
+        label=DocItemLabel.TEXT,
         text="This paper introduces the biggest invention ever made. ...",
     )
     mylist = doc.add_group(parent=chapter1, label=GroupLabel.LIST)
     doc.add_paragraph(
         parent=mylist,
-        label="list_item",
+        label=DocItemLabel.LIST_ITEM,
         text="Cooks your favourite meal before you know you want it.",
     )
     doc.add_paragraph(
@@ -193,7 +193,7 @@ def _construct_doc() -> DoclingDocument:
     table_el = BaseTableData(num_rows=3, num_cols=3, table_cells=table_cells)
     doc.add_table(data=table_el)
     fig_caption = doc.add_paragraph(
-        label="caption", text="This is the caption of figure 1."
+        label=DocItemLabel.CAPTION, text="This is the caption of figure 1."
     )
     doc.add_figure(data=BaseFigureData(), caption=fig_caption.get_ref())
     return doc

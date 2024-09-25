@@ -73,9 +73,7 @@ class BaseTableData(BaseModel):  # TBD
     @property
     def grid(
         self,
-    ) -> List[
-        List[TableCell]
-    ]:  # TODO compute grid representation on the fly from table_cells
+    ) -> List[List[TableCell]]:
         """grid."""
         # Initialise empty table data grid (only empty cells)
         table_data = [
@@ -110,6 +108,7 @@ class BaseTableData(BaseModel):  # TBD
 class FileInfo(BaseModel):
     """FileInfo."""
 
+    filename: str
     document_hash: str
 
 
@@ -264,7 +263,6 @@ class TextItem(DocItem):
 
         """
         body = f"<{self.label.value}>"
-        # body = f"<{self.name}>"
 
         assert DocumentToken.is_known_token(
             body
@@ -610,11 +608,6 @@ class DoclingDocument(DocumentTrees):
 
     pages: Dict[int, PageItem] = {}  # empty as default
 
-    # def add_furniture_group(self, name: str):
-    #    group = GroupItem(name=name)
-    #    self.furniture.children.append(group)
-    #    return group
-
     def add_group(
         self,
         label: Optional[GroupLabel] = None,
@@ -789,11 +782,6 @@ class DoclingDocument(DocumentTrees):
     def num_pages(self):
         """num_pages."""
         return len(self.pages.values())
-
-    def build_page_trees(self):
-        """build_page_trees."""
-        # TODO: For every PageItem, update the furniture and body trees
-        # from the main doc.
 
     def iterate_elements(
         self,
