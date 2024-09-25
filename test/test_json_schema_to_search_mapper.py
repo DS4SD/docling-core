@@ -51,7 +51,7 @@ def test_json_schema_to_search_mapper_0():
     index_ref = _load(filename)
 
     diff = jsondiff.diff(index_ref, index_def)
-    print(json.dumps(index_def, indent=2))
+    # print(json.dumps(index_def, indent=2))
     print(diff)
     assert index_def == index_ref
 
