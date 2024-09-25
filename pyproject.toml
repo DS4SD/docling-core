@@ -119,6 +119,7 @@ module = [
     "pandas.*",
     "requests.*",
     "tabulate.*",
+    "yaml.*",
 ]
 ignore_missing_imports = true
 
