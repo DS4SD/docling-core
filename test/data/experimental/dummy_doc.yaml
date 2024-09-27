@@ -1,13 +1,17 @@
 ---
 ## Document with content + optional layout info
 description: { } # DescriptionType - TBD
-file_info: # FileInfo type
-  document_hash: e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5
+name: "dummy_doc"
+origin:
+  binary_hash: 7954723514066505909
+  filename: dummy_doc.pdf
+  mimetype: application/pdf
+  uri: null
 
 # Root element for any headers, footers, framing, navigation elements, all other non-body text, type GroupItem
 furniture:
   name: "_root_"
-  dloc: "#/furniture"
+  self_ref: "#/furniture"
   parent: null # Only root elements have no parent.
   children: # only the first-level children appear here, as references (RefItem)
     - $ref: "/texts/0"
@@ -15,12 +19,12 @@ furniture:
 # Root element for anything in the document body, type GroupItem
 body:
   name: "_root_"
-  dloc: "#/body"
+  self_ref: "#/body"
   parent: null # Only root elements have no parent.
   children: # only the first-level children appear here, as references (RefItem)
     - $ref: "/texts/1"
-    - $ref: "/figure/0"
-    - $ref: "/texts/2"
+    - $ref: "/pictures/0"
+    - $ref: "/texts/3"
     - $ref: "/tables/0"
 
 # All groups of items nested deeper in body or furniture roots, type List[GroupItem]
@@ -31,7 +35,7 @@ groups: [] # The parent + children relations capture nesting and reading-order.
 texts:
   - orig: "arXiv:2206.01062v1 [cs.CV] 2 Jun 2022"
     text: "arXiv:2206.01062v1 [cs.CV] 2 Jun 2022"
-    dloc: "e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5#/texts/0"
+    self_ref: "#/texts/0"
     hash: 132103230
     label: "page_header"
     parent:
@@ -47,8 +51,8 @@ texts:
         charspan: [ 1,423 ] # 2-tuple, references to "orig"
   - orig: "DocLayNet: A Large Human-Annotated Dataset for\nDocument-Layout Analysis"
     text: "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
-    dloc: "e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5#/texts/1"
-    hash: 2349732 # uint64 hash of dloc
+    self_ref: "#/texts/1"
+    hash: 2349732 # uint64 hash of self_ref
     label: "title"
     parent:
       $ref: "#/body"
@@ -63,11 +67,11 @@ texts:
         charspan: [ 1,423 ] # 2-tuple, references to "orig"
   - orig: "OPERATION (cont.)" # nested inside the figure
     text: "OPERATION (cont.)"
-    dloc: "e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5#/texts/2"
+    self_ref: "#/texts/2"
     hash: 6978483
     label: "section_header"
     parent:
-      $ref: "/figures/0"
+      $ref: "/pictures/0"
     children: [ ]
     prov:
       - page_no: 1
@@ -79,11 +83,11 @@ texts:
         charspan: [ 0,734 ]
   - orig: "Figure 1: Four examples of complex page layouts across dif-\nferent document categories" # nested inside the figure
     text: "Figure 1: Four examples of complex page layouts across different document categories"
-    dloc: "e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5#/texts/3"
+    self_ref: "#/texts/3"
     hash: 6978483
     label: "caption"
     parent:
-      $ref: "/figures/0"
+      $ref: "#/body"
     children: [ ]
     prov:
       - page_no: 1
@@ -92,33 +96,28 @@ texts:
           t: 354.3
           b: 334.4
           r: 376.0
-          coord_origin: "BOTTOMLEFT"
+          coord_origin: BOTTOMLEFT
         charspan: [ 1,423 ] # 2-tuple, references to "orig"
 
 
 tables: # All tables...
-  - dloc: "e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5#/table/0"
+  - self_ref: "#/table/0"
     hash: 98574
     label: "table"
     parent:
       $ref: "#/body"
     children: [ ]
-    caption:
-      $ref: "/texts/3"
-    references:
-      - $ref: "/text/??"
-    footnotes:
-      - $ref: "/text/??"
     image:
-      format: png
+      mimetype: image/png
       dpi: 72
       size:
         width: 231
         height: 351
-      uri: "file:///e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5/tables/0.png"
+      uri: "file:///dummy_doc/tables/0.png"
       #alternatives: base64 encoded striong
     data: # TableData Type
-      grid: [ [ ] ] # list-of-list of TableCell type
+      table_cells: [] # flat list of TableCell type
+      grid: [[]] # list-of-list of TableCell type
       otsl: "<fcel><ecel>..." # OTSL token string
       html: "" # ??
     prov:
@@ -128,34 +127,29 @@ tables: # All tables...
           t: 354.3
           b: 334.4
           r: 376.0
-          coord_origin: "BOTTOMLEFT"
+          coord_origin: BOTTOMLEFT
         charspan: [ 1,423 ] # 2-tuple, references to "orig"
 
-figures: # All figures...
-  - dloc: "e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5#/figures/0"
+pictures: # All pictures...
+  - self_ref: "#/pictures/0"
     hash: 7782482
-    label: "figure"
+    label: "picture"
     parent:
       $ref: "#/body"
-    caption:
-      $ref: "/texts/2"
-    references:
-      - $ref: "/text/??"
-    footnotes:
-      - $ref: "/text/??"
-
-    data: # FigureData Type
+    captions:
+      - $ref: "/texts/3"
+    data: # BaseFigureData Type
       classification: "illustration"
       confidence: 0.78
       description: "...."
       # content structure?
     image:
-      format: png
+      mimetype: image/png
       dpi: 72
       size:
         width: 231
         height: 351
-      uri: "file:///e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5/figures/0.png"
+      uri: "file:///dummy_doc/pictures/0.png"
       #alternatives: base64 encoded striong
     children:
       - $ref: "/texts/2" # This text element appears inside the figure, hence it is a child.
@@ -173,16 +167,17 @@ key_value_items: [ ] # All KV-items
 # We should consider this for pages
 pages: # Optional, for layout documents
   1:
-    hash: "5b0916ed3ead46e69efcddb2c932afd91d0e25ce6828c39e5617e6ee2bd0cf6e"
+    hash: 6203680922337857390
     size:
       width: 768.23
       height: 583.15
     image:
-      format: png
+      mimetype: image/png
       dpi: 144
       size:
         width: 1536
         height: 1166
-      uri: "file:///e6fc0db2ee6e7165e93c8286ec52e0d19dfa239c2bddcfe96e64dae3de6190b5/pages/1.png"
+      uri: "file:///dummy_doc/pages/1.png"
       #alternatives: base64 encoded string
     num_elements: 23
+    page_no: 1

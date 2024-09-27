@@ -1,3 +1,34 @@
+## [v1.6.3](https://github.com/DS4SD/docling-core/releases/tag/v1.6.3) - 2024-09-26
+
+### Fix
+
+* Change order of JSON Schema to search mapper transformations ([#32](https://github.com/DS4SD/docling-core/issues/32)) ([`a4ddd14`](https://github.com/DS4SD/docling-core/commit/a4ddd142eef864c55b62c8815d38dbff14f4caa7))
+
+## [v1.6.2](https://github.com/DS4SD/docling-core/releases/tag/v1.6.2) - 2024-09-24
+
+### Fix
+
+* Remove duplicate captions in markdown ([#31](https://github.com/DS4SD/docling-core/issues/31)) ([`a334b9f`](https://github.com/DS4SD/docling-core/commit/a334b9fc721a2e1efc9f12b585cff17363875d57))
+
+## [v1.6.1](https://github.com/DS4SD/docling-core/releases/tag/v1.6.1) - 2024-09-24
+
+### Fix
+
+* Remove unnecessary package dependency ([#30](https://github.com/DS4SD/docling-core/issues/30)) ([`e706d68`](https://github.com/DS4SD/docling-core/commit/e706d686db159f6480439d214c85b1664f38e28f))
+
+## [v1.6.0](https://github.com/DS4SD/docling-core/releases/tag/v1.6.0) - 2024-09-23
+
+### Feature
+
+* Add figures in markdown export ([#27](https://github.com/DS4SD/docling-core/issues/27)) ([`b843ae6`](https://github.com/DS4SD/docling-core/commit/b843ae6688a20e68e2da59b2f68fd61f8d4beacb))
+
+## [v1.5.0](https://github.com/DS4SD/docling-core/releases/tag/v1.5.0) - 2024-09-20
+
+### Feature
+
+* Add export to doctags for document components ([#25](https://github.com/DS4SD/docling-core/issues/25)) ([`891530f`](https://github.com/DS4SD/docling-core/commit/891530f595dbf656bbc2708fb25a05aa1ec65afa))
+* Add file source resolution utility ([#22](https://github.com/DS4SD/docling-core/issues/22)) ([`752cbc3`](https://github.com/DS4SD/docling-core/commit/752cbc3e89461fa633277cfe3887bc5a6fa5c2b0))
+
 ## [v1.4.1](https://github.com/DS4SD/docling-core/releases/tag/v1.4.1) - 2024-09-18
 
 ### Fix
