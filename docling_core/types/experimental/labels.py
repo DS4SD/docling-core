@@ -29,8 +29,6 @@ class DocItemLabel(str, Enum):
     PARAGRAPH = "paragraph"  # explicitly a paragraph and not arbitrary text
     REFERENCE = "reference"
 
-    # To be completed...
-
 
 class GroupLabel(str, Enum):
     """GroupLabel."""
@@ -39,8 +37,8 @@ class GroupLabel(str, Enum):
     LIST = "list"  # group label for list container (not the list-items)
     CHAPTER = "chapter"
     SECTION = "section"
-
-    # ...
+    SHEET = "sheet"
+    SLIDE = "slide"
 
 
 class TableCellLabel(str, Enum):
@@ -48,5 +46,5 @@ class TableCellLabel(str, Enum):
 
     COLUMN_HEADER = "col_header"
     ROW_HEADER = "row_header"
-    SECTION = "row_section"
+    ROW_SECTION = "row_section"
     BODY = "body"

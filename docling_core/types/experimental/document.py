@@ -1,6 +1,8 @@
 """Models for the Docling Document data type."""
 
 import hashlib
+import json
+import mimetypes
 import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -11,12 +13,14 @@ from pydantic import (
     ConfigDict,
     Field,
     computed_field,
+    field_serializer,
+    field_validator,
     model_validator,
 )
 from tabulate import tabulate
 
 from docling_core.types.doc.tokens import DocumentToken
-from docling_core.types.experimental.base import BoundingBox, Size
+from docling_core.types.experimental import BoundingBox, Size
 from docling_core.types.experimental.labels import DocItemLabel, GroupLabel
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
@@ -105,11 +109,43 @@ class BaseTableData(BaseModel):  # TBD
         return table_data
 
 
-class FileInfo(BaseModel):
-    """FileInfo."""
+class DocumentOrigin(BaseModel):
+    """FileSource."""
 
-    filename: str
-    document_hash: str
+    mimetype: str  # the mimetype of the original file
+    binary_hash: Uint64  # the binary hash of the original file.
+    # TODO: Change to be Uint64 and provide utility method to generate
+
+    filename: str  # The name of the original file, including extension, without path.
+    # Could stem from filesystem, source URI, Content-Disposition header, ...
+
+    uri: Optional[AnyUrl] = (
+        None  # any possible reference to a source file,
+        # from any file handler protocol (e.g. https://, file://, s3://)
+    )
+
+    @field_validator("binary_hash", mode="before")
+    @classmethod
+    def parse_hex_string(cls, value):
+        """parse_hex_string."""
+        if isinstance(value, str):
+            try:
+                # Convert hex string to an integer
+                hash_int = Uint64(value, 16)
+                # Mask to fit within 64 bits (unsigned)
+                return hash_int & 0xFFFFFFFFFFFFFFFF
+            except ValueError:
+                raise ValueError(f"Invalid sha256 hexdigest: {value}")
+        return value  # If already an int, return it as is.
+
+    @field_validator("mimetype")
+    @classmethod
+    def validate_mimetype(cls, v):
+        """validate_mimetype."""
+        # Check if the provided MIME type is valid using mimetypes module
+        if v not in mimetypes.types_map.values():
+            raise ValueError(f"'{v}' is not a valid MIME type")
+        return v
 
 
 class RefItem(BaseModel):
@@ -147,10 +183,19 @@ class RefItem(BaseModel):
 class ImageRef(BaseModel):
     """ImageRef."""
 
-    format: str  # png, etc.
-    dpi: int  # ...
+    mimetype: str
+    dpi: int
     size: Size
     uri: AnyUrl
+
+    @field_validator("mimetype")
+    @classmethod
+    def validate_mimetype(cls, v):
+        """validate_mimetype."""
+        # Check if the provided MIME type is valid using mimetypes module
+        if v not in mimetypes.types_map.values():
+            raise ValueError(f"'{v}' is not a valid MIME type")
+        return v
 
 
 class ProvenanceItem(BaseModel):
@@ -164,27 +209,14 @@ class ProvenanceItem(BaseModel):
 class NodeItem(BaseModel):
     """NodeItem."""
 
-    dloc: str  # format spec ({document_hash}{json-path})
+    self_ref: str  # format spec: json-path
     parent: Optional[RefItem] = None
     children: List[RefItem] = []
+    hash: Uint64 = 0
 
     def get_ref(self):
         """get_ref."""
-        return RefItem(cref=f"#{self.dloc.split('#')[1]}")
-
-    @computed_field  # type: ignore
-    @property
-    def hash(self) -> Uint64:  # TODO align with hasher on deepsearch-glm
-        """hash."""
-        if not len(self.dloc):
-            return 0
-        hash_object = hashlib.sha256(self.dloc.encode("utf-8"))
-
-        # Convert the hash to an integer
-        hash_int = int.from_bytes(hash_object.digest(), "big")
-
-        # Mask it to fit within 64 bits
-        return Uint64(hash_int & 0xFFFFFFFFFFFFFFFF)  # 64-bit unsigned integer mask
+        return RefItem(cref=self.self_ref)
 
 
 class GroupItem(NodeItem):  # Container type, can't be a leaf node
@@ -264,9 +296,10 @@ class TextItem(DocItem):
         """
         body = f"<{self.label.value}>"
 
-        assert DocumentToken.is_known_token(
-            body
-        ), f"failed DocumentToken.is_known_token({body})"
+        # TODO: This must be done through an explicit mapping.
+        # assert DocumentToken.is_known_token(
+        #    body
+        # ), f"failed DocumentToken.is_known_token({body})"
 
         if add_location:
             body += self.get_location_tokens(
@@ -280,7 +313,7 @@ class TextItem(DocItem):
         if add_content and self.text is not None:
             body += self.text.strip()
 
-        body += f"</{self.label}>{new_line}"
+        body += f"</{self.label.value}>{new_line}"
 
         return body
 
@@ -577,9 +610,9 @@ class DocumentTrees(BaseModel):
     """DocumentTrees."""
 
     furniture: GroupItem = GroupItem(
-        name="_root_", dloc="#/furniture"
+        name="_root_", self_ref="#/furniture"
     )  # List[RefItem] = []
-    body: GroupItem = GroupItem(name="_root_", dloc="#/body")  # List[RefItem] = []
+    body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
 
 
 class PageItem(BaseModel):
@@ -587,18 +620,31 @@ class PageItem(BaseModel):
 
     # A page carries separate root items for furniture and body,
     # only referencing items on the page
-    hash: str  # page hash
+    hash: Uint64 = (
+        0  # dummy default, correct value ensured through
+        # field_serializer on DoclingDocument
+    )
     size: Size
     image: Optional[ImageRef] = None
     page_no: int
 
 
+class DescriptionItem(BaseModel):
+    """DescriptionItem."""
+
+
 class DoclingDocument(DocumentTrees):
     """DoclingDocument."""
 
-    version: str = "0.0.1"  # = SemanticVersion(version="0.0.1")
-    description: Any
-    file_info: FileInfo
+    version: str = "0.1.0"  # use SemanticVersion type instead
+    description: DescriptionItem
+    name: str  # The working name of this document, without extensions
+    # (could be taken from originating doc, or just "Untitled 1")
+    origin: Optional[DocumentOrigin] = (
+        None  # DoclingDocuments may specify an origin (converted to DoclingDocument).
+        # This is optional, e.g. a DoclingDocument could also be entirely
+        # generated from synthetic data.
+    )
 
     groups: List[GroupItem] = []
     texts: List[TextItem] = []
@@ -607,6 +653,41 @@ class DoclingDocument(DocumentTrees):
     key_value_items: List[KeyValueItem] = []
 
     pages: Dict[int, PageItem] = {}  # empty as default
+
+    def _compute_hash(self, obj):
+        hash_object = hashlib.sha256(obj.encode("utf-8"))
+        # Convert the hash to an integer
+        hash_int = int.from_bytes(hash_object.digest(), "big")
+        # Mask it to fit within 64 bits
+        return Uint64(hash_int & 0xFFFFFFFFFFFFFFFF)  # 64-bit unsigned integer mask
+
+    @computed_field
+    def hash(self) -> Uint64:
+        """hash."""
+        # Get a dictionary representation of the model, excluding the computed field.
+        # explicitly include fields to be sure the hash is stable.
+        # Must not include hash itself or the pages.
+        model_dict = self.model_dump(
+            mode="json",
+            by_alias=True,
+            include={
+                "version",
+                "name",
+                "description",
+                "origin",
+                "groups",
+                "texts",
+                "figures",
+                "tables",
+                "key_value_items",
+                # "furniture",
+                # "body",
+            },
+        )
+
+        json_string = json.dumps(model_dict, sort_keys=True)
+
+        return self._compute_hash(json_string)
 
     def add_group(
         self,
@@ -626,12 +707,11 @@ class DoclingDocument(DocumentTrees):
 
         group_index = len(self.groups)
         cref = f"#/groups/{group_index}"
-        dloc = f"{self.file_info.document_hash}{cref}"
 
-        group = GroupItem(dloc=dloc, parent=parent.get_ref())
-        if name:
+        group = GroupItem(self_ref=cref, parent=parent.get_ref())
+        if name is not None:
             group.name = name
-        if label:
+        if label is not None:
             group.label = label
 
         self.groups.append(group)
@@ -666,12 +746,11 @@ class DoclingDocument(DocumentTrees):
 
         text_index = len(self.texts)
         cref = f"#/texts/{text_index}"
-        dloc = f"{self.file_info.document_hash}{cref}"
         text_item = item_cls(
             label=label,
             text=text,
             orig=orig,
-            dloc=dloc,
+            self_ref=cref,
             parent=parent.get_ref(),
         )
         if prov:
@@ -703,10 +782,9 @@ class DoclingDocument(DocumentTrees):
 
         table_index = len(self.tables)
         cref = f"#/tables/{table_index}"
-        dloc = f"{self.file_info.document_hash}{cref}"
 
         tbl_item = TableItem(
-            label=DocItemLabel.TABLE, data=data, dloc=dloc, parent=parent.get_ref()
+            label=DocItemLabel.TABLE, data=data, self_ref=cref, parent=parent.get_ref()
         )
         if prov:
             tbl_item.prov.append(prov)
@@ -739,10 +817,12 @@ class DoclingDocument(DocumentTrees):
 
         figure_index = len(self.figures)
         cref = f"#/figures/{figure_index}"
-        dloc = f"{self.file_info.document_hash}{cref}"
 
         fig_item = FigureItem(
-            label=DocItemLabel.PICTURE, data=data, dloc=dloc, parent=parent.get_ref()
+            label=DocItemLabel.PICTURE,
+            data=data,
+            self_ref=cref,
+            parent=parent.get_ref(),
         )
         if prov:
             fig_item.prov.append(prov)
@@ -789,7 +869,7 @@ class DoclingDocument(DocumentTrees):
         with_groups: bool = False,
         traverse_figures: bool = True,
         page_no: Optional[int] = None,
-        _level=0,  # fixed parameter, carries through the node nesting level
+        _level: int = 0,  # fixed parameter, carries through the node nesting level
     ) -> typing.Iterable[Tuple[NodeItem, int]]:  # tuple of node and level
         """iterate_elements.
 
@@ -839,14 +919,13 @@ class DoclingDocument(DocumentTrees):
         delim: str = "\n\n",
         from_element: int = 0,
         to_element: Optional[int] = None,
-        labels: list[str] = [
-            "title",
-            "subtitle-level-1",
-            "paragraph",
-            "caption",
-            "table",
-            "Text",
-            "text",
+        labels: list[DocItemLabel] = [
+            DocItemLabel.TITLE,
+            DocItemLabel.SECTION_HEADER,
+            DocItemLabel.PARAGRAPH,
+            DocItemLabel.CAPTION,
+            DocItemLabel.TABLE,
+            DocItemLabel.TEXT,
         ],
         strict_text: bool = False,
     ) -> str:
@@ -867,7 +946,7 @@ class DoclingDocument(DocumentTrees):
         :param delim: str:  (Default value = "\n\n")
         :param from_element: int:  (Default value = 0)
         :param to_element: Optional[int]:  (Default value = None)
-        :param labels: list[str]:  (Default value = ["title")
+        :param labels: list[DocItemLabel]
         :param "subtitle-level-1":
         :param "paragraph":
         :param "caption":
@@ -966,15 +1045,13 @@ class DoclingDocument(DocumentTrees):
         delim: str = "\n\n",
         from_element: int = 0,
         to_element: Optional[int] = None,
-        labels: list[str] = [
-            "title",
-            "subtitle-level-1",
-            "Section-header" "paragraph",
-            "caption",
-            "table",
-            "figure",
-            "text",
-            "Text",
+        labels: list[DocItemLabel] = [
+            DocItemLabel.TITLE,
+            DocItemLabel.SECTION_HEADER,
+            DocItemLabel.PARAGRAPH,
+            DocItemLabel.CAPTION,
+            DocItemLabel.TABLE,
+            DocItemLabel.TEXT,
         ],
         xsize: int = 100,
         ysize: int = 100,
@@ -994,7 +1071,7 @@ class DoclingDocument(DocumentTrees):
         :param delim: str:  (Default value = "\n\n")
         :param from_element: int:  (Default value = 0)
         :param to_element: Optional[int]:  (Default value = None)
-        :param labels: list[str]:  (Default value = ["title")
+        :param labels: list[DocItemLabel]
         :param "subtitle-level-1":
         :param "Section-header" "paragraph":
         :param "caption":
@@ -1092,7 +1169,7 @@ class DoclingDocument(DocumentTrees):
 
         return doctags
 
-    def add_page(self, page_no: int, size: Size, hash: str) -> PageItem:
+    def add_page(self, page_no: int, size: Size) -> PageItem:
         """add_page.
 
         :param page_no: int:
@@ -1100,7 +1177,41 @@ class DoclingDocument(DocumentTrees):
         :param hash: str:
 
         """
-        pitem = PageItem(page_no=page_no, size=size, hash=hash)
+        pitem = PageItem(page_no=page_no, size=size, hash=page_no)
 
         self.pages[page_no] = pitem
         return pitem
+
+    @field_serializer("body", "furniture", mode="wrap")
+    def serialize_tree(self, value: NodeItem, handler):
+        """serialize_tree."""
+        for node, level in self.iterate_elements(root=value, with_groups=True):
+            node.hash = self._derive_hash(node.self_ref)
+
+        return handler(value)
+
+    @field_serializer("pages", mode="wrap")
+    def serialize_pages(self, pages: Dict[int, PageItem], handler):
+        """serialize_pages."""
+        for page in pages.values():
+            page.hash = self._derive_hash(str(page.page_no))
+
+        return handler(pages)
+
+    def update_hashes(self):
+        """update_hashes."""
+        # Updates the hashes on all elements, based on the computed document hash
+        for node, level in self.iterate_elements(root=self.body, with_groups=True):
+            node.hash = self._derive_hash(node.self_ref)
+
+        for node, level in self.iterate_elements(root=self.furniture, with_groups=True):
+            node.hash = self._derive_hash(node.self_ref)
+
+        for page in self.pages.values():
+            page.hash = self._derive_hash(str(page.page_no))
+
+    def _derive_hash(self, data: str) -> Uint64:
+        doc_hash = self.hash
+        combined = f"{doc_hash}{data}"
+
+        return self._compute_hash(combined)

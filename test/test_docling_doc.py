@@ -3,8 +3,8 @@ import yaml
 from docling_core.types.experimental.document import (
     BaseFigureData,
     BaseTableData,
+    DescriptionItem,
     DoclingDocument,
-    FileInfo,
     TableCell,
 )
 from docling_core.types.experimental.labels import DocItemLabel, GroupLabel
@@ -80,8 +80,8 @@ def _test_export_methods(doc):
     ### Iterate all elements
     doc.print_element_tree()
     ## Export stuff
-    print(doc.export_to_markdown())
-    print(doc.export_to_document_tokens())
+    doc.export_to_markdown()
+    doc.export_to_document_tokens()
     for table in doc.tables:
         table.export_to_html()
         table.export_to_dataframe()
@@ -91,9 +91,7 @@ def _test_export_methods(doc):
 
 
 def _construct_doc() -> DoclingDocument:
-    doc = DoclingDocument(
-        description={}, file_info=FileInfo(filename="dummy", document_hash="xyz")
-    )
+    doc = DoclingDocument(description=DescriptionItem(), name="Untitled 1")
     # group, heading, paragraph, table, figure, title, list, provenance
     doc.add_paragraph(label=DocItemLabel.TEXT, text="Author 1\nAffiliation 1")
     doc.add_paragraph(label=DocItemLabel.TEXT, text="Author 2\nAffiliation 2")
