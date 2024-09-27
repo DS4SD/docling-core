@@ -102,10 +102,6 @@ remove-unused-variables = true
 expand-star-imports = true
 recursive = true
 
-[tool.flake8]
-per-file-ignores = "__init__.py:F401"
-classmethod-decorators = "classmethod,validator"
-
 [tool.mypy]
 pretty = true
 # strict = true
