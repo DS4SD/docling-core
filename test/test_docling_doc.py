@@ -1,14 +1,97 @@
 import pytest
 import yaml
 
+from collections import deque
+
 from docling_core.types.experimental.document import (
     BasePictureData,
     BaseTableData,
     DescriptionItem,
     DoclingDocument,
     TableCell,
+    NodeItem,
+    DocItem,
+    TextItem,
+    FloatingItem,
+    KeyValueItem,
+    SectionItem,
+    PictureItem,
+    TableItem,
+    BasePictureData,
+    BaseTableData
 )
 from docling_core.types.experimental.labels import DocItemLabel, GroupLabel
+
+def test_docitems():
+
+    # Iterative function to find all subclasses
+    def find_all_subclasses_iterative(base_class):
+        subclasses = deque([base_class])  # Use a deque for efficient popping from the front
+        all_subclasses = []
+
+        while subclasses:
+            current_class = subclasses.popleft()  # Get the next class to process
+            for subclass in current_class.__subclasses__():
+                all_subclasses.append(subclass)
+                subclasses.append(subclass)  # Add the subclass for further exploration
+
+        return all_subclasses
+
+    def serialise(obj):
+        return yaml.safe_dump(obj.model_dump(mode="json", by_alias=True))
+
+    def write(name:str, serialisation:str):
+        with open(f"./test/data/docling_document/unit/{name}.yaml", "w") as fw:
+            fw.write(serialisation)
+
+    def read(name:str):
+        with open(f"./test/data/docling_document/unit/{name}.yaml", "r") as fr:
+            gold = fr.read()
+        return gold
+
+    def generate(dc, obj):
+        write(dc.__name__, pred)
+    
+    def verify(dc, obj):
+        pred = serialise(obj)            
+        #print(f"\t{dc.__name__}:\n {pred}")
+        gold = read(dc.__name__)
+
+        assert pred==gold, f"pred!=gold for {dc.__name__}"        
+    
+    # Iterate over the derived classes of the BaseClass
+    derived_classes = find_all_subclasses_iterative(DocItem)
+    for dc in derived_classes:
+
+        if dc is TextItem:
+            obj = dc(text="whatever", orig="whatever", dloc="sdvsd", label=DocItemLabel.TEXT, self_ref="#")
+            verify(dc, obj)
+            
+        elif dc is FloatingItem:
+            obj = dc(text="whatever", orig="whatever", dloc="sdvsd", label=DocItemLabel.TEXT, self_ref="#")
+            verify(dc, obj)
+            
+        elif dc is KeyValueItem:
+            obj = dc(text="whatever", orig="whatever", dloc="sdvsd", label=DocItemLabel.TEXT, self_ref="#")
+            verify(dc, obj)
+            
+        elif dc is SectionItem:
+            obj = dc(text="whatever", orig="whatever", dloc="sdvsd", label=DocItemLabel.TEXT, self_ref="#")
+            verify(dc, obj)
+            
+        elif dc is PictureItem:
+            obj = dc(text="whatever", orig="whatever", dloc="sdvsd", label=DocItemLabel.TEXT, self_ref="#",
+                     data=BasePictureData())
+            verify(dc, obj)
+            
+        elif dc is TableItem:
+            obj = dc(text="whatever", orig="whatever", dloc="sdvsd", label=DocItemLabel.TEXT, self_ref="#",
+                     data=BaseTableData(num_rows=3, num_cols=5, cells=[]))
+            verify(dc, obj)
+            
+        else:
+            print(f"{dc.__name__} is not known")            
+            assert False, "new derived class detected {dc.__name__}: {e}"
 
 
 def test_reference_doc():
@@ -232,3 +315,4 @@ def _construct_doc() -> DoclingDocument:
     fig_item = doc.add_picture(data=BasePictureData(), caption=fig_caption)
 
     return doc
+    
