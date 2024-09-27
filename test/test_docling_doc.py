@@ -1,3 +1,4 @@
+import pytest
 import yaml
 
 from docling_core.types.experimental.document import (
@@ -11,7 +12,7 @@ from docling_core.types.experimental.labels import DocItemLabel, GroupLabel
 
 
 def test_reference_doc():
-    # Read YAML file
+    # Read YAML file of manual reference doc
     with open("test/data/experimental/dummy_doc.yaml", "r") as fp:
         dict_from_yaml = yaml.safe_load(fp)
 
@@ -35,18 +36,16 @@ def test_reference_doc():
     assert obj == obj2
     assert obj is obj2
 
-    doc_dumped = doc.model_dump(mode="json", by_alias=True)
-    out_yaml = yaml.safe_dump(doc_dumped)
-
-    doc_reload = DoclingDocument.model_validate(yaml.safe_load(out_yaml))
-
-    assert doc_reload == doc  # must be equal
-    assert doc_reload is not doc  # can't be identical
-
-    ### Iterate all elements
+    # Iterate all elements
 
     for item, level in doc.iterate_elements():
         print(f"Item: {item} at level {level}")
+
+    # Serialize and reload
+    _test_serialize_and_reload(doc)
+
+    # Call Export methods
+    _test_export_methods(doc)
 
 
 def test_parse_doc():
@@ -65,15 +64,31 @@ def test_parse_doc():
 def test_construct_doc():
 
     doc = _construct_doc()
+
+    assert doc.validate_tree(doc.body)
+    assert doc.validate_tree(doc.furniture)
+
     _test_export_methods(doc)
     _test_serialize_and_reload(doc)
+
+
+def test_construct_bad_doc():
+    doc = _construct_bad_doc()
+    assert doc.validate_tree(doc.body) == False
+
+    _test_export_methods(doc)
+    with pytest.raises(ValueError):
+        _test_serialize_and_reload(doc)
 
 
 def _test_serialize_and_reload(doc):
     ### Serialize and deserialize stuff
     yaml_dump = yaml.safe_dump(doc.model_dump(mode="json", by_alias=True))
     # print(f"\n\n{yaml_dump}")
-    DoclingDocument.model_validate(yaml.safe_load(yaml_dump))
+    doc_reload = DoclingDocument.model_validate(yaml.safe_load(yaml_dump))
+
+    assert doc_reload == doc  # must be equal
+    assert doc_reload is not doc  # can't be identical
 
 
 def _test_export_methods(doc):
@@ -90,11 +105,28 @@ def _test_export_methods(doc):
         fig.export_to_document_tokens(doc)
 
 
+def _construct_bad_doc():
+    doc = DoclingDocument(description=DescriptionItem(), name="Bad doc")
+
+    title = doc.add_text(label=DocItemLabel.TITLE, text="This is the title")
+    group = doc.add_group(parent=title, name="chapter 1")
+    text = doc.add_text(
+        parent=group,
+        label=DocItemLabel.SECTION_HEADER,
+        text="This is the first section",
+    )
+
+    # Bend the parent of an element to be another.
+    text.parent = title.get_ref()
+
+    return doc
+
+
 def _construct_doc() -> DoclingDocument:
     doc = DoclingDocument(description=DescriptionItem(), name="Untitled 1")
     # group, heading, paragraph, table, figure, title, list, provenance
-    doc.add_paragraph(label=DocItemLabel.TEXT, text="Author 1\nAffiliation 1")
-    doc.add_paragraph(label=DocItemLabel.TEXT, text="Author 2\nAffiliation 2")
+    doc.add_text(label=DocItemLabel.TEXT, text="Author 1\nAffiliation 1")
+    doc.add_text(label=DocItemLabel.TEXT, text="Author 2\nAffiliation 2")
 
     chapter1 = doc.add_group(
         label=GroupLabel.CHAPTER, name="Introduction"
@@ -105,21 +137,21 @@ def _construct_doc() -> DoclingDocument:
         text="1. Introduction",
         level=1,
     )
-    doc.add_paragraph(
+    doc.add_text(
         parent=chapter1,
         label=DocItemLabel.TEXT,
         text="This paper introduces the biggest invention ever made. ...",
     )
     mylist = doc.add_group(parent=chapter1, label=GroupLabel.LIST)
-    doc.add_paragraph(
+    doc.add_text(
         parent=mylist,
         label=DocItemLabel.LIST_ITEM,
         text="Cooks your favourite meal before you know you want it.",
     )
-    doc.add_paragraph(
+    doc.add_text(
         parent=mylist, label=DocItemLabel.LIST_ITEM, text="Cleans up all your dishes."
     )
-    doc.add_paragraph(
+    doc.add_text(
         parent=mylist,
         label=DocItemLabel.LIST_ITEM,
         text="Drains your bank account without consent.",
@@ -194,7 +226,7 @@ def _construct_doc() -> DoclingDocument:
     table_el = BaseTableData(num_rows=3, num_cols=3, table_cells=table_cells)
     doc.add_table(data=table_el)
 
-    fig_caption = doc.add_paragraph(
+    fig_caption = doc.add_text(
         label=DocItemLabel.CAPTION, text="This is the caption of figure 1."
     )
     fig_item = doc.add_picture(data=BasePictureData(), caption=fig_caption)

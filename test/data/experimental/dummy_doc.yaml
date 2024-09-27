@@ -80,6 +80,7 @@ texts:
           t: 354.3
           b: 334.4
           r: 376.0
+          coord_origin: BOTTOMLEFT
         charspan: [ 0,734 ]
   - orig: "Figure 1: Four examples of complex page layouts across dif-\nferent document categories" # nested inside the figure
     text: "Figure 1: Four examples of complex page layouts across different document categories"

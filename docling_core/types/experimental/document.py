@@ -316,9 +316,10 @@ class TextItem(DocItem):
 
 
 class SectionItem(TextItem):
-    """Section."""
+    """SectionItem."""
 
-    level: LevelNumber = 1
+    label: DocItemLabel = DocItemLabel.SECTION_HEADER
+    level: LevelNumber
 
 
 class FloatingItem(DocItem):
@@ -616,7 +617,7 @@ class DescriptionItem(BaseModel):
 class DoclingDocument(BaseModel):
     """DoclingDocument."""
 
-    version: str = "0.1.0"  # use SemanticVersion type instead
+    version: str = "0.1.0"  # TODO use SemanticVersion type instead
     description: DescriptionItem
     name: str  # The working name of this document, without extensions
     # (could be taken from originating doc, or just "Untitled 1")
@@ -632,7 +633,7 @@ class DoclingDocument(BaseModel):
     body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
 
     groups: List[GroupItem] = []
-    texts: List[TextItem] = []
+    texts: List[Union[SectionItem, TextItem]] = []
     pictures: List[PictureItem] = []
     tables: List[TableItem] = []
     key_value_items: List[KeyValueItem] = []
@@ -676,14 +677,13 @@ class DoclingDocument(BaseModel):
 
         return group
 
-    def add_paragraph(
+    def add_text(
         self,
         label: str,
         text: str,
         orig: Optional[str] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
-        item_cls=TextItem,
     ):
         """add_paragraph.
 
@@ -692,7 +692,6 @@ class DoclingDocument(BaseModel):
         :param orig: Optional[str]:  (Default value = None)
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
         :param parent: Optional[GroupItem]:  (Default value = None)
-        :param item_cls:  (Default value = TextItem)
 
         """
         if not parent:
@@ -703,7 +702,7 @@ class DoclingDocument(BaseModel):
 
         text_index = len(self.texts)
         cref = f"#/texts/{text_index}"
-        text_item = item_cls(
+        text_item = TextItem(
             label=label,
             text=text,
             orig=orig,
@@ -809,20 +808,43 @@ class DoclingDocument(BaseModel):
         :param parent: Optional[GroupItem]:  (Default value = None)
 
         """
-        item: SectionItem = self.add_paragraph(
-            label=DocItemLabel.SECTION_HEADER,
+        if not parent:
+            parent = self.body
+
+        if not orig:
+            orig = text
+
+        text_index = len(self.texts)
+        cref = f"#/texts/{text_index}"
+        section_header_item = SectionItem(
+            level=level,
             text=text,
             orig=orig,
-            prov=prov,
-            parent=parent,
-            item_cls=SectionItem,
+            self_ref=cref,
+            parent=parent.get_ref(),
         )
-        item.level = level
-        return item
+        if prov:
+            section_header_item.prov.append(prov)
+
+        self.texts.append(section_header_item)
+        parent.children.append(RefItem(cref=cref))
+
+        return section_header_item
 
     def num_pages(self):
         """num_pages."""
         return len(self.pages.values())
+
+    def validate_tree(self, root) -> bool:
+        """validate_tree."""
+        res = []
+        for child_ref in root.children:
+            child = child_ref.resolve(self)
+            if child.parent.resolve(self) != root:
+                return False
+            res.append(self.validate_tree(child))
+
+        return all(res) or len(res) == 0
 
     def iterate_elements(
         self,
@@ -1133,3 +1155,12 @@ class DoclingDocument(BaseModel):
 
         self.pages[page_no] = pitem
         return pitem
+
+    @model_validator(mode="after")  # type: ignore
+    @classmethod
+    def validate_document(cls, d: "DoclingDocument"):
+        """validate_document."""
+        if not d.validate_tree(d.body) or not d.validate_tree(d.furniture):
+            raise ValueError("Document hierachy is inconsistent.")
+
+        return d
