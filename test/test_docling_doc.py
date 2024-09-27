@@ -1,6 +1,7 @@
 import yaml
 
-from docling_core.types.experimental.document import DoclingDocument, FileInfo
+from docling_core.types.experimental.labels import DocItemLabel
+from docling_core.types.experimental.document import DoclingDocument, DocItem, TextItem, FileInfo
 
 
 def test_load_serialize_doc():
@@ -76,3 +77,25 @@ def test_construct_doc():
     print(f"\n\n{yaml_dump}")
 
     DoclingDocument.model_validate(yaml.safe_load(yaml_dump))
+
+def test_docitems():
+
+    # Iterate over the derived classes of the BaseClass
+    derived_classes = DocItem.__subclasses__()
+    for dc in derived_classes:
+
+        if issubclass(dc, TextItem):
+            _ = dc(text="whatever", orig="whatever", dloc="sdvsd", label=DocItemLabel.TEXT)
+            yaml_dump = yaml.safe_dump(_.model_dump(mode="json", by_alias=True))
+            print(f"\n\n{yaml_dump}")
+        else:            
+            try:
+                _ = dc()            
+                yaml_dump = yaml.safe_dump(_.model_dump(mode="json", by_alias=True))
+                
+                print(f"\n\n{yaml_dump}")        
+            except TypeError as e:
+                print(f"Could not instantiate {dc.__name__}: {e}")
+            except Exception as e:
+                print(f"Could not instantiate {dc.__name__}: {e}")            
+         
