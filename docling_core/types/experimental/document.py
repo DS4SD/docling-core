@@ -1,7 +1,6 @@
 """Models for the Docling Document data type."""
 
 import hashlib
-import json
 import mimetypes
 import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -13,7 +12,6 @@ from pydantic import (
     ConfigDict,
     Field,
     computed_field,
-    field_serializer,
     field_validator,
     model_validator,
 )
@@ -27,8 +25,8 @@ Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
 
 
-class BaseFigureData(BaseModel):  # TBD
-    """BaseFigureData."""
+class BasePictureData(BaseModel):  # TBD
+    """BasePictureData."""
 
 
 class TableCell(BaseModel):
@@ -212,7 +210,6 @@ class NodeItem(BaseModel):
     self_ref: str  # format spec: json-path
     parent: Optional[RefItem] = None
     children: List[RefItem] = []
-    hash: Uint64 = 0
 
     def get_ref(self):
         """get_ref."""
@@ -222,7 +219,7 @@ class NodeItem(BaseModel):
 class GroupItem(NodeItem):  # Container type, can't be a leaf node
     """GroupItem."""
 
-    name: Optional[str] = None
+    name: str = "group"
     label: GroupLabel = GroupLabel.UNSPECIFIED
 
 
@@ -318,7 +315,7 @@ class TextItem(DocItem):
         return body
 
 
-class Section(TextItem):
+class SectionItem(TextItem):
     """Section."""
 
     level: LevelNumber = 1
@@ -333,17 +330,15 @@ class FloatingItem(DocItem):
     image: Optional[ImageRef] = None
 
 
-class FigureItem(FloatingItem):
-    """FigureItem."""
+class PictureItem(FloatingItem):
+    """PictureItem."""
 
-    data: BaseFigureData
+    data: BasePictureData
 
     def export_to_document_tokens(
         self,
         doc: "DoclingDocument",
         new_line: str = "\n",
-        page_w: float = 0.0,
-        page_h: float = 0.0,
         xsize: int = 100,
         ysize: int = 100,
         add_location: bool = True,
@@ -351,12 +346,10 @@ class FigureItem(FloatingItem):
         add_content: bool = True,  # not used at the moment
         add_page_index: bool = True,
     ):
-        r"""Export figure to document tokens format.
+        r"""Export picture to document tokens format.
 
         :param doc: "DoclingDocument":
         :param new_line: str:  (Default value = "\n")
-        :param page_w: float:  (Default value = 0.0)
-        :param page_h: float:  (Default value = 0.0)
         :param xsize: int:  (Default value = 100)
         :param ysize: int:  (Default value = 100)
         :param add_location: bool:  (Default value = True)
@@ -603,16 +596,7 @@ class KeyValueItem(DocItem):
     """KeyValueItem."""
 
 
-ContentItem = Union[TextItem, FigureItem, TableItem, KeyValueItem]
-
-
-class DocumentTrees(BaseModel):
-    """DocumentTrees."""
-
-    furniture: GroupItem = GroupItem(
-        name="_root_", self_ref="#/furniture"
-    )  # List[RefItem] = []
-    body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
+ContentItem = Union[TextItem, PictureItem, TableItem, KeyValueItem]
 
 
 class PageItem(BaseModel):
@@ -620,10 +604,6 @@ class PageItem(BaseModel):
 
     # A page carries separate root items for furniture and body,
     # only referencing items on the page
-    hash: Uint64 = (
-        0  # dummy default, correct value ensured through
-        # field_serializer on DoclingDocument
-    )
     size: Size
     image: Optional[ImageRef] = None
     page_no: int
@@ -633,7 +613,7 @@ class DescriptionItem(BaseModel):
     """DescriptionItem."""
 
 
-class DoclingDocument(DocumentTrees):
+class DoclingDocument(BaseModel):
     """DoclingDocument."""
 
     version: str = "0.1.0"  # use SemanticVersion type instead
@@ -646,9 +626,14 @@ class DoclingDocument(DocumentTrees):
         # generated from synthetic data.
     )
 
+    furniture: GroupItem = GroupItem(
+        name="_root_", self_ref="#/furniture"
+    )  # List[RefItem] = []
+    body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
+
     groups: List[GroupItem] = []
     texts: List[TextItem] = []
-    figures: List[FigureItem] = []
+    pictures: List[PictureItem] = []
     tables: List[TableItem] = []
     key_value_items: List[KeyValueItem] = []
 
@@ -660,34 +645,6 @@ class DoclingDocument(DocumentTrees):
         hash_int = int.from_bytes(hash_object.digest(), "big")
         # Mask it to fit within 64 bits
         return Uint64(hash_int & 0xFFFFFFFFFFFFFFFF)  # 64-bit unsigned integer mask
-
-    @computed_field
-    def hash(self) -> Uint64:
-        """hash."""
-        # Get a dictionary representation of the model, excluding the computed field.
-        # explicitly include fields to be sure the hash is stable.
-        # Must not include hash itself or the pages.
-        model_dict = self.model_dump(
-            mode="json",
-            by_alias=True,
-            include={
-                "version",
-                "name",
-                "description",
-                "origin",
-                "groups",
-                "texts",
-                "figures",
-                "tables",
-                "key_value_items",
-                # "furniture",
-                # "body",
-            },
-        )
-
-        json_string = json.dumps(model_dict, sort_keys=True)
-
-        return self._compute_hash(json_string)
 
     def add_group(
         self,
@@ -796,16 +753,16 @@ class DoclingDocument(DocumentTrees):
 
         return tbl_item
 
-    def add_figure(
+    def add_picture(
         self,
-        data: BaseFigureData,
+        data: BasePictureData,
         caption: Optional[Union[TextItem, RefItem]] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
     ):
-        """add_figure.
+        """add_picture.
 
-        :param data: BaseFigureData:
+        :param data: BasePictureData:
         :param caption: Optional[Union[TextItem:
         :param RefItem]]:  (Default value = None)
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
@@ -815,10 +772,10 @@ class DoclingDocument(DocumentTrees):
         if not parent:
             parent = self.body
 
-        figure_index = len(self.figures)
-        cref = f"#/figures/{figure_index}"
+        picture_index = len(self.pictures)
+        cref = f"#/pictures/{picture_index}"
 
-        fig_item = FigureItem(
+        fig_item = PictureItem(
             label=DocItemLabel.PICTURE,
             data=data,
             self_ref=cref,
@@ -829,14 +786,13 @@ class DoclingDocument(DocumentTrees):
         if caption:
             fig_item.captions.append(caption.get_ref())
 
-        self.figures.append(fig_item)
+        self.pictures.append(fig_item)
         parent.children.append(RefItem(cref=cref))
 
         return fig_item
 
     def add_heading(
         self,
-        label: DocItemLabel,
         text: str,
         orig: Optional[str] = None,
         level: LevelNumber = 1,
@@ -853,8 +809,13 @@ class DoclingDocument(DocumentTrees):
         :param parent: Optional[GroupItem]:  (Default value = None)
 
         """
-        item: Section = self.add_paragraph(
-            label, text, orig, prov, parent, item_cls=Section
+        item: SectionItem = self.add_paragraph(
+            label=DocItemLabel.SECTION_HEADER,
+            text=text,
+            orig=orig,
+            prov=prov,
+            parent=parent,
+            item_cls=SectionItem,
         )
         item.level = level
         return item
@@ -867,7 +828,7 @@ class DoclingDocument(DocumentTrees):
         self,
         root: Optional[NodeItem] = None,
         with_groups: bool = False,
-        traverse_figures: bool = True,
+        traverse_pictures: bool = True,
         page_no: Optional[int] = None,
         _level: int = 0,  # fixed parameter, carries through the node nesting level
     ) -> typing.Iterable[Tuple[NodeItem, int]]:  # tuple of node and level
@@ -875,7 +836,7 @@ class DoclingDocument(DocumentTrees):
 
         :param root: Optional[NodeItem]:  (Default value = None)
         :param with_groups: bool:  (Default value = False)
-        :param traverse_figures: bool:  (Default value = True)
+        :param traverse_pictures: bool:  (Default value = True)
         :param page_no: Optional[int]:  (Default value = None)
         :param _level:  (Default value = 0)
         :param # fixed parameter:
@@ -901,7 +862,7 @@ class DoclingDocument(DocumentTrees):
 
             if isinstance(child, NodeItem):
                 # If the child is a NodeItem, recursively traverse it
-                if not isinstance(child, FigureItem) or traverse_figures:
+                if not isinstance(child, PictureItem) or traverse_pictures:
                     yield from self.iterate_elements(
                         child, _level=_level + 1, with_groups=with_groups
                     )
@@ -1072,14 +1033,6 @@ class DoclingDocument(DocumentTrees):
         :param from_element: int:  (Default value = 0)
         :param to_element: Optional[int]:  (Default value = None)
         :param labels: list[DocItemLabel]
-        :param "subtitle-level-1":
-        :param "Section-header" "paragraph":
-        :param "caption":
-        :param "table":
-        :param "figure":
-        :param "text":
-        :param "Text":
-        :param ]:
         :param xsize: int:  (Default value = 100)
         :param ysize: int:  (Default value = 100)
         :param add_location: bool:  (Default value = True)
@@ -1152,7 +1105,7 @@ class DoclingDocument(DocumentTrees):
                     add_page_index=add_page_index,
                 )
 
-            elif isinstance(item, FigureItem) and (item_type in labels):
+            elif isinstance(item, PictureItem) and (item_type in labels):
 
                 doctags += item.export_to_document_tokens(
                     doc=self,
@@ -1174,44 +1127,9 @@ class DoclingDocument(DocumentTrees):
 
         :param page_no: int:
         :param size: Size:
-        :param hash: str:
 
         """
-        pitem = PageItem(page_no=page_no, size=size, hash=page_no)
+        pitem = PageItem(page_no=page_no, size=size)
 
         self.pages[page_no] = pitem
         return pitem
-
-    @field_serializer("body", "furniture", mode="wrap")
-    def serialize_tree(self, value: NodeItem, handler):
-        """serialize_tree."""
-        for node, level in self.iterate_elements(root=value, with_groups=True):
-            node.hash = self._derive_hash(node.self_ref)
-
-        return handler(value)
-
-    @field_serializer("pages", mode="wrap")
-    def serialize_pages(self, pages: Dict[int, PageItem], handler):
-        """serialize_pages."""
-        for page in pages.values():
-            page.hash = self._derive_hash(str(page.page_no))
-
-        return handler(pages)
-
-    def update_hashes(self):
-        """update_hashes."""
-        # Updates the hashes on all elements, based on the computed document hash
-        for node, level in self.iterate_elements(root=self.body, with_groups=True):
-            node.hash = self._derive_hash(node.self_ref)
-
-        for node, level in self.iterate_elements(root=self.furniture, with_groups=True):
-            node.hash = self._derive_hash(node.self_ref)
-
-        for page in self.pages.values():
-            page.hash = self._derive_hash(str(page.page_no))
-
-    def _derive_hash(self, data: str) -> Uint64:
-        doc_hash = self.hash
-        combined = f"{doc_hash}{data}"
-
-        return self._compute_hash(combined)

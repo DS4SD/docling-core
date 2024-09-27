@@ -323,7 +323,11 @@
           "type": "string"
         },
         "bounding_box": {
-          "$ref": "#/$defs/BoundingBoxContainer",
+          "allOf": [
+            {
+              "$ref": "#/$defs/BoundingBoxContainer"
+            }
+          ],
           "x-es-suppress": true
         },
         "prov": {

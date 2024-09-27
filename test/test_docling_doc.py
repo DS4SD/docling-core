@@ -1,7 +1,7 @@
 import yaml
 
 from docling_core.types.experimental.document import (
-    BaseFigureData,
+    BasePictureData,
     BaseTableData,
     DescriptionItem,
     DoclingDocument,
@@ -86,7 +86,7 @@ def _test_export_methods(doc):
         table.export_to_html()
         table.export_to_dataframe()
         table.export_to_document_tokens(doc)
-    for fig in doc.figures:
+    for fig in doc.pictures:
         fig.export_to_document_tokens(doc)
 
 
@@ -95,12 +95,13 @@ def _construct_doc() -> DoclingDocument:
     # group, heading, paragraph, table, figure, title, list, provenance
     doc.add_paragraph(label=DocItemLabel.TEXT, text="Author 1\nAffiliation 1")
     doc.add_paragraph(label=DocItemLabel.TEXT, text="Author 2\nAffiliation 2")
+
     chapter1 = doc.add_group(
         label=GroupLabel.CHAPTER, name="Introduction"
     )  # can be done if such information is present, or ommitted.
+
     doc.add_heading(
         parent=chapter1,
-        label=DocItemLabel.SECTION_HEADER,
         text="1. Introduction",
         level=1,
     )
@@ -192,8 +193,10 @@ def _construct_doc() -> DoclingDocument:
     )
     table_el = BaseTableData(num_rows=3, num_cols=3, table_cells=table_cells)
     doc.add_table(data=table_el)
+
     fig_caption = doc.add_paragraph(
         label=DocItemLabel.CAPTION, text="This is the caption of figure 1."
     )
-    doc.add_figure(data=BaseFigureData(), caption=fig_caption.get_ref())
+    fig_item = doc.add_picture(data=BasePictureData(), caption=fig_caption)
+
     return doc

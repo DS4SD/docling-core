@@ -23,7 +23,7 @@ body:
   parent: null # Only root elements have no parent.
   children: # only the first-level children appear here, as references (RefItem)
     - $ref: "/texts/1"
-    - $ref: "/figures/0"
+    - $ref: "/pictures/0"
     - $ref: "/texts/3"
     - $ref: "/tables/0"
 
@@ -71,7 +71,7 @@ texts:
     hash: 6978483
     label: "section_header"
     parent:
-      $ref: "/figures/0"
+      $ref: "/pictures/0"
     children: [ ]
     prov:
       - page_no: 1
@@ -130,8 +130,8 @@ tables: # All tables...
           coord_origin: BOTTOMLEFT
         charspan: [ 1,423 ] # 2-tuple, references to "orig"
 
-figures: # All figures...
-  - self_ref: "#/figures/0"
+pictures: # All pictures...
+  - self_ref: "#/pictures/0"
     hash: 7782482
     label: "picture"
     parent:
@@ -149,7 +149,7 @@ figures: # All figures...
       size:
         width: 231
         height: 351
-      uri: "file:///dummy_doc/figures/0.png"
+      uri: "file:///dummy_doc/pictures/0.png"
       #alternatives: base64 encoded striong
     children:
       - $ref: "/texts/2" # This text element appears inside the figure, hence it is a child.

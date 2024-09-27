@@ -58,7 +58,11 @@
       "x-es-type": "text"
     },
     "file-info": {
-      "$ref": "#/$defs/FileInfoObject",
+      "allOf": [
+        {
+          "$ref": "#/$defs/FileInfoObject"
+        }
+      ],
       "description": "Minimal identification information of the document within a collection.",
       "title": "Document information"
     }
