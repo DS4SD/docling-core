@@ -1,6 +1,7 @@
 """Models for the Docling Document data type."""
 
 import hashlib
+import importlib
 import mimetypes
 import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -15,6 +16,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from pydantic_extra_types.semantic_version import SemanticVersion
 from tabulate import tabulate
 
 from docling_core.types.doc.tokens import DocumentToken
@@ -619,7 +621,7 @@ class DescriptionItem(BaseModel):
 class DoclingDocument(BaseModel):
     """DoclingDocument."""
 
-    version: str = "0.1.0"  # TODO use SemanticVersion type instead
+    version: Optional[SemanticVersion] = Field(default=None, validate_default=True)
     description: DescriptionItem
     name: str  # The working name of this document, without extensions
     # (could be taken from originating doc, or just "Untitled 1")
@@ -641,6 +643,15 @@ class DoclingDocument(BaseModel):
     key_value_items: List[KeyValueItem] = []
 
     pages: Dict[int, PageItem] = {}  # empty as default
+
+    @field_validator("version")
+    @classmethod
+    def check_version_omitted(cls, v: str) -> str:
+        """Set the version field to this library version by default."""
+        if v is None:
+            return importlib.metadata.version("docling-core")
+        else:
+            return v
 
     def _compute_hash(self, obj):
         hash_object = hashlib.sha256(obj.encode("utf-8"))
