@@ -211,6 +211,8 @@ class NodeItem(BaseModel):
     parent: Optional[RefItem] = None
     children: List[RefItem] = []
 
+    model_config = ConfigDict(extra="forbid")
+
     def get_ref(self):
         """get_ref."""
         return RefItem(cref=self.self_ref)

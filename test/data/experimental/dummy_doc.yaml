@@ -36,7 +36,6 @@ texts:
   - orig: "arXiv:2206.01062v1 [cs.CV] 2 Jun 2022"
     text: "arXiv:2206.01062v1 [cs.CV] 2 Jun 2022"
     self_ref: "#/texts/0"
-    hash: 132103230
     label: "page_header"
     parent:
       $ref: "#/furniture"
@@ -52,7 +51,6 @@ texts:
   - orig: "DocLayNet: A Large Human-Annotated Dataset for\nDocument-Layout Analysis"
     text: "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
     self_ref: "#/texts/1"
-    hash: 2349732 # uint64 hash of self_ref
     label: "title"
     parent:
       $ref: "#/body"
@@ -68,7 +66,6 @@ texts:
   - orig: "OPERATION (cont.)" # nested inside the figure
     text: "OPERATION (cont.)"
     self_ref: "#/texts/2"
-    hash: 6978483
     label: "section_header"
     parent:
       $ref: "/pictures/0"
@@ -85,7 +82,6 @@ texts:
   - orig: "Figure 1: Four examples of complex page layouts across dif-\nferent document categories" # nested inside the figure
     text: "Figure 1: Four examples of complex page layouts across different document categories"
     self_ref: "#/texts/3"
-    hash: 6978483
     label: "caption"
     parent:
       $ref: "#/body"
@@ -103,7 +99,6 @@ texts:
 
 tables: # All tables...
   - self_ref: "#/table/0"
-    hash: 98574
     label: "table"
     parent:
       $ref: "#/body"
@@ -133,7 +128,6 @@ tables: # All tables...
 
 pictures: # All pictures...
   - self_ref: "#/pictures/0"
-    hash: 7782482
     label: "picture"
     parent:
       $ref: "#/body"
@@ -168,7 +162,6 @@ key_value_items: [ ] # All KV-items
 # We should consider this for pages
 pages: # Optional, for layout documents
   1:
-    hash: 6203680922337857390
     size:
       width: 768.23
       height: 583.15
