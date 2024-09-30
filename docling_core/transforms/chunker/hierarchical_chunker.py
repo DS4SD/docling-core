@@ -83,10 +83,6 @@ class HierarchicalChunker(BaseChunker):
 
         return output_text
 
-    @classmethod
-    def _create_path(cls, pos: int, path_prefix: str = "main-text") -> str:
-        return f"$.{path_prefix}[{pos}]"
-
     class _MainTextItemNode(BaseModel):
         parent: Optional[int] = None
         children: list[int] = []
