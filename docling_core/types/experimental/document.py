@@ -28,6 +28,9 @@ Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
 CURRENT_VERSION: Final = "1.0.0"
 
+# (subset of) JSON Pointer URI fragment identifier format:
+_JSON_POINTER_REGEX = r"^#(/[\w\-]+(/\d+)?)?$"
+
 
 class BasePictureData(BaseModel):  # TBD
     """BasePictureData."""
@@ -155,7 +158,7 @@ class DocumentOrigin(BaseModel):
 class RefItem(BaseModel):
     """RefItem."""
 
-    cref: str = Field(alias="$ref")
+    cref: str = Field(alias="$ref", pattern=_JSON_POINTER_REGEX)
 
     # This method makes RefItem compatible with DocItem
     def get_ref(self):
@@ -169,18 +172,15 @@ class RefItem(BaseModel):
     def resolve(self, doc: "DoclingDocument"):
         """resolve."""
         path_components = self.cref.split("/")
-        if len(path_components) > 2:
+        if (num_comps := len(path_components)) == 3:
             _, path, index_str = path_components
-        else:
-            _, path = path_components
-            index_str = None
-
-        if index_str:
             index = int(index_str)
             obj = doc.__getattribute__(path)[index]
-        else:
+        elif num_comps == 2:
+            _, path = path_components
             obj = doc.__getattribute__(path)
-
+        else:
+            raise RuntimeError(f"Unsupported number of path components: {num_comps}")
         return obj
 
 
@@ -213,7 +213,7 @@ class ProvenanceItem(BaseModel):
 class NodeItem(BaseModel):
     """NodeItem."""
 
-    self_ref: str  # format spec: json-path
+    self_ref: str = Field(pattern=_JSON_POINTER_REGEX)
     parent: Optional[RefItem] = None
     children: List[RefItem] = []
 

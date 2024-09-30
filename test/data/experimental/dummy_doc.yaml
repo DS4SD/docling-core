@@ -14,7 +14,7 @@ furniture:
   self_ref: "#/furniture"
   parent: null # Only root elements have no parent.
   children: # only the first-level children appear here, as references (RefItem)
-    - $ref: "/texts/0"
+    - $ref: "#/texts/0"
 
 # Root element for anything in the document body, type GroupItem
 body:
@@ -22,10 +22,10 @@ body:
   self_ref: "#/body"
   parent: null # Only root elements have no parent.
   children: # only the first-level children appear here, as references (RefItem)
-    - $ref: "/texts/1"
-    - $ref: "/pictures/0"
-    - $ref: "/texts/3"
-    - $ref: "/tables/0"
+    - $ref: "#/texts/1"
+    - $ref: "#/pictures/0"
+    - $ref: "#/texts/3"
+    - $ref: "#/tables/0"
 
 # All groups of items nested deeper in body or furniture roots, type List[GroupItem]
 groups: [] # The parent + children relations capture nesting and reading-order.
@@ -68,7 +68,7 @@ texts:
     self_ref: "#/texts/2"
     label: "section_header"
     parent:
-      $ref: "/pictures/0"
+      $ref: "#/pictures/0"
     children: [ ]
     prov:
       - page_no: 1
@@ -132,7 +132,7 @@ pictures: # All pictures...
     parent:
       $ref: "#/body"
     captions:
-      - $ref: "/texts/3"
+      - $ref: "#/texts/3"
     data: # BaseFigureData Type
       classification: "illustration"
       confidence: 0.78
@@ -147,7 +147,7 @@ pictures: # All pictures...
       uri: "file:///dummy_doc/pictures/0.png"
       #alternatives: base64 encoded striong
     children:
-      - $ref: "/texts/2" # This text element appears inside the figure, hence it is a child.
+      - $ref: "#/texts/2" # This text element appears inside the figure, hence it is a child.
     prov:
       - page_no: 1
         bbox:
