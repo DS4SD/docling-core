@@ -22,7 +22,7 @@ from .document import (
     PictureItem,
     ProvenanceItem,
     RefItem,
-    SectionItem,
+    SectionHeaderItem,
     TableCell,
     TableItem,
     TextItem,

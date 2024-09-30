@@ -1,11 +1,13 @@
 """Models for the Docling Document data type."""
 
+import importlib
 import mimetypes
 import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 from pydantic import (
+    AfterValidator,
     AnyUrl,
     BaseModel,
     ConfigDict,
@@ -14,6 +16,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from pydantic_extra_types.semantic_version import SemanticVersion
 from tabulate import tabulate
 
 from docling_core.types.doc.tokens import DocumentToken
@@ -318,10 +321,12 @@ class TextItem(DocItem):
         return body
 
 
-class SectionItem(TextItem):
+class SectionHeaderItem(TextItem):
     """SectionItem."""
 
-    label: DocItemLabel = DocItemLabel.SECTION_HEADER
+    label: typing.Annotated[
+        DocItemLabel, AfterValidator(lambda x: DocItemLabel.SECTION_HEADER)
+    ] = Field(default=DocItemLabel.SECTION_HEADER, frozen=True)
     level: LevelNumber
 
 
@@ -337,6 +342,9 @@ class FloatingItem(DocItem):
 class PictureItem(FloatingItem):
     """PictureItem."""
 
+    label: typing.Annotated[
+        DocItemLabel, AfterValidator(lambda x: DocItemLabel.PICTURE)
+    ] = Field(default=DocItemLabel.PICTURE, frozen=True)
     data: BasePictureData
 
     def export_to_document_tokens(
@@ -393,6 +401,9 @@ class TableItem(FloatingItem):
     """TableItem."""
 
     data: BaseTableData
+    label: typing.Annotated[
+        DocItemLabel, AfterValidator(lambda x: DocItemLabel.TABLE)
+    ] = Field(default=DocItemLabel.TABLE, frozen=True)
 
     def export_to_dataframe(self) -> pd.DataFrame:
         """Export the table as a Pandas DataFrame."""
@@ -600,7 +611,7 @@ class KeyValueItem(DocItem):
     """KeyValueItem."""
 
 
-ContentItem = Union[TextItem, SectionItem, PictureItem, TableItem, KeyValueItem]
+ContentItem = Union[TextItem, SectionHeaderItem, PictureItem, TableItem, KeyValueItem]
 
 
 class PageItem(BaseModel):
@@ -621,8 +632,7 @@ class DoclingDocument(BaseModel):
     """DoclingDocument."""
 
     schema_name: typing.Literal["DoclingDocument"] = "DoclingDocument"
-
-    version: str = "0.1.0"  # TODO use SemanticVersion type instead
+    version: Optional[SemanticVersion] = Field(default=None, validate_default=True)
     description: DescriptionItem
     name: str  # The working name of this document, without extensions
     # (could be taken from originating doc, or just "Untitled 1")
@@ -638,12 +648,21 @@ class DoclingDocument(BaseModel):
     body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
 
     groups: List[GroupItem] = []
-    texts: List[Union[SectionItem, TextItem]] = []
+    texts: List[Union[SectionHeaderItem, TextItem]] = []
     pictures: List[PictureItem] = []
     tables: List[TableItem] = []
     key_value_items: List[KeyValueItem] = []
 
     pages: Dict[int, PageItem] = {}  # empty as default
+
+    @field_validator("version")
+    @classmethod
+    def check_version_omitted(cls, v: str) -> str:
+        """Set the version field to this library version by default."""
+        if v is None:
+            return importlib.metadata.version("docling-core")
+        else:
+            return v
 
     def add_group(
         self,
@@ -814,7 +833,7 @@ class DoclingDocument(BaseModel):
 
         text_index = len(self.texts)
         cref = f"#/texts/{text_index}"
-        section_header_item = SectionItem(
+        section_header_item = SectionHeaderItem(
             level=level,
             text=text,
             orig=orig,
