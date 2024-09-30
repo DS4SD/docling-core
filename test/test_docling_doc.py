@@ -64,7 +64,6 @@ def test_docitems():
             obj = dc(
                 text="whatever",
                 orig="whatever",
-                dloc="sdvsd",
                 label=DocItemLabel.TEXT,
                 self_ref="#",
             )
@@ -72,9 +71,6 @@ def test_docitems():
 
         elif dc is FloatingItem:
             obj = dc(
-                text="whatever",
-                orig="whatever",
-                dloc="sdvsd",
                 label=DocItemLabel.TEXT,
                 self_ref="#",
             )
@@ -82,9 +78,6 @@ def test_docitems():
 
         elif dc is KeyValueItem:
             obj = dc(
-                text="whatever",
-                orig="whatever",
-                dloc="sdvsd",
                 label=DocItemLabel.TEXT,
                 self_ref="#",
             )
@@ -94,7 +87,6 @@ def test_docitems():
             obj = dc(
                 text="whatever",
                 orig="whatever",
-                dloc="sdvsd",
                 label=DocItemLabel.TEXT,
                 self_ref="#",
                 level=2,
@@ -103,9 +95,6 @@ def test_docitems():
 
         elif dc is PictureItem:
             obj = dc(
-                text="whatever",
-                orig="whatever",
-                dloc="sdvsd",
                 label=DocItemLabel.TEXT,
                 self_ref="#",
                 data=BasePictureData(),
@@ -114,12 +103,9 @@ def test_docitems():
 
         elif dc is TableItem:
             obj = dc(
-                text="whatever",
-                orig="whatever",
-                dloc="sdvsd",
                 label=DocItemLabel.TEXT,
                 self_ref="#",
-                data=BaseTableData(num_rows=3, num_cols=5, cells=[]),
+                data=BaseTableData(num_rows=3, num_cols=5, table_cells=[]),
             )
             verify(dc, obj)
 
@@ -155,7 +141,7 @@ def test_reference_doc():
 
     # Iterate all elements
 
-    for item, level in doc.iterate_elements():
+    for item, level in doc.iterate_items():
         print(f"Item: {item} at level {level}")
 
     # Serialize and reload

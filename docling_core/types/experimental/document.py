@@ -1,6 +1,5 @@
 """Models for the Docling Document data type."""
 
-import hashlib
 import mimetypes
 import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -131,7 +130,9 @@ class DocumentOrigin(BaseModel):
                 # Convert hex string to an integer
                 hash_int = Uint64(value, 16)
                 # Mask to fit within 64 bits (unsigned)
-                return hash_int & 0xFFFFFFFFFFFFFFFF
+                return (
+                    hash_int & 0xFFFFFFFFFFFFFFFF
+                )  # TODO be sure it doesn't clip uint64 max
             except ValueError:
                 raise ValueError(f"Invalid sha256 hexdigest: {value}")
         return value  # If already an int, return it as is.
@@ -599,7 +600,7 @@ class KeyValueItem(DocItem):
     """KeyValueItem."""
 
 
-ContentItem = Union[TextItem, PictureItem, TableItem, KeyValueItem]
+ContentItem = Union[TextItem, SectionItem, PictureItem, TableItem, KeyValueItem]
 
 
 class PageItem(BaseModel):
@@ -618,6 +619,8 @@ class DescriptionItem(BaseModel):
 
 class DoclingDocument(BaseModel):
     """DoclingDocument."""
+
+    schema_name: typing.Literal["DoclingDocument"] = "DoclingDocument"
 
     version: str = "0.1.0"  # TODO use SemanticVersion type instead
     description: DescriptionItem
@@ -641,13 +644,6 @@ class DoclingDocument(BaseModel):
     key_value_items: List[KeyValueItem] = []
 
     pages: Dict[int, PageItem] = {}  # empty as default
-
-    def _compute_hash(self, obj):
-        hash_object = hashlib.sha256(obj.encode("utf-8"))
-        # Convert the hash to an integer
-        hash_int = int.from_bytes(hash_object.digest(), "big")
-        # Mask it to fit within 64 bits
-        return Uint64(hash_int & 0xFFFFFFFFFFFFFFFF)  # 64-bit unsigned integer mask
 
     def add_group(
         self,
@@ -848,7 +844,7 @@ class DoclingDocument(BaseModel):
 
         return all(res) or len(res) == 0
 
-    def iterate_elements(
+    def iterate_items(
         self,
         root: Optional[NodeItem] = None,
         with_groups: bool = False,
@@ -887,13 +883,13 @@ class DoclingDocument(BaseModel):
             if isinstance(child, NodeItem):
                 # If the child is a NodeItem, recursively traverse it
                 if not isinstance(child, PictureItem) or traverse_pictures:
-                    yield from self.iterate_elements(
+                    yield from self.iterate_items(
                         child, _level=_level + 1, with_groups=with_groups
                     )
 
     def print_element_tree(self):
         """print_element_tree."""
-        for ix, (item, level) in enumerate(self.iterate_elements(with_groups=True)):
+        for ix, (item, level) in enumerate(self.iterate_items(with_groups=True)):
             if isinstance(item, GroupItem):
                 print(" " * level, f"{ix}: {item.label.value} with name={item.name}")
             elif isinstance(item, DocItem):
@@ -948,7 +944,7 @@ class DoclingDocument(BaseModel):
         md_texts: list[str] = []
 
         skip_count = 0
-        for ix, (item, level) in enumerate(self.iterate_elements(self.body)):
+        for ix, (item, level) in enumerate(self.iterate_items(self.body)):
             if skip_count < from_element:
                 skip_count += 1
                 continue  # skip as many items as you want
@@ -1077,7 +1073,7 @@ class DoclingDocument(BaseModel):
         # pagedims = self.get_map_to_page_dimensions()
 
         skip_count = 0
-        for ix, (item, level) in enumerate(self.iterate_elements(self.body)):
+        for ix, (item, level) in enumerate(self.iterate_items(self.body)):
             if skip_count < from_element:
                 skip_count += 1
                 continue  # skip as many items as you want
