@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 from pydantic import (
-    AfterValidator,
     AnyUrl,
     BaseModel,
     ConfigDict,
@@ -324,9 +323,7 @@ class TextItem(DocItem):
 class SectionHeaderItem(TextItem):
     """SectionItem."""
 
-    label: typing.Annotated[
-        DocItemLabel, AfterValidator(lambda x: DocItemLabel.SECTION_HEADER)
-    ] = Field(default=DocItemLabel.SECTION_HEADER, frozen=True)
+    label: typing.Literal[DocItemLabel.SECTION_HEADER] = DocItemLabel.SECTION_HEADER
     level: LevelNumber
 
 
@@ -342,9 +339,8 @@ class FloatingItem(DocItem):
 class PictureItem(FloatingItem):
     """PictureItem."""
 
-    label: typing.Annotated[
-        DocItemLabel, AfterValidator(lambda x: DocItemLabel.PICTURE)
-    ] = Field(default=DocItemLabel.PICTURE, frozen=True)
+    label: typing.Literal[DocItemLabel.PICTURE] = DocItemLabel.PICTURE
+
     data: BasePictureData
 
     def export_to_document_tokens(
@@ -401,9 +397,7 @@ class TableItem(FloatingItem):
     """TableItem."""
 
     data: BaseTableData
-    label: typing.Annotated[
-        DocItemLabel, AfterValidator(lambda x: DocItemLabel.TABLE)
-    ] = Field(default=DocItemLabel.TABLE, frozen=True)
+    label: typing.Literal[DocItemLabel.TABLE] = DocItemLabel.TABLE
 
     def export_to_dataframe(self) -> pd.DataFrame:
         """Export the table as a Pandas DataFrame."""

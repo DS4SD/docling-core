@@ -89,7 +89,7 @@ def test_docitems():
             obj = dc(
                 text="whatever",
                 orig="whatever",
-                label=DocItemLabel.TEXT,
+                label=DocItemLabel.SECTION_HEADER,
                 self_ref="#",
                 level=2,
             )
@@ -97,7 +97,6 @@ def test_docitems():
 
         elif dc is PictureItem:
             obj = dc(
-                label=DocItemLabel.TEXT,
                 self_ref="#",
                 data=BasePictureData(),
             )
@@ -105,7 +104,6 @@ def test_docitems():
 
         elif dc is TableItem:
             obj = dc(
-                label=DocItemLabel.TEXT,
                 self_ref="#",
                 data=BaseTableData(num_rows=3, num_cols=5, table_cells=[]),
             )
