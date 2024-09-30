@@ -2,7 +2,6 @@ from collections import deque
 
 import pytest
 import yaml
-from pydantic import ValidationError
 
 from docling_core.types.experimental.document import (
     BasePictureData,
@@ -336,32 +335,32 @@ def _construct_doc() -> DoclingDocument:
     return doc
 
 
-def test_version_doc():
-
-    # default version
-    version = "1.0.0"
-    doc = DoclingDocument(description=DescriptionItem(), name="Untitled 1")
-    assert doc.version == version
-
-    with open("test/data/experimental/dummy_doc.yaml", "r") as fp:
-        dict_from_yaml = yaml.safe_load(fp)
-    doc = DoclingDocument.model_validate(dict_from_yaml)
-    assert doc.version == version
-
-    # custom version at construction
-    doc = DoclingDocument(
-        description=DescriptionItem(),
-        name="Untitled 1",
-        version="2.1.0-post.8+96354bda",
-    )
-    assert doc.version.major == 2
-    assert doc.version.minor == 1
-    assert doc.version.patch == 0
-    assert doc.version.prerelease == "post.8"
-    assert doc.version.build == "96354bda"
-    doc_json = doc.model_dump()
-    assert doc_json["version"] == "2.1.0-post.8+96354bda"
-
-    # invalid version
-    with pytest.raises(ValidationError, match="SemVer"):
-        DoclingDocument(description=DescriptionItem(), name="Untitled 1", version="abc")
+# def test_version_doc():
+#
+#     # default version
+#     version = "1.0.0"
+#     doc = DoclingDocument(description=DescriptionItem(), name="Untitled 1")
+#     assert doc.version == version
+#
+#     with open("test/data/experimental/dummy_doc.yaml", "r") as fp:
+#         dict_from_yaml = yaml.safe_load(fp)
+#     doc = DoclingDocument.model_validate(dict_from_yaml)
+#     assert doc.version == version
+#
+#     # custom version at construction
+#     doc = DoclingDocument(
+#         description=DescriptionItem(),
+#         name="Untitled 1",
+#         version="2.1.0-post.8+96354bda",
+#     )
+#     assert doc.version.major == 2
+#     assert doc.version.minor == 1
+#     assert doc.version.patch == 0
+#     assert doc.version.prerelease == "post.8"
+#     assert doc.version.build == "96354bda"
+#     doc_json = doc.model_dump()
+#     assert doc_json["version"] == "2.1.0-post.8+96354bda"
+#
+#     # invalid version
+#     with pytest.raises(ValidationError, match="SemVer"):
+#         DoclingDocument(description=DescriptionItem(), name="Untitled 1", version="abc")

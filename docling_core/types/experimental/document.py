@@ -14,7 +14,6 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from pydantic_extra_types.semantic_version import SemanticVersion
 from tabulate import tabulate
 
 from docling_core.types.doc.tokens import DocumentToken
@@ -628,7 +627,10 @@ class DoclingDocument(BaseModel):
     """DoclingDocument."""
 
     schema_name: typing.Literal["DoclingDocument"] = "DoclingDocument"
-    version: Optional[SemanticVersion] = Field(default=None, validate_default=True)
+    version: typing.Literal["1.0.0"] = (
+        "1.0.0"
+        # Optional[SemanticVersion] = Field(default=None, validate_default=True)
+    )
     description: DescriptionItem
     name: str  # The working name of this document, without extensions
     # (could be taken from originating doc, or just "Untitled 1")
@@ -651,14 +653,14 @@ class DoclingDocument(BaseModel):
 
     pages: Dict[int, PageItem] = {}  # empty as default
 
-    @field_validator("version")
-    @classmethod
-    def check_version_omitted(cls, v: str) -> str:
-        """Set the version field to this library version by default."""
-        if v is None:
-            return "1.0.0"
-        else:
-            return v
+    # @field_validator("version")
+    # @classmethod
+    # def check_version_omitted(cls, v: str) -> str:
+    #     """Set the version field to this library version by default."""
+    #     if v is None:
+    #         return "1.0.0"
+    #     else:
+    #         return v
 
     def add_group(
         self,
