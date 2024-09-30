@@ -2,8 +2,10 @@ from collections import deque
 
 import pytest
 import yaml
+from pydantic import ValidationError
 
 from docling_core.types.experimental.document import (
+    CURRENT_VERSION,
     BasePictureData,
     BaseTableData,
     DescriptionItem,
@@ -335,32 +337,43 @@ def _construct_doc() -> DoclingDocument:
     return doc
 
 
-# def test_version_doc():
-#
-#     # default version
-#     version = "1.0.0"
-#     doc = DoclingDocument(description=DescriptionItem(), name="Untitled 1")
-#     assert doc.version == version
-#
-#     with open("test/data/experimental/dummy_doc.yaml", "r") as fp:
-#         dict_from_yaml = yaml.safe_load(fp)
-#     doc = DoclingDocument.model_validate(dict_from_yaml)
-#     assert doc.version == version
-#
-#     # custom version at construction
-#     doc = DoclingDocument(
-#         description=DescriptionItem(),
-#         name="Untitled 1",
-#         version="2.1.0-post.8+96354bda",
-#     )
-#     assert doc.version.major == 2
-#     assert doc.version.minor == 1
-#     assert doc.version.patch == 0
-#     assert doc.version.prerelease == "post.8"
-#     assert doc.version.build == "96354bda"
-#     doc_json = doc.model_dump()
-#     assert doc_json["version"] == "2.1.0-post.8+96354bda"
-#
-#     # invalid version
-#     with pytest.raises(ValidationError, match="SemVer"):
-#         DoclingDocument(description=DescriptionItem(), name="Untitled 1", version="abc")
+def test_version_doc():
+
+    # default version
+    doc = DoclingDocument(description=DescriptionItem(), name="Untitled 1")
+    assert doc.version == CURRENT_VERSION
+
+    with open("test/data/experimental/dummy_doc.yaml") as fp:
+        dict_from_yaml = yaml.safe_load(fp)
+    doc = DoclingDocument.model_validate(dict_from_yaml)
+    assert doc.version == CURRENT_VERSION
+
+    # invalid version
+    with pytest.raises(ValidationError, match="NoneType"):
+        DoclingDocument(description=DescriptionItem(), name="Untitled 1", version=None)
+    with pytest.raises(ValidationError, match="pattern"):
+        DoclingDocument(description=DescriptionItem(), name="Untitled 1", version="abc")
+
+    # incompatible version (major)
+    major_split = CURRENT_VERSION.split(".", 1)
+    new_version = f"{int(major_split[0]) + 1}.{major_split[1]}"
+    with pytest.raises(ValidationError, match="incompatible"):
+        DoclingDocument(
+            description=DescriptionItem(), name="Untitled 1", version=new_version
+        )
+
+    # incompatible version (minor)
+    minor_split = major_split[1].split(".", 1)
+    new_version = f"{major_split[0]}.{int(minor_split[0]) + 1}.{minor_split[1]}"
+    with pytest.raises(ValidationError, match="incompatible"):
+        DoclingDocument(
+            description=DescriptionItem(), name="Untitled 1", version=new_version
+        )
+
+    # compatible version (equal or lower minor)
+    patch_split = minor_split[1].split(".", 1)
+    comp_version = f"{major_split[0]}.{minor_split[0]}.{int(patch_split[0]) + 1}"
+    doc = DoclingDocument(
+        description=DescriptionItem(), name="Untitled 1", version=comp_version
+    )
+    assert doc.version == CURRENT_VERSION

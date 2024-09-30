@@ -1,8 +1,9 @@
 """Models for the Docling Document data type."""
 
 import mimetypes
+import re
 import typing
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Final, List, Optional, Tuple, Union
 
 import pandas as pd
 from pydantic import (
@@ -10,18 +11,22 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    StringConstraints,
     computed_field,
     field_validator,
     model_validator,
 )
 from tabulate import tabulate
+from typing_extensions import Annotated
 
+from docling_core.search.package import VERSION_PATTERN
 from docling_core.types.doc.tokens import DocumentToken
 from docling_core.types.experimental import BoundingBox, Size
 from docling_core.types.experimental.labels import DocItemLabel, GroupLabel
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
+CURRENT_VERSION: Final = "1.0.0"
 
 
 class BasePictureData(BaseModel):  # TBD
@@ -627,9 +632,8 @@ class DoclingDocument(BaseModel):
     """DoclingDocument."""
 
     schema_name: typing.Literal["DoclingDocument"] = "DoclingDocument"
-    version: typing.Literal["1.0.0"] = (
-        "1.0.0"
-        # Optional[SemanticVersion] = Field(default=None, validate_default=True)
+    version: Annotated[str, StringConstraints(pattern=VERSION_PATTERN, strict=True)] = (
+        CURRENT_VERSION
     )
     description: DescriptionItem
     name: str  # The working name of this document, without extensions
@@ -652,15 +656,6 @@ class DoclingDocument(BaseModel):
     key_value_items: List[KeyValueItem] = []
 
     pages: Dict[int, PageItem] = {}  # empty as default
-
-    # @field_validator("version")
-    # @classmethod
-    # def check_version_omitted(cls, v: str) -> str:
-    #     """Set the version field to this library version by default."""
-    #     if v is None:
-    #         return "1.0.0"
-    #     else:
-    #         return v
 
     def add_group(
         self,
@@ -1170,6 +1165,24 @@ class DoclingDocument(BaseModel):
 
         self.pages[page_no] = pitem
         return pitem
+
+    @field_validator("version")
+    @classmethod
+    def check_version_is_compatible(cls, v: str) -> str:
+        """Check if this document version is compatible with current version."""
+        current_match = re.match(VERSION_PATTERN, CURRENT_VERSION)
+        doc_match = re.match(VERSION_PATTERN, v)
+        if (
+            doc_match is None
+            or current_match is None
+            or doc_match["major"] != current_match["major"]
+            or doc_match["minor"] > current_match["minor"]
+        ):
+            raise ValueError(
+                f"incompatible version {v} with schema version {CURRENT_VERSION}"
+            )
+        else:
+            return CURRENT_VERSION
 
     @model_validator(mode="after")  # type: ignore
     @classmethod
