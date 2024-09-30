@@ -1,4 +1,3 @@
-import importlib
 from collections import deque
 
 import pytest
@@ -340,7 +339,7 @@ def _construct_doc() -> DoclingDocument:
 def test_version_doc():
 
     # default version
-    version = importlib.metadata.version("docling-core")
+    version = "1.0.0"
     doc = DoclingDocument(description=DescriptionItem(), name="Untitled 1")
     assert doc.version == version
 

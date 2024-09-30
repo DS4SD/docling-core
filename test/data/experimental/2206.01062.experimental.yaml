@@ -13273,4 +13273,4 @@ texts:
   self_ref: '#/texts/127'
   text: '[23] Connor Shorten and Taghi M. Khoshgoftaar. A survey on image data augmentation
     for deep learning. Journal of Big Data , 6(1):60, 2019.'
-version: 0.1.0
+version: 1.0.0

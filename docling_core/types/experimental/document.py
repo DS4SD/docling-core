@@ -1,6 +1,5 @@
 """Models for the Docling Document data type."""
 
-import importlib
 import mimetypes
 import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -224,7 +223,10 @@ class NodeItem(BaseModel):
 class GroupItem(NodeItem):  # Container type, can't be a leaf node
     """GroupItem."""
 
-    name: str = "group"
+    name: str = (
+        "group"  # Name of the group, e.g. "Introduction Chapter",
+        # "Slide 5", "Navigation menu list", ...
+    )
     label: GroupLabel = GroupLabel.UNSPECIFIED
 
 
@@ -654,7 +656,7 @@ class DoclingDocument(BaseModel):
     def check_version_omitted(cls, v: str) -> str:
         """Set the version field to this library version by default."""
         if v is None:
-            return importlib.metadata.version("docling-core")
+            return "1.0.0"
         else:
             return v
 
