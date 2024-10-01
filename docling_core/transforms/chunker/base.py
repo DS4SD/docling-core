@@ -21,6 +21,7 @@ class Chunk(BaseModel):
 
     path: str
     text: str
+    heading: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -40,7 +41,6 @@ class ChunkWithMetadata(Chunk):
 
     page: Optional[int] = None
     bbox: Optional[BoundingBox] = None
-    heading: Optional[str] = None
 
 
 class BaseChunker(BaseModel, ABC):
