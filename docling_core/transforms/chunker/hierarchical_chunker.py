@@ -27,7 +27,7 @@ class HierarchicalChunker(BaseChunker):
 
     heading_as_metadata: bool = Field(
         default=False,
-        description="Whether heading should be in metadata",
+        description="Whether heading should be in metadata (instead of text)",
     )
     include_metadata: bool = Field(
         default=True,
