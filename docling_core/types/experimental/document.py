@@ -29,6 +29,22 @@ Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
 CURRENT_VERSION: Final = "1.0.0"
 
+DEFAULT_EXPORT_LABELS = {
+    DocItemLabel.TITLE,
+    DocItemLabel.DOCUMENT_INDEX,
+    DocItemLabel.SECTION_HEADER,
+    DocItemLabel.PARAGRAPH,
+    DocItemLabel.CAPTION,
+    DocItemLabel.TABLE,
+    DocItemLabel.PICTURE,
+    DocItemLabel.FORMULA,
+    DocItemLabel.CHECKBOX_UNSELECTED,
+    DocItemLabel.CHECKBOX_SELECTED,
+    DocItemLabel.TEXT,
+    DocItemLabel.LIST_ITEM,
+    DocItemLabel.CODE,
+}
+
 
 class BasePictureData(BaseModel):  # TBD
     """BasePictureData."""
@@ -339,6 +355,13 @@ class FloatingItem(DocItem):
     footnotes: List[RefItem] = []
     image: Optional[ImageRef] = None
 
+    def caption_text(self, doc: "DoclingDocument") -> str:
+        """Computes the caption as a single text."""
+        text = ""
+        for cap in self.captions:
+            text += cap.resolve(doc).text
+        return ""
+
 
 class PictureItem(FloatingItem):
     """PictureItem."""
@@ -382,9 +405,7 @@ class PictureItem(FloatingItem):
             )
 
         if add_caption and len(self.captions):
-            text = ""
-            for cap in self.captions:
-                text += cap.resolve(doc).text
+            text = self.caption_text(doc)
 
             if len(text):
                 body += f"{DocumentToken.BEG_CAPTION.value}"
@@ -447,6 +468,28 @@ class TableItem(FloatingItem):
         df = pd.DataFrame(table_data, columns=columns)
 
         return df
+
+    def export_to_markdown(self) -> str:
+        """Export the table as markdown."""
+        table = []
+        for row in self.data.grid:
+            tmp = []
+            for col in row:
+                tmp.append(col.text)
+            table.append(tmp)
+
+        md_table = ""
+        if len(table) > 1 and len(table[0]) > 0:
+            try:
+                md_table = tabulate(table[1:], headers=table[0], tablefmt="github")
+            except ValueError:
+                md_table = tabulate(
+                    table[1:],
+                    headers=table[0],
+                    tablefmt="github",
+                    disable_numparse=True,
+                )
+        return md_table
 
     def export_to_html(self) -> str:
         """Export the table as html."""
@@ -533,9 +576,7 @@ class TableItem(FloatingItem):
             )
 
         if add_caption and len(self.captions):
-            text = ""
-            for cap in self.captions:
-                text += cap.resolve(doc).text
+            text = self.caption_text(doc)
 
             if len(text):
                 body += f"{DocumentToken.BEG_CAPTION.value}"
@@ -905,20 +946,18 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, DocItem):
                 print(" " * level, f"{ix}: {item.label.value}")
 
-    def export_to_markdown(
+    def export_to_dict(self) -> Dict:
+        """export_to_dict."""
+        return self.model_dump(mode="json", by_alias=True, exclude_none=True)
+
+    def export_to_markdown(  # noqa: C901
         self,
         delim: str = "\n\n",
         from_element: int = 0,
         to_element: Optional[int] = None,
-        labels: list[DocItemLabel] = [
-            DocItemLabel.TITLE,
-            DocItemLabel.SECTION_HEADER,
-            DocItemLabel.PARAGRAPH,
-            DocItemLabel.CAPTION,
-            DocItemLabel.TABLE,
-            DocItemLabel.TEXT,
-        ],
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         strict_text: bool = False,
+        image_placeholder: str = "<!-- image -->",
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -937,7 +976,7 @@ class DoclingDocument(BaseModel):
         :param delim: str:  (Default value = "\n\n")
         :param from_element: int:  (Default value = 0)
         :param to_element: Optional[int]:  (Default value = None)
-        :param labels: list[DocItemLabel]
+        :param labels: set[DocItemLabel]
         :param "subtitle-level-1":
         :param "paragraph":
         :param "caption":
@@ -946,12 +985,35 @@ class DoclingDocument(BaseModel):
         :param "text":
         :param ]:
         :param strict_text: bool:  (Default value = False)
+        :param image_placeholder str:  (Default value = "<!-- image -->")
+            the placeholder to include to position images in the markdown.
         :returns: The exported Markdown representation.
         :rtype: str
         """
         has_title = False
         prev_text = ""
         md_texts: list[str] = []
+
+        # collect all captions embedded in table and figure objects
+        # to avoid repeating them
+        embedded_captions = set()
+        skip_count = 0
+        for ix, (item, level) in enumerate(self.iterate_items(self.body)):
+            if skip_count < from_element:
+                skip_count += 1
+                continue  # skip as many items as you want
+
+            if to_element and ix >= to_element:
+                break
+
+            if (
+                isinstance(item, (TableItem, PictureItem))
+                and len(item.captions) > 0
+                and item.label in labels
+            ):
+                caption = item.caption_text(self)
+                if caption:
+                    embedded_captions.add(caption)
 
         skip_count = 0
         for ix, (item, level) in enumerate(self.iterate_items(self.body)):
@@ -970,6 +1032,11 @@ class DoclingDocument(BaseModel):
                 if isinstance(item, TextItem) and item_type in labels:
                     text = item.text
 
+                    # skip captions of they are embedded in the actual
+                    # floating object
+                    if item_type == DocItemLabel.CAPTION and text in embedded_captions:
+                        continue
+
                     # ignore repeated text
                     if prev_text == text or text is None:
                         continue
@@ -977,7 +1044,7 @@ class DoclingDocument(BaseModel):
                         prev_text = text
 
                     # first title match
-                    if item_type == "title" and not has_title:
+                    if item_type == DocItemLabel.TITLE and not has_title:
                         if strict_text:
                             markdown_text = f"{text}"
                         else:
@@ -985,9 +1052,10 @@ class DoclingDocument(BaseModel):
                         has_title = True
 
                     # secondary titles
-                    elif item_type in {"title", "subtitle-level-1"} or (
-                        has_title and item_type == "title"
-                    ):
+                    elif item_type in {
+                        DocItemLabel.TITLE,
+                        DocItemLabel.SECTION_HEADER,
+                    } or (has_title and item_type == DocItemLabel.TITLE):
                         if strict_text:
                             markdown_text = f"{text}"
                         else:
@@ -997,33 +1065,35 @@ class DoclingDocument(BaseModel):
                     else:
                         markdown_text = text
 
-                elif (
-                    isinstance(item, TableItem)
-                    and item.data
-                    and item_type in labels
-                    and not strict_text
-                ):
-                    table = []
-                    for row in item.data.grid:
-                        tmp = []
-                        for col in row:
-                            tmp.append(col.text)
-                        table.append(tmp)
+                elif isinstance(item, TableItem) and item.data and item_type in labels:
+                    parts = []
 
-                    if len(table) > 1 and len(table[0]) > 0:
-                        try:
-                            md_table = tabulate(
-                                table[1:], headers=table[0], tablefmt="github"
-                            )
-                        except ValueError:
-                            md_table = tabulate(
-                                table[1:],
-                                headers=table[0],
-                                tablefmt="github",
-                                disable_numparse=True,
-                            )
+                    # Compute the caption
+                    if caption := item.caption_text(self):
+                        parts.append(caption)
 
-                        markdown_text = md_table
+                    # Rendered the item
+                    if not strict_text:
+                        md_table = item.export_to_markdown()
+                        if md_table:
+                            parts.append(item.export_to_markdown())
+
+                    # Combine parts
+                    markdown_text = "\n".join(parts)
+
+                elif isinstance(item, PictureItem) and item_type in labels:
+                    parts = []
+
+                    # Compute the caption
+                    if caption := item.caption_text(self):
+                        parts.append(caption)
+
+                    # Rendered the item
+                    if not strict_text:
+                        parts.append(f"{image_placeholder}")
+
+                    # Combine parts
+                    markdown_text = "\n".join(parts)
 
             if markdown_text:
                 md_texts.append(markdown_text)
@@ -1031,19 +1101,29 @@ class DoclingDocument(BaseModel):
         result = delim.join(md_texts)
         return result
 
+    def export_to_text(  # noqa: C901
+        self,
+        delim: str = "\n\n",
+        from_element: int = 0,
+        to_element: Optional[int] = None,
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+    ) -> str:
+        """export_to_text."""
+        return self.export_to_markdown(
+            delim,
+            from_element,
+            to_element,
+            labels,
+            strict_text=True,
+            image_placeholder="",
+        )
+
     def export_to_document_tokens(
         self,
         delim: str = "\n\n",
         from_element: int = 0,
         to_element: Optional[int] = None,
-        labels: list[DocItemLabel] = [
-            DocItemLabel.TITLE,
-            DocItemLabel.SECTION_HEADER,
-            DocItemLabel.PARAGRAPH,
-            DocItemLabel.CAPTION,
-            DocItemLabel.TABLE,
-            DocItemLabel.TEXT,
-        ],
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         xsize: int = 100,
         ysize: int = 100,
         add_location: bool = True,
@@ -1062,7 +1142,7 @@ class DoclingDocument(BaseModel):
         :param delim: str:  (Default value = "\n\n")
         :param from_element: int:  (Default value = 0)
         :param to_element: Optional[int]:  (Default value = None)
-        :param labels: list[DocItemLabel]
+        :param labels: set[DocItemLabel]
         :param xsize: int:  (Default value = 100)
         :param ysize: int:  (Default value = 100)
         :param add_location: bool:  (Default value = True)
