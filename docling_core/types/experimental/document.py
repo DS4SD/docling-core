@@ -916,6 +916,7 @@ class DoclingDocument(BaseModel):
             DocItemLabel.PARAGRAPH,
             DocItemLabel.CAPTION,
             DocItemLabel.TABLE,
+            DocItemLabel.PICTURE,
             DocItemLabel.TEXT,
         ],
         strict_text: bool = False,
