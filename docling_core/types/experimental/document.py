@@ -905,7 +905,7 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, DocItem):
                 print(" " * level, f"{ix}: {item.label.value}")
 
-    def export_to_markdown(
+    def export_to_markdown(  # noqa: C901
         self,
         delim: str = "\n\n",
         from_element: int = 0,
@@ -919,6 +919,7 @@ class DoclingDocument(BaseModel):
             DocItemLabel.TEXT,
         ],
         strict_text: bool = False,
+        image_placeholder: str = "<!-- image -->",
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -946,6 +947,8 @@ class DoclingDocument(BaseModel):
         :param "text":
         :param ]:
         :param strict_text: bool:  (Default value = False)
+        :param image_placeholder str:  (Default value = "<!-- image -->")
+            the placeholder to include to position images in the markdown.
         :returns: The exported Markdown representation.
         :rtype: str
         """
@@ -997,12 +1000,7 @@ class DoclingDocument(BaseModel):
                     else:
                         markdown_text = text
 
-                elif (
-                    isinstance(item, TableItem)
-                    and item.data
-                    and item_type in labels
-                    and not strict_text
-                ):
+                elif isinstance(item, TableItem) and item.data and item_type in labels:
                     table = []
                     for row in item.data.grid:
                         tmp = []
@@ -1010,6 +1008,7 @@ class DoclingDocument(BaseModel):
                             tmp.append(col.text)
                         table.append(tmp)
 
+                    md_table = ""
                     if len(table) > 1 and len(table[0]) > 0:
                         try:
                             md_table = tabulate(
@@ -1023,7 +1022,38 @@ class DoclingDocument(BaseModel):
                                 disable_numparse=True,
                             )
 
-                        markdown_text = md_table
+                    parts = []
+
+                    # Compute the caption
+                    caption = ""
+                    for cap in item.captions:
+                        caption += cap.resolve(self).text
+                    if caption:
+                        parts.append(caption)
+
+                    # Rendered the item
+                    if not strict_text:
+                        parts.append(md_table)
+
+                    # Combine parts
+                    markdown_text = "\n".join(parts)
+
+                elif isinstance(item, PictureItem) and item_type in labels:
+                    parts = []
+
+                    # Compute the caption
+                    caption = ""
+                    for cap in item.captions:
+                        caption += cap.resolve(self).text
+                    if caption:
+                        parts.append(caption)
+
+                    # Rendered the item
+                    if not strict_text:
+                        parts.append(f"{image_placeholder}")
+
+                    # Combine parts
+                    markdown_text = "\n".join(parts)
 
             if markdown_text:
                 md_texts.append(markdown_text)
