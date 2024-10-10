@@ -1022,7 +1022,7 @@ class DoclingDocument(BaseModel):
 
                     # skip captions of they are embedded in the actual
                     # floating object
-                    if item_type == "caption" and text in embedded_captions:
+                    if item_type == DocItemLabel.CAPTION and text in embedded_captions:
                         continue
 
                     # ignore repeated text
@@ -1032,7 +1032,7 @@ class DoclingDocument(BaseModel):
                         prev_text = text
 
                     # first title match
-                    if item_type == "title" and not has_title:
+                    if item_type == DocItemLabel.TITLE and not has_title:
                         if strict_text:
                             markdown_text = f"{text}"
                         else:
@@ -1040,9 +1040,10 @@ class DoclingDocument(BaseModel):
                         has_title = True
 
                     # secondary titles
-                    elif item_type in {"title", "subtitle-level-1"} or (
-                        has_title and item_type == "title"
-                    ):
+                    elif item_type in {
+                        DocItemLabel.TITLE,
+                        DocItemLabel.SECTION_HEADER,
+                    } or (has_title and item_type == DocItemLabel.TITLE):
                         if strict_text:
                             markdown_text = f"{text}"
                         else:
