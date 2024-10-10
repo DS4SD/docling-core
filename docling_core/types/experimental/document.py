@@ -982,6 +982,27 @@ class DoclingDocument(BaseModel):
         prev_text = ""
         md_texts: list[str] = []
 
+        # collect all captions embedded in table and figure objects
+        # to avoid repeating them
+        embedded_captions = set()
+        skip_count = 0
+        for ix, (item, level) in enumerate(self.iterate_items(self.body)):
+            if skip_count < from_element:
+                skip_count += 1
+                continue  # skip as many items as you want
+
+            if to_element and ix >= to_element:
+                break
+
+            if (
+                isinstance(item, (TableItem, PictureItem))
+                and len(item.captions) > 0
+                and item.label in labels
+            ):
+                caption = item.caption_text(self)
+                if caption:
+                    embedded_captions.add(caption)
+
         skip_count = 0
         for ix, (item, level) in enumerate(self.iterate_items(self.body)):
             if skip_count < from_element:
@@ -998,6 +1019,11 @@ class DoclingDocument(BaseModel):
 
                 if isinstance(item, TextItem) and item_type in labels:
                     text = item.text
+
+                    # skip captions of they are embedded in the actual
+                    # floating object
+                    if item_type == "caption" and text in embedded_captions:
+                        continue
 
                     # ignore repeated text
                     if prev_text == text or text is None:
