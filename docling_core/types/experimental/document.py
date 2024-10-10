@@ -339,6 +339,13 @@ class FloatingItem(DocItem):
     footnotes: List[RefItem] = []
     image: Optional[ImageRef] = None
 
+    def caption_text(self, doc: "DoclingDocument") -> str:
+        """Computes the caption as a single text."""
+        text = ""
+        for cap in self.captions:
+            text += cap.resolve(doc).text
+        return ""
+
 
 class PictureItem(FloatingItem):
     """PictureItem."""
@@ -382,9 +389,7 @@ class PictureItem(FloatingItem):
             )
 
         if add_caption and len(self.captions):
-            text = ""
-            for cap in self.captions:
-                text += cap.resolve(doc).text
+            text = self.caption_text(doc)
 
             if len(text):
                 body += f"{DocumentToken.BEG_CAPTION.value}"
@@ -447,6 +452,28 @@ class TableItem(FloatingItem):
         df = pd.DataFrame(table_data, columns=columns)
 
         return df
+
+    def export_to_markdown(self) -> str:
+        """Export the table as markdown."""
+        table = []
+        for row in self.data.grid:
+            tmp = []
+            for col in row:
+                tmp.append(col.text)
+            table.append(tmp)
+
+        md_table = ""
+        if len(table) > 1 and len(table[0]) > 0:
+            try:
+                md_table = tabulate(table[1:], headers=table[0], tablefmt="github")
+            except ValueError:
+                md_table = tabulate(
+                    table[1:],
+                    headers=table[0],
+                    tablefmt="github",
+                    disable_numparse=True,
+                )
+        return md_table
 
     def export_to_html(self) -> str:
         """Export the table as html."""
@@ -533,9 +560,7 @@ class TableItem(FloatingItem):
             )
 
         if add_caption and len(self.captions):
-            text = ""
-            for cap in self.captions:
-                text += cap.resolve(doc).text
+            text = self.caption_text(doc)
 
             if len(text):
                 body += f"{DocumentToken.BEG_CAPTION.value}"
@@ -1002,39 +1027,17 @@ class DoclingDocument(BaseModel):
                         markdown_text = text
 
                 elif isinstance(item, TableItem) and item.data and item_type in labels:
-                    table = []
-                    for row in item.data.grid:
-                        tmp = []
-                        for col in row:
-                            tmp.append(col.text)
-                        table.append(tmp)
-
-                    md_table = ""
-                    if len(table) > 1 and len(table[0]) > 0:
-                        try:
-                            md_table = tabulate(
-                                table[1:], headers=table[0], tablefmt="github"
-                            )
-                        except ValueError:
-                            md_table = tabulate(
-                                table[1:],
-                                headers=table[0],
-                                tablefmt="github",
-                                disable_numparse=True,
-                            )
-
                     parts = []
 
                     # Compute the caption
-                    caption = ""
-                    for cap in item.captions:
-                        caption += cap.resolve(self).text
-                    if caption:
+                    if caption := item.caption_text(self):
                         parts.append(caption)
 
                     # Rendered the item
                     if not strict_text:
-                        parts.append(md_table)
+                        md_table = item.export_to_markdown()
+                        if md_table:
+                            parts.append(item.export_to_markdown())
 
                     # Combine parts
                     markdown_text = "\n".join(parts)
@@ -1043,10 +1046,7 @@ class DoclingDocument(BaseModel):
                     parts = []
 
                     # Compute the caption
-                    caption = ""
-                    for cap in item.captions:
-                        caption += cap.resolve(self).text
-                    if caption:
+                    if caption := item.caption_text(self):
                         parts.append(caption)
 
                     # Rendered the item
