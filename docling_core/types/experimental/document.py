@@ -29,6 +29,22 @@ Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
 CURRENT_VERSION: Final = "1.0.0"
 
+DEFAULT_EXPORT_LABELS = {
+    DocItemLabel.TITLE,
+    DocItemLabel.DOCUMENT_INDEX,
+    DocItemLabel.SECTION_HEADER,
+    DocItemLabel.PARAGRAPH,
+    DocItemLabel.CAPTION,
+    DocItemLabel.TABLE,
+    DocItemLabel.PICTURE,
+    DocItemLabel.FORMULA,
+    DocItemLabel.CHECKBOX_UNSELECTED,
+    DocItemLabel.CHECKBOX_SELECTED,
+    DocItemLabel.TEXT,
+    DocItemLabel.LIST_ITEM,
+    DocItemLabel.CODE,
+}
+
 
 class BasePictureData(BaseModel):  # TBD
     """BasePictureData."""
@@ -930,20 +946,16 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, DocItem):
                 print(" " * level, f"{ix}: {item.label.value}")
 
+    def export_to_dict(self) -> Dict:
+        """export_to_dict."""
+        return self.model_dump(mode="json", by_alias=True, exclude_none=True)
+
     def export_to_markdown(  # noqa: C901
         self,
         delim: str = "\n\n",
         from_element: int = 0,
         to_element: Optional[int] = None,
-        labels: list[DocItemLabel] = [
-            DocItemLabel.TITLE,
-            DocItemLabel.SECTION_HEADER,
-            DocItemLabel.PARAGRAPH,
-            DocItemLabel.CAPTION,
-            DocItemLabel.TABLE,
-            DocItemLabel.PICTURE,
-            DocItemLabel.TEXT,
-        ],
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         strict_text: bool = False,
         image_placeholder: str = "<!-- image -->",
     ) -> str:
@@ -964,7 +976,7 @@ class DoclingDocument(BaseModel):
         :param delim: str:  (Default value = "\n\n")
         :param from_element: int:  (Default value = 0)
         :param to_element: Optional[int]:  (Default value = None)
-        :param labels: list[DocItemLabel]
+        :param labels: set[DocItemLabel]
         :param "subtitle-level-1":
         :param "paragraph":
         :param "caption":
@@ -1089,19 +1101,29 @@ class DoclingDocument(BaseModel):
         result = delim.join(md_texts)
         return result
 
+    def export_to_text(  # noqa: C901
+        self,
+        delim: str = "\n\n",
+        from_element: int = 0,
+        to_element: Optional[int] = None,
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+    ) -> str:
+        """export_to_text."""
+        return self.export_to_markdown(
+            delim,
+            from_element,
+            to_element,
+            labels,
+            strict_text=True,
+            image_placeholder="",
+        )
+
     def export_to_document_tokens(
         self,
         delim: str = "\n\n",
         from_element: int = 0,
         to_element: Optional[int] = None,
-        labels: list[DocItemLabel] = [
-            DocItemLabel.TITLE,
-            DocItemLabel.SECTION_HEADER,
-            DocItemLabel.PARAGRAPH,
-            DocItemLabel.CAPTION,
-            DocItemLabel.TABLE,
-            DocItemLabel.TEXT,
-        ],
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         xsize: int = 100,
         ysize: int = 100,
         add_location: bool = True,
@@ -1120,7 +1142,7 @@ class DoclingDocument(BaseModel):
         :param delim: str:  (Default value = "\n\n")
         :param from_element: int:  (Default value = 0)
         :param to_element: Optional[int]:  (Default value = None)
-        :param labels: list[DocItemLabel]
+        :param labels: set[DocItemLabel]
         :param xsize: int:  (Default value = 100)
         :param ysize: int:  (Default value = 100)
         :param add_location: bool:  (Default value = True)
