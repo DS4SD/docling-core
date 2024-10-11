@@ -143,6 +143,14 @@ class DocumentOrigin(BaseModel):
         # from any file handler protocol (e.g. https://, file://, s3://)
     )
 
+    _extra_mimetypes = [
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+        "application/vnd.openxmlformats-officedocument.presentationml.template",
+        "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ]
+
     @field_validator("binary_hash", mode="before")
     @classmethod
     def parse_hex_string(cls, value):
@@ -164,7 +172,7 @@ class DocumentOrigin(BaseModel):
     def validate_mimetype(cls, v):
         """validate_mimetype."""
         # Check if the provided MIME type is valid using mimetypes module
-        if v not in mimetypes.types_map.values():
+        if v not in mimetypes.types_map.values() and v not in cls._extra_mimetypes:
             raise ValueError(f"'{v}' is not a valid MIME type")
         return v
 
@@ -345,6 +353,14 @@ class SectionHeaderItem(TextItem):
 
     label: typing.Literal[DocItemLabel.SECTION_HEADER] = DocItemLabel.SECTION_HEADER
     level: LevelNumber
+
+
+class ListItem(TextItem):
+    """SectionItem."""
+
+    label: typing.Literal[DocItemLabel.LIST_ITEM] = DocItemLabel.LIST_ITEM
+    enumerated: bool = False
+    marker: str  # The bullet or number symbol that prefixes this list item
 
 
 class FloatingItem(DocItem):
@@ -689,7 +705,7 @@ class DoclingDocument(BaseModel):
     body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
 
     groups: List[GroupItem] = []
-    texts: List[Union[SectionHeaderItem, TextItem]] = []
+    texts: List[Union[SectionHeaderItem, ListItem, TextItem]] = []
     pictures: List[PictureItem] = []
     tables: List[TableItem] = []
     key_value_items: List[KeyValueItem] = []
@@ -725,6 +741,50 @@ class DoclingDocument(BaseModel):
         parent.children.append(RefItem(cref=cref))
 
         return group
+
+    def add_list_item(
+        self,
+        text: str,
+        enumerated: bool = False,
+        marker: Optional[str] = None,
+        orig: Optional[str] = None,
+        prov: Optional[ProvenanceItem] = None,
+        parent: Optional[GroupItem] = None,
+    ):
+        """add_paragraph.
+
+        :param label: str:
+        :param text: str:
+        :param orig: Optional[str]:  (Default value = None)
+        :param prov: Optional[ProvenanceItem]:  (Default value = None)
+        :param parent: Optional[GroupItem]:  (Default value = None)
+
+        """
+        if not parent:
+            parent = self.body
+
+        if not orig:
+            orig = text
+
+        marker = marker or "-"
+
+        text_index = len(self.texts)
+        cref = f"#/texts/{text_index}"
+        list_item = ListItem(
+            text=text,
+            orig=orig,
+            self_ref=cref,
+            parent=parent.get_ref(),
+            enumerated=enumerated,
+            marker=marker,
+        )
+        if prov:
+            list_item.prov.append(prov)
+
+        self.texts.append(list_item)
+        parent.children.append(RefItem(cref=cref))
+
+        return list_item
 
     def add_text(
         self,
@@ -1060,6 +1120,15 @@ class DoclingDocument(BaseModel):
                             markdown_text = f"{text}"
                         else:
                             markdown_text = f"## {text}"
+
+                    # secondary titles
+                    elif isinstance(item, ListItem):
+                        if item.enumerated:
+                            marker = item.marker
+                        else:
+                            marker = "-"
+
+                        markdown_text = f"{marker} {text}"
 
                     # normal text
                     else:

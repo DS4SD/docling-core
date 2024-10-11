@@ -13,6 +13,7 @@ from docling_core.types.experimental.document import (
     DoclingDocument,
     FloatingItem,
     KeyValueItem,
+    ListItem,
     PictureItem,
     SectionHeaderItem,
     TableCell,
@@ -52,9 +53,9 @@ def test_docitems():
         return gold
 
     def verify(dc, obj):
-        pred = serialise(obj)
+        pred = serialise(obj).strip()
         # print(f"\t{dc.__name__}:\n {pred}")
-        gold = read(dc.__name__)
+        gold = read(dc.__name__).strip()
 
         assert pred == gold, f"pred!=gold for {dc.__name__}"
 
@@ -70,7 +71,15 @@ def test_docitems():
                 self_ref="#",
             )
             verify(dc, obj)
-
+        elif dc is ListItem:
+            obj = dc(
+                text="whatever",
+                orig="whatever",
+                marker="(1)",
+                enumerated=True,
+                self_ref="#",
+            )
+            verify(dc, obj)
         elif dc is FloatingItem:
             obj = dc(
                 label=DocItemLabel.TEXT,
