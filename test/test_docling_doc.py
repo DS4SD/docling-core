@@ -6,7 +6,6 @@ from pydantic import ValidationError
 
 from docling_core.types.experimental.document import (
     CURRENT_VERSION,
-    BasePictureData,
     BaseTableData,
     DescriptionItem,
     DocItem,
@@ -14,6 +13,7 @@ from docling_core.types.experimental.document import (
     FloatingItem,
     KeyValueItem,
     ListItem,
+    PictureData,
     PictureItem,
     SectionHeaderItem,
     TableCell,
@@ -107,7 +107,7 @@ def test_docitems():
         elif dc is PictureItem:
             obj = dc(
                 self_ref="#",
-                data=BasePictureData(),
+                data=PictureData(),
             )
             verify(dc, obj)
 
@@ -203,7 +203,7 @@ def _test_serialize_and_reload(doc):
     assert doc_reload is not doc  # can't be identical
 
 
-def _test_export_methods(doc):
+def _test_export_methods(doc: DoclingDocument):
     ### Iterate all elements
     doc.print_element_tree()
     ## Export stuff
@@ -341,7 +341,7 @@ def _construct_doc() -> DoclingDocument:
     fig_caption = doc.add_text(
         label=DocItemLabel.CAPTION, text="This is the caption of figure 1."
     )
-    fig_item = doc.add_picture(data=BasePictureData(), caption=fig_caption)
+    fig_item = doc.add_picture(data=PictureData(), caption=fig_caption)
 
     return doc
 

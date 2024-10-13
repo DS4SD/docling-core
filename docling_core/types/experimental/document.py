@@ -46,8 +46,26 @@ DEFAULT_EXPORT_LABELS = {
 }
 
 
-class BasePictureData(BaseModel):  # TBD
-    """BasePictureData."""
+class PictureClassificationData(BaseModel):
+    """PictureClassificationData."""
+
+    provenance: str
+    predicted_class: str
+    confidence: float
+
+
+class PictureDescriptionData(BaseModel):
+    """PictureDescriptionData."""
+
+    text: str
+    provenance: str = ""
+
+
+class PictureData(BaseModel):
+    """PictureData."""
+
+    classification: Optional[PictureClassificationData] = None
+    description: Optional[PictureDescriptionData] = None
 
 
 class TableCell(BaseModel):
@@ -384,7 +402,7 @@ class PictureItem(FloatingItem):
 
     label: typing.Literal[DocItemLabel.PICTURE] = DocItemLabel.PICTURE
 
-    data: BasePictureData
+    data: PictureData
 
     def export_to_document_tokens(
         self,
@@ -863,14 +881,14 @@ class DoclingDocument(BaseModel):
 
     def add_picture(
         self,
-        data: BasePictureData,
+        data: PictureData,
         caption: Optional[Union[TextItem, RefItem]] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
     ):
         """add_picture.
 
-        :param data: BasePictureData:
+        :param data: PictureData:
         :param caption: Optional[Union[TextItem:
         :param RefItem]]:  (Default value = None)
         :param prov: Optional[ProvenanceItem]:  (Default value = None)

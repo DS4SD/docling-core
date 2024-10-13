@@ -133,10 +133,14 @@ pictures: # All pictures...
       $ref: "#/body"
     captions:
       - $ref: "#/texts/3"
-    data: # BaseFigureData Type
-      classification: "illustration"
-      confidence: 0.78
-      description: "...."
+    data: # PictureData Type
+      classification:
+        provenance: model1
+        predicted_class: "illustration"
+        confidence: 0.78
+      description:
+        text: "..."
+        provenance: "model2"
       # content structure?
     image:
       mimetype: image/png

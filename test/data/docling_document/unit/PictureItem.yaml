@@ -1,6 +1,8 @@
 captions: []
 children: []
-data: {}
+data:
+  classification: null
+  description: null
 footnotes: []
 image: null
 label: picture

@@ -7,7 +7,6 @@
 
 from .base import BoundingBox, CoordOrigin, Size
 from .document import (
-    BasePictureData,
     BaseTableData,
     DescriptionItem,
     DocItem,
@@ -19,6 +18,7 @@ from .document import (
     KeyValueItem,
     NodeItem,
     PageItem,
+    PictureData,
     PictureItem,
     ProvenanceItem,
     RefItem,
