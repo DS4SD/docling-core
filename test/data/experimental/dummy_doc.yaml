@@ -141,6 +141,10 @@ pictures: # All pictures...
       description:
         text: "..."
         provenance: "model2"
+      molecule:
+        smi: "..."
+        confidence: 0.98
+        provenance: "model3-1.0.0"
       # content structure?
     image:
       mimetype: image/png

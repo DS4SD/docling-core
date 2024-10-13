@@ -61,11 +61,20 @@ class PictureDescriptionData(BaseModel):
     provenance: str = ""
 
 
+class PictureMoleculeData(BaseModel):
+    """PictureMoleculeData."""
+
+    smi: str
+    confidence: float
+    provenance: str = ""
+
+
 class PictureData(BaseModel):
     """PictureData."""
 
     classification: Optional[PictureClassificationData] = None
     description: Optional[PictureDescriptionData] = None
+    molecule: Optional[PictureMoleculeData] = None
 
 
 class TableCell(BaseModel):
