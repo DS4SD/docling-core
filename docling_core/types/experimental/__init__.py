@@ -7,7 +7,6 @@
 
 from .base import BoundingBox, CoordOrigin, Size
 from .document import (
-    BaseTableData,
     DescriptionItem,
     DocItem,
     DoclingDocument,
@@ -24,6 +23,7 @@ from .document import (
     RefItem,
     SectionHeaderItem,
     TableCell,
+    TableData,
     TableItem,
     TextItem,
 )

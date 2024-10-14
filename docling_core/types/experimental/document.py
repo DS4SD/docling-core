@@ -117,7 +117,7 @@ class TableCell(BaseModel):
         return data
 
 
-class BaseTableData(BaseModel):  # TBD
+class TableData(BaseModel):  # TBD
     """BaseTableData."""
 
     table_cells: List[TableCell] = []
@@ -469,7 +469,7 @@ class PictureItem(FloatingItem):
 class TableItem(FloatingItem):
     """TableItem."""
 
-    data: BaseTableData
+    data: TableData
     label: typing.Literal[DocItemLabel.TABLE] = DocItemLabel.TABLE
 
     def export_to_dataframe(self) -> pd.DataFrame:
@@ -860,7 +860,7 @@ class DoclingDocument(BaseModel):
 
     def add_table(
         self,
-        data: BaseTableData,
+        data: TableData,
         caption: Optional[Union[TextItem, RefItem]] = None,  # This is not cool yet.
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,

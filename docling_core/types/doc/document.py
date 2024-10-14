@@ -579,7 +579,7 @@ class ExportedCCSDocument(
                     if item.text:
                         markdown_text = item.text
                     if not strict_text:
-                        markdown_text += "\n" + md_table
+                        markdown_text += "\n\n" + md_table
 
                 elif isinstance(item, Figure) and item_type in main_text_labels:
 

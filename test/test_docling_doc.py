@@ -6,7 +6,6 @@ from pydantic import ValidationError
 
 from docling_core.types.experimental.document import (
     CURRENT_VERSION,
-    BaseTableData,
     DescriptionItem,
     DocItem,
     DoclingDocument,
@@ -17,6 +16,7 @@ from docling_core.types.experimental.document import (
     PictureItem,
     SectionHeaderItem,
     TableCell,
+    TableData,
     TableItem,
     TextItem,
 )
@@ -114,7 +114,7 @@ def test_docitems():
         elif dc is TableItem:
             obj = dc(
                 self_ref="#",
-                data=BaseTableData(num_rows=3, num_cols=5, table_cells=[]),
+                data=TableData(num_rows=3, num_cols=5, table_cells=[]),
             )
             verify(dc, obj)
 
@@ -335,7 +335,7 @@ def _construct_doc() -> DoclingDocument:
             text="695944",
         )
     )
-    table_el = BaseTableData(num_rows=3, num_cols=3, table_cells=table_cells)
+    table_el = TableData(num_rows=3, num_cols=3, table_cells=table_cells)
     doc.add_table(data=table_el)
 
     fig_caption = doc.add_text(
