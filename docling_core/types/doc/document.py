@@ -6,7 +6,7 @@
 """Models for the Docling Document data type."""
 
 from datetime import datetime
-from typing import Generic, Optional, Union
+from typing import Dict, Generic, Optional, Union
 
 from pydantic import (
     AnyHttpUrl,
@@ -433,6 +433,10 @@ class ExportedCCSDocument(
                 pagedims[_.page] = [_.width, _.height]
 
         return pagedims
+
+    def export_to_dict(self) -> Dict:
+        """export_to_dict."""
+        return self.model_dump(mode="json", by_alias=True, exclude_none=True)
 
     def export_to_markdown(  # noqa: C901
         self,

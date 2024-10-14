@@ -97,7 +97,12 @@ class TableCell(BaseModel):
     def from_dict_format(cls, data: Any) -> Any:
         """from_dict_format."""
         if isinstance(data, Dict):
-            if "bbox" not in data or data["bbox"] is None:
+            # Check if this is a native BoundingBox or a bbox from docling-ibm-models
+            if (
+                "bbox" not in data
+                or data["bbox"] is None
+                or isinstance(data["bbox"], BoundingBox)
+            ):
                 return data
             text = data["bbox"].get("token", "")
             if not len(text):
@@ -403,7 +408,7 @@ class FloatingItem(DocItem):
         text = ""
         for cap in self.captions:
             text += cap.resolve(doc).text
-        return ""
+        return text
 
 
 class PictureItem(FloatingItem):
@@ -469,7 +474,7 @@ class TableItem(FloatingItem):
 
     def export_to_dataframe(self) -> pd.DataFrame:
         """Export the table as a Pandas DataFrame."""
-        if self.data is None or self.data.num_rows == 0 or self.data.num_cols == 0:
+        if self.data.num_rows == 0 or self.data.num_cols == 0:
             return pd.DataFrame()
 
         # Count how many rows are column headers
@@ -815,7 +820,7 @@ class DoclingDocument(BaseModel):
 
     def add_text(
         self,
-        label: str,
+        label: DocItemLabel,
         text: str,
         orig: Optional[str] = None,
         prov: Optional[ProvenanceItem] = None,
@@ -1167,6 +1172,7 @@ class DoclingDocument(BaseModel):
                     # Compute the caption
                     if caption := item.caption_text(self):
                         parts.append(caption)
+                        parts.append("\n")
 
                     # Rendered the item
                     if not strict_text:
@@ -1183,6 +1189,7 @@ class DoclingDocument(BaseModel):
                     # Compute the caption
                     if caption := item.caption_text(self):
                         parts.append(caption)
+                        parts.append("\n")
 
                     # Rendered the item
                     if not strict_text:
