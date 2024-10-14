@@ -145,6 +145,11 @@ pictures: # All pictures...
         smi: "..."
         confidence: 0.98
         provenance: "model3-1.0.0"
+      advanced:
+        myanalysis:
+          prediction: "abc"
+        something_else:
+          text: "aaa"
       # content structure?
     image:
       mimetype: image/png
