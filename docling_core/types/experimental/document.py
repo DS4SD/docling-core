@@ -75,6 +75,7 @@ class PictureData(BaseModel):
     classification: Optional[PictureClassificationData] = None
     description: Optional[PictureDescriptionData] = None
     molecule: Optional[PictureMoleculeData] = None
+    advanced: Optional[Dict[str, Any]] = None
 
 
 class TableCell(BaseModel):
