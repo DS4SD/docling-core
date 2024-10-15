@@ -699,7 +699,9 @@ class KeyValueItem(DocItem):
     """KeyValueItem."""
 
 
-ContentItem = Union[TextItem, SectionHeaderItem, PictureItem, TableItem, KeyValueItem]
+ContentItem = Union[
+    TextItem, SectionHeaderItem, ListItem, PictureItem, TableItem, KeyValueItem
+]
 
 
 class PageItem(BaseModel):
