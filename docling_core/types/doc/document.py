@@ -1,11 +1,14 @@
 """Models for the Docling Document data type."""
 
+import base64
 import mimetypes
 import re
 import typing
+from io import BytesIO
 from typing import Any, Dict, Final, List, Optional, Tuple, Union
 
 import pandas as pd
+from PIL import Image as PILImage
 from pydantic import (
     AnyUrl,
     BaseModel,
@@ -17,7 +20,7 @@ from pydantic import (
     model_validator,
 )
 from tabulate import tabulate
-from typing_extensions import Annotated
+from typing_extensions import Annotated, Self
 
 from docling_core.search.package import VERSION_PATTERN
 from docling_core.types.base import _JSON_POINTER_REGEX
@@ -246,6 +249,22 @@ class ImageRef(BaseModel):
     dpi: int
     size: Size
     uri: AnyUrl
+    _pil: Optional[PILImage.Image] = None
+
+    @property
+    def pil_image(self) -> PILImage.Image:
+        """Return the PIL Image."""
+        if self._pil is not None:
+            return self._pil
+
+        if str(self.uri).startswith("data:"):
+            encoded_img = str(self.uri).split(",")[1]
+            decoded_img = base64.b64decode(encoded_img)
+            self._pil = PILImage.open(BytesIO(decoded_img))
+        else:
+            self._pil = PILImage.open(str(self.uri))
+
+        return self._pil
 
     @field_validator("mimetype")
     @classmethod
@@ -255,6 +274,21 @@ class ImageRef(BaseModel):
         if v not in mimetypes.types_map.values():
             raise ValueError(f"'{v}' is not a valid MIME type")
         return v
+
+    @classmethod
+    def from_pil(cls, image: PILImage.Image, dpi: int) -> Self:
+        """Construct ImageRef from a PIL Image."""
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        img_uri = f"data:image/png;base64,{img_str}"
+        return cls(
+            mimetype="image/png",
+            dpi=dpi,
+            size=Size(width=image.width, height=image.height),
+            uri=img_uri,
+            _pil=image,
+        )
 
 
 class ProvenanceItem(BaseModel):
@@ -897,6 +931,7 @@ class DoclingDocument(BaseModel):
     def add_picture(
         self,
         data: PictureData,
+        image: Optional[ImageRef] = None,
         caption: Optional[Union[TextItem, RefItem]] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
@@ -919,6 +954,7 @@ class DoclingDocument(BaseModel):
         fig_item = PictureItem(
             label=DocItemLabel.PICTURE,
             data=data,
+            image=image,
             self_ref=cref,
             parent=parent.get_ref(),
         )
@@ -1336,14 +1372,16 @@ class DoclingDocument(BaseModel):
 
         return doctags
 
-    def add_page(self, page_no: int, size: Size) -> PageItem:
+    def add_page(
+        self, page_no: int, size: Size, image: Optional[ImageRef] = None
+    ) -> PageItem:
         """add_page.
 
         :param page_no: int:
         :param size: Size:
 
         """
-        pitem = PageItem(page_no=page_no, size=size)
+        pitem = PageItem(page_no=page_no, size=size, image=image)
 
         self.pages[page_no] = pitem
         return pitem

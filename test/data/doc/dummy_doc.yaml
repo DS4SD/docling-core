@@ -169,6 +169,23 @@ pictures: # All pictures...
           b: 623.4
           r: 702.5
         charspan: [ 0,288 ]
+  - self_ref: "#/pictures/1"
+    label: "picture"
+    parent:
+      $ref: "#/body"
+    data: # PictureData Type
+      classification: null
+      description: null
+      molecule: null
+      advanced: null
+    image:
+      mimetype: image/png
+      dpi: 72
+      size:
+        width: 2.0
+        height: 2.0
+      uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAC0lEQVR4nGNgQAYAAA4AAamRc7EAAAAASUVORK5CYII="
+    prov: []
 
 key_value_items: [ ] # All KV-items
 

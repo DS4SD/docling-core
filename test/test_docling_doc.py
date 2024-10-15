@@ -2,6 +2,7 @@ from collections import deque
 
 import pytest
 import yaml
+from PIL import Image as PILImage
 from pydantic import ValidationError
 
 from docling_core.types.doc.document import (
@@ -10,6 +11,7 @@ from docling_core.types.doc.document import (
     DocItem,
     DoclingDocument,
     FloatingItem,
+    ImageRef,
     KeyValueItem,
     ListItem,
     PictureData,
@@ -343,7 +345,29 @@ def _construct_doc() -> DoclingDocument:
     )
     fig_item = doc.add_picture(data=PictureData(), caption=fig_caption)
 
+    fig2_image = PILImage.new(mode="RGB", size=(2, 2), color=(0, 0, 0))
+    fig2_item = doc.add_picture(
+        data=PictureData(), image=ImageRef.from_pil(image=fig2_image, dpi=72)
+    )
     return doc
+
+
+def test_pil_image():
+    doc = DoclingDocument(description=DescriptionItem(), name="Untitled 1")
+    fig_image = PILImage.new(mode="RGB", size=(2, 2), color=(0, 0, 0))
+    fig_item = doc.add_picture(
+        data=PictureData(), image=ImageRef.from_pil(image=fig_image, dpi=72)
+    )
+
+    ### Serialize and deserialize the document
+    yaml_dump = yaml.safe_dump(doc.model_dump(mode="json", by_alias=True))
+    doc_reload = DoclingDocument.model_validate(yaml.safe_load(yaml_dump))
+    reloaded_fig = doc_reload.pictures[0]
+    reloaded_image = reloaded_fig.image.pil_image
+
+    assert reloaded_image.size == fig_image.size
+    assert reloaded_image.mode == fig_image.mode
+    assert reloaded_image.tobytes() == fig_image.tobytes()
 
 
 def test_version_doc():
