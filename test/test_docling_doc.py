@@ -2,6 +2,7 @@ from collections import deque
 
 import pytest
 import yaml
+from PIL import Image as PILImage
 from pydantic import ValidationError
 
 from docling_core.types.experimental.document import (
@@ -11,6 +12,7 @@ from docling_core.types.experimental.document import (
     DocItem,
     DoclingDocument,
     FloatingItem,
+    ImagePIL,
     KeyValueItem,
     ListItem,
     PictureData,
@@ -342,6 +344,11 @@ def _construct_doc() -> DoclingDocument:
         label=DocItemLabel.CAPTION, text="This is the caption of figure 1."
     )
     fig_item = doc.add_picture(data=PictureData(), caption=fig_caption)
+
+    fig2_image = PILImage.new(mode="RGB", size=(2, 2), color=(0, 0, 0))
+    fig2_item = doc.add_picture(
+        data=PictureData(), image=ImagePIL(image=fig2_image, dpi=72)
+    )
 
     return doc
 

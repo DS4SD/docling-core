@@ -1,21 +1,28 @@
 """Models for the Docling Document data type."""
 
+import base64
 import mimetypes
 import re
 import typing
+from io import BytesIO
 from typing import Any, Dict, Final, List, Optional, Tuple, Union
 
 import pandas as pd
+from PIL import Image as PILImage
 from pydantic import (
     AnyUrl,
     BaseModel,
     ConfigDict,
     Field,
+    GetJsonSchemaHandler,
     StringConstraints,
     computed_field,
     field_validator,
+    model_serializer,
     model_validator,
 )
+from pydantic.json_schema import JsonSchemaValue
+from pydantic_core import core_schema as cs
 from tabulate import tabulate
 from typing_extensions import Annotated
 
@@ -257,6 +264,46 @@ class ImageRef(BaseModel):
         return v
 
 
+class ImagePIL(BaseModel):
+    """ImagePIL."""
+
+    dpi: int
+    image: PILImage.Image
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    # @classmethod
+    # def __get_pydantic_core_schema__(
+    #     cls, source: Type[Any], handler: GetCoreSchemaHandler
+    # ) -> cs.CoreSchema:
+    #     return ImageRef.__get_pydantic_core_schema__(source, handler)
+
+    @classmethod
+    def __get_pydantic_json_schema__(
+        cls, core_schema: cs.CoreSchema, handler: GetJsonSchemaHandler
+    ) -> JsonSchemaValue:
+        """Retun the json_schema of the ImageRef."""
+        return ImageRef.__get_pydantic_json_schema__(core_schema, handler)
+
+    @model_serializer()
+    def serialize_model(self):
+        """Serialize the model as ImageRef."""
+        buffered = BytesIO()
+        self.image.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        img_uri = f"data:image/png;base64,{img_str}"
+        img_ref = ImageRef(
+            mimetype="image/png",
+            dpi=self.dpi,
+            size=Size(width=self.image.width, height=self.image.height),
+            uri=img_uri,
+        )
+        return img_ref.model_dump()
+
+
+ImageType = Union[ImageRef, ImagePIL]
+
+
 class ProvenanceItem(BaseModel):
     """ProvenanceItem."""
 
@@ -402,7 +449,7 @@ class FloatingItem(DocItem):
     captions: List[RefItem] = []
     references: List[RefItem] = []
     footnotes: List[RefItem] = []
-    image: Optional[ImageRef] = None
+    image: Optional[ImageType] = None
 
     def caption_text(self, doc: "DoclingDocument") -> str:
         """Computes the caption as a single text."""
@@ -708,7 +755,7 @@ class PageItem(BaseModel):
     # A page carries separate root items for furniture and body,
     # only referencing items on the page
     size: Size
-    image: Optional[ImageRef] = None
+    image: Optional[ImageType] = None
     page_no: int
 
 
@@ -897,6 +944,7 @@ class DoclingDocument(BaseModel):
     def add_picture(
         self,
         data: PictureData,
+        image: Optional[ImageType] = None,
         caption: Optional[Union[TextItem, RefItem]] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
@@ -919,6 +967,7 @@ class DoclingDocument(BaseModel):
         fig_item = PictureItem(
             label=DocItemLabel.PICTURE,
             data=data,
+            image=image,
             self_ref=cref,
             parent=parent.get_ref(),
         )
@@ -1336,14 +1385,17 @@ class DoclingDocument(BaseModel):
 
         return doctags
 
-    def add_page(self, page_no: int, size: Size) -> PageItem:
+    def add_page(
+        self, page_no: int, size: Size, image: Optional[ImageType] = None
+    ) -> PageItem:
         """add_page.
 
         :param page_no: int:
         :param size: Size:
+        :param image: Optional[ImageType]:
 
         """
-        pitem = PageItem(page_no=page_no, size=size)
+        pitem = PageItem(page_no=page_no, size=size, image=image)
 
         self.pages[page_no] = pitem
         return pitem
