@@ -6,7 +6,7 @@
 """Generate the JSON Schema of pydantic models and export them to files.
 
 Example:
-    python docling_core/utils/ds_generate_jsonschema.py doc.base.TableCell
+    python docling_core/utils/ds_generate_jsonschema.py legacy_doc.base.TableCell
 
 """
 import argparse
@@ -48,7 +48,7 @@ def main() -> None:
     """Print the JSON Schema of a model."""
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
-        "class_ref", help="Class reference, e.g., doc.base.TableCell"
+        "class_ref", help="Class reference, e.g., legacy_doc.base.TableCell"
     )
     args = argparser.parse_args()
 

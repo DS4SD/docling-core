@@ -4,7 +4,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from docling_core.types.experimental.document import (
+from docling_core.types.doc.document import (
     CURRENT_VERSION,
     DescriptionItem,
     DocItem,
@@ -20,7 +20,7 @@ from docling_core.types.experimental.document import (
     TableItem,
     TextItem,
 )
-from docling_core.types.experimental.labels import DocItemLabel, GroupLabel
+from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 
 
 def test_docitems():
@@ -125,7 +125,7 @@ def test_docitems():
 
 def test_reference_doc():
     # Read YAML file of manual reference doc
-    with open("test/data/experimental/dummy_doc.yaml", "r") as fp:
+    with open("test/data/doc/dummy_doc.yaml", "r") as fp:
         dict_from_yaml = yaml.safe_load(fp)
 
     doc = DoclingDocument.model_validate(dict_from_yaml)
@@ -162,7 +162,7 @@ def test_reference_doc():
 
 def test_parse_doc():
     with open(
-        "test/data/experimental/2206.01062.experimental.yaml",
+        "test/data/doc/2206.01062.yaml",
         "r",
     ) as fp:
         dict_from_yaml = yaml.safe_load(fp)
@@ -352,7 +352,7 @@ def test_version_doc():
     doc = DoclingDocument(description=DescriptionItem(), name="Untitled 1")
     assert doc.version == CURRENT_VERSION
 
-    with open("test/data/experimental/dummy_doc.yaml") as fp:
+    with open("test/data/doc/dummy_doc.yaml") as fp:
         dict_from_yaml = yaml.safe_load(fp)
     doc = DoclingDocument.model_validate(dict_from_yaml)
     assert doc.version == CURRENT_VERSION
