@@ -49,12 +49,18 @@ DEFAULT_EXPORT_LABELS = {
 }
 
 
+class PictureClassificationClass(BaseModel):
+    """PictureClassificationData."""
+
+    class_name: str
+    confidence: float
+
+
 class PictureClassificationData(BaseModel):
     """PictureClassificationData."""
 
     provenance: str
-    predicted_class: str
-    confidence: float
+    predicted_classes: List[PictureClassificationClass]
 
 
 class PictureDescriptionData(BaseModel):
