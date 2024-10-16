@@ -777,10 +777,6 @@ class PageItem(BaseModel):
     page_no: int
 
 
-class DescriptionItem(BaseModel):
-    """DescriptionItem."""
-
-
 class DoclingDocument(BaseModel):
     """DoclingDocument."""
 
@@ -788,7 +784,6 @@ class DoclingDocument(BaseModel):
     version: Annotated[str, StringConstraints(pattern=VERSION_PATTERN, strict=True)] = (
         CURRENT_VERSION
     )
-    description: DescriptionItem
     name: str  # The working name of this document, without extensions
     # (could be taken from originating doc, or just "Untitled 1")
     origin: Optional[DocumentOrigin] = (

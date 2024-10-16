@@ -7,7 +7,6 @@
 
 from .base import BoundingBox, CoordOrigin, Size
 from .document import (
-    DescriptionItem,
     DocItem,
     DoclingDocument,
     DocumentOrigin,
