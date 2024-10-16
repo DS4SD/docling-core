@@ -4444,7 +4444,7 @@
             "captions": [],
             "references": [],
             "footnotes": [],
-            "data": {}
+            "annotations": []
         },
         {
             "self_ref": "#/pictures/1",
@@ -4476,7 +4476,7 @@
             ],
             "references": [],
             "footnotes": [],
-            "data": {}
+            "annotations": []
         },
         {
             "self_ref": "#/pictures/2",
@@ -4508,7 +4508,7 @@
             ],
             "references": [],
             "footnotes": [],
-            "data": {}
+            "annotations": []
         },
         {
             "self_ref": "#/pictures/3",
@@ -4536,7 +4536,7 @@
             "captions": [],
             "references": [],
             "footnotes": [],
-            "data": {}
+            "annotations": []
         },
         {
             "self_ref": "#/pictures/4",
@@ -4564,7 +4564,7 @@
             "captions": [],
             "references": [],
             "footnotes": [],
-            "data": {}
+            "annotations": []
         },
         {
             "self_ref": "#/pictures/5",
@@ -4592,7 +4592,7 @@
             "captions": [],
             "references": [],
             "footnotes": [],
-            "data": {}
+            "annotations": []
         },
         {
             "self_ref": "#/pictures/6",
@@ -4624,7 +4624,7 @@
             ],
             "references": [],
             "footnotes": [],
-            "data": {}
+            "annotations": []
         },
         {
             "self_ref": "#/pictures/7",
@@ -4656,7 +4656,7 @@
             ],
             "references": [],
             "footnotes": [],
-            "data": {}
+            "annotations": []
         },
         {
             "self_ref": "#/pictures/8",
@@ -4684,7 +4684,7 @@
             "captions": [],
             "references": [],
             "footnotes": [],
-            "data": {}
+            "annotations": []
         },
         {
             "self_ref": "#/pictures/9",
@@ -4712,7 +4712,7 @@
             "captions": [],
             "references": [],
             "footnotes": [],
-            "data": {}
+            "annotations": []
         }
     ],
     "tables": [
