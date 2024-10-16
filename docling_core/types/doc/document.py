@@ -5,7 +5,7 @@ import mimetypes
 import re
 import typing
 from io import BytesIO
-from typing import Any, Dict, Final, List, Optional, Tuple, Union
+from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
 
 import pandas as pd
 from PIL import Image as PILImage
@@ -49,6 +49,12 @@ DEFAULT_EXPORT_LABELS = {
 }
 
 
+class BasePictureData(BaseModel):
+    """BasePictureData."""
+
+    kind: str
+
+
 class PictureClassificationClass(BaseModel):
     """PictureClassificationData."""
 
@@ -56,35 +62,50 @@ class PictureClassificationClass(BaseModel):
     confidence: float
 
 
-class PictureClassificationData(BaseModel):
+class PictureClassificationData(BasePictureData):
     """PictureClassificationData."""
 
+    kind: Literal["classification"] = "classification"
     provenance: str
     predicted_classes: List[PictureClassificationClass]
 
 
-class PictureDescriptionData(BaseModel):
+class PictureDescriptionData(BasePictureData):
     """PictureDescriptionData."""
 
+    kind: Literal["description"] = "description"
     text: str
-    provenance: str = ""
+    provenance: str
 
 
 class PictureMoleculeData(BaseModel):
     """PictureMoleculeData."""
 
+    kind: Literal["molecule_data"] = "molecule_data"
+
     smi: str
     confidence: float
-    provenance: str = ""
+    class_name: str
+    segmentation: List[Tuple[float, float]]
+    provenance: str
 
 
-class PictureData(BaseModel):
-    """PictureData."""
+class PictureMiscData(BaseModel):
+    """PictureMiscData."""
 
-    classification: Optional[PictureClassificationData] = None
-    description: Optional[PictureDescriptionData] = None
-    molecule: Optional[PictureMoleculeData] = None
-    advanced: Optional[Dict[str, Any]] = None
+    kind: Literal["misc"] = "misc"
+    content: Dict[str, Any]
+
+
+PictureDataType = Annotated[
+    Union[
+        PictureClassificationData,
+        PictureDescriptionData,
+        PictureMoleculeData,
+        PictureMiscData,
+    ],
+    Field(discriminator="kind"),
+]
 
 
 class TableCell(BaseModel):
@@ -459,7 +480,7 @@ class PictureItem(FloatingItem):
 
     label: typing.Literal[DocItemLabel.PICTURE] = DocItemLabel.PICTURE
 
-    data: PictureData
+    annotations: List[PictureDataType] = []
 
     def export_to_document_tokens(
         self,
@@ -940,7 +961,7 @@ class DoclingDocument(BaseModel):
 
     def add_picture(
         self,
-        data: PictureData,
+        annotations: List[PictureDataType] = [],
         image: Optional[ImageRef] = None,
         caption: Optional[Union[TextItem, RefItem]] = None,
         prov: Optional[ProvenanceItem] = None,
@@ -948,7 +969,7 @@ class DoclingDocument(BaseModel):
     ):
         """add_picture.
 
-        :param data: PictureData:
+        :param data: List[PictureData]: (Default value = [])
         :param caption: Optional[Union[TextItem:
         :param RefItem]]:  (Default value = None)
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
@@ -963,7 +984,7 @@ class DoclingDocument(BaseModel):
 
         fig_item = PictureItem(
             label=DocItemLabel.PICTURE,
-            data=data,
+            annotations=annotations,
             image=image,
             self_ref=cref,
             parent=parent.get_ref(),

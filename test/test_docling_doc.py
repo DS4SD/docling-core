@@ -15,7 +15,6 @@ from docling_core.types.doc.document import (
     ImageRef,
     KeyValueItem,
     ListItem,
-    PictureData,
     PictureItem,
     SectionHeaderItem,
     TableCell,
@@ -119,7 +118,6 @@ def test_docitems():
         elif dc is PictureItem:
             obj = dc(
                 self_ref="#",
-                data=PictureData(),
             )
             verify(dc, obj)
 
@@ -353,21 +351,17 @@ def _construct_doc() -> DoclingDocument:
     fig_caption = doc.add_text(
         label=DocItemLabel.CAPTION, text="This is the caption of figure 1."
     )
-    fig_item = doc.add_picture(data=PictureData(), caption=fig_caption)
+    fig_item = doc.add_picture(caption=fig_caption)
 
     fig2_image = PILImage.new(mode="RGB", size=(2, 2), color=(0, 0, 0))
-    fig2_item = doc.add_picture(
-        data=PictureData(), image=ImageRef.from_pil(image=fig2_image, dpi=72)
-    )
+    fig2_item = doc.add_picture(image=ImageRef.from_pil(image=fig2_image, dpi=72))
     return doc
 
 
 def test_pil_image():
     doc = DoclingDocument(description=DescriptionItem(), name="Untitled 1")
     fig_image = PILImage.new(mode="RGB", size=(2, 2), color=(0, 0, 0))
-    fig_item = doc.add_picture(
-        data=PictureData(), image=ImageRef.from_pil(image=fig_image, dpi=72)
-    )
+    fig_item = doc.add_picture(image=ImageRef.from_pil(image=fig_image, dpi=72))
 
     ### Serialize and deserialize the document
     yaml_dump = yaml.safe_dump(doc.model_dump(mode="json", by_alias=True))

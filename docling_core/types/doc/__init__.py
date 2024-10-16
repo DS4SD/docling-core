@@ -17,7 +17,6 @@ from .document import (
     KeyValueItem,
     NodeItem,
     PageItem,
-    PictureData,
     PictureItem,
     ProvenanceItem,
     RefItem,

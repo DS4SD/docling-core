@@ -133,24 +133,27 @@ pictures: # All pictures...
       $ref: "#/body"
     captions:
       - $ref: "#/texts/3"
-    data: # PictureData Type
-      classification:
+    annotations: # PictureData Type
+      - kind: classification
         provenance: model1
         predicted_classes:
           - class_name: "illustration"
             confidence: 0.78
-      description:
+      - kind: description
         text: "..."
         provenance: "model2"
-      molecule:
+      - kind: molecule_data
         smi: "..."
         confidence: 0.98
+        class_name: "chemistry_molecular_structure"
+        segmentation: [[0,0],[1,0],[0,1],[1,1]]
         provenance: "model3-1.0.0"
-      advanced:
-        myanalysis:
-          prediction: "abc"
-        something_else:
-          text: "aaa"
+      - kind: misc
+        content:
+          myanalysis:
+            prediction: "abc"
+          something_else:
+            text: "aaa"
       # content structure?
     image:
       mimetype: image/png
@@ -174,11 +177,7 @@ pictures: # All pictures...
     label: "picture"
     parent:
       $ref: "#/body"
-    data: # PictureData Type
-      classification: null
-      description: null
-      molecule: null
-      advanced: null
+    annotations: []
     image:
       mimetype: image/png
       dpi: 72
