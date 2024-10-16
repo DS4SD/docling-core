@@ -10,6 +10,7 @@ from docling_core.types.doc.document import (
     DescriptionItem,
     DocItem,
     DoclingDocument,
+    DocumentOrigin,
     FloatingItem,
     ImageRef,
     KeyValueItem,
@@ -23,6 +24,15 @@ from docling_core.types.doc.document import (
     TextItem,
 )
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
+
+
+def test_doc_origin():
+
+    doc_origin = DocumentOrigin(
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename="myfile.pdf",
+        binary_hash="50115d582a0897fe1dd520a6876ec3f9321690ed0f6cfdc99a8d09019be073e8",
+    )
 
 
 def test_docitems():

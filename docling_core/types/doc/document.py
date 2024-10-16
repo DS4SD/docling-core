@@ -181,7 +181,7 @@ class DocumentOrigin(BaseModel):
         # from any file handler protocol (e.g. https://, file://, s3://)
     )
 
-    _extra_mimetypes = [
+    _extra_mimetypes: typing.ClassVar[List[str]] = [
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
         "application/vnd.openxmlformats-officedocument.presentationml.template",
