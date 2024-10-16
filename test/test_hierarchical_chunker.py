@@ -6,7 +6,7 @@
 import json
 
 from docling_core.transforms.chunker import HierarchicalChunker
-from docling_core.transforms.chunker.hierarchical_chunker import Chunk
+from docling_core.transforms.chunker.hierarchical_chunker import DocChunk
 from docling_core.types.doc import DoclingDocument as DLDocument
 
 
@@ -18,7 +18,9 @@ def test_chunk_merge_list_items():
         merge_list_items=True,
     )
     chunks = chunker.chunk(dl_doc=dl_doc)
-    act_data = dict(root=[Chunk.model_validate(n).export_json_dict() for n in chunks])
+    act_data = dict(
+        root=[DocChunk.model_validate(n).export_json_dict() for n in chunks]
+    )
     with open("test/data/chunker/0_out_chunks.json") as f:
         exp_data = json.load(fp=f)
     assert exp_data == act_data
@@ -32,7 +34,9 @@ def test_chunk_no_merge_list_items():
         merge_list_items=False,
     )
     chunks = chunker.chunk(dl_doc=dl_doc)
-    act_data = dict(root=[Chunk.model_validate(n).export_json_dict() for n in chunks])
+    act_data = dict(
+        root=[DocChunk.model_validate(n).export_json_dict() for n in chunks]
+    )
     with open("test/data/chunker/1_out_chunks.json") as f:
         exp_data = json.load(fp=f)
     assert exp_data == act_data

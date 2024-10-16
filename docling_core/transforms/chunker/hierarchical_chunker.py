@@ -11,10 +11,9 @@ import logging
 from typing import Any, ClassVar, Iterator, Optional
 
 from pandas import DataFrame
-from pydantic import BaseModel, Field, conlist
+from pydantic import Field
 
-from docling_core.transforms.chunker import BaseChunker
-from docling_core.transforms.chunker.base import BaseChunk
+from docling_core.transforms.chunker import BaseChunk, BaseChunker, BaseMeta
 from docling_core.types.doc import DoclingDocument as DLDocument
 from docling_core.types.doc.document import (
     DocItem,
@@ -33,50 +32,42 @@ _KEY_CAPTIONS = "captions"
 _logger = logging.getLogger(__name__)
 
 
-class ChunkMeta(BaseModel):
-    """Data model for specific chunk metadata."""
+class DocMeta(BaseMeta):
+    """Data model for Hierarchical Chunker metadata."""
 
-    # TODO align paths typewith _JSON_POINTER_REGEX
-    doc_items: conlist(DocItem, min_length=1) = Field(  # type: ignore
+    doc_items: list[DocItem] = Field(
         alias=_KEY_DOC_ITEMS,
+        min_length=1,
     )
-    headings: Optional[conlist(str, min_length=1)] = Field(  # type: ignore
+    headings: Optional[list[str]] = Field(
         default=None,
         alias=_KEY_HEADINGS,
+        min_length=1,
     )
-    captions: Optional[conlist(str, min_length=1)] = Field(  # type: ignore
+    captions: Optional[list[str]] = Field(
         default=None,
         alias=_KEY_CAPTIONS,
+        min_length=1,
     )
 
     excluded_embed: ClassVar[list[str]] = [_KEY_DOC_ITEMS]
     excluded_llm: ClassVar[list[str]] = [_KEY_DOC_ITEMS]
 
-    def export_json_dict(self) -> dict[str, Any]:
-        """Helper method for exporting non-None keys to JSON mode.
 
-        Returns:
-            dict[str, Any]: The exported dictionary.
-        """
-        return self.model_dump(mode="json", by_alias=True, exclude_none=True)
+class DocChunk(BaseChunk):
+    """Data model for Hierarchical Chunker chunks."""
 
-
-class Chunk(BaseChunk):
-    """Data model for specific chunk."""
-
-    meta: ChunkMeta
-
-    def export_json_dict(self) -> dict[str, Any]:
-        """Helper method for exporting non-None keys to JSON mode.
-
-        Returns:
-            dict[str, Any]: The exported dictionary.
-        """
-        return self.model_dump(mode="json", by_alias=True, exclude_none=True)
+    meta: DocMeta
 
 
 class HierarchicalChunker(BaseChunker):
-    """Chunker implementation leveraging the document layout."""
+    r"""Chunker implementation leveraging the document layout.
+
+    Args:
+        merge_list_items (bool): Whether to merge successive list items.
+            Defaults to True.
+        delim (str): Delimiter to use for merging text. Defaults to "\n".
+    """
 
     merge_list_items: bool = True
     delim: str = "\n"
@@ -129,9 +120,9 @@ class HierarchicalChunker(BaseChunker):
                         list_items.append(item)
                         continue
                     elif list_items:  # need to yield
-                        yield Chunk(
+                        yield DocChunk(
                             text=self.delim.join([i.text for i in list_items]),
-                            meta=ChunkMeta(
+                            meta=DocMeta(
                                 doc_items=list_items,
                                 headings=[
                                     heading_by_level[k]
@@ -148,7 +139,7 @@ class HierarchicalChunker(BaseChunker):
                     isinstance(item, TextItem)
                     and item.label == DocItemLabel.SECTION_HEADER
                 ):
-                    # TODO second branch not needed after cleanup above:
+                    # TODO second branch not needed once cleanup above complete:
                     level = item.level if isinstance(item, SectionHeaderItem) else 1
                     heading_by_level[level] = item.text
 
@@ -173,9 +164,9 @@ class HierarchicalChunker(BaseChunker):
                     ] or None
                 else:
                     continue
-                c = Chunk(
+                c = DocChunk(
                     text=text,
-                    meta=ChunkMeta(
+                    meta=DocMeta(
                         doc_items=[item],
                         headings=[heading_by_level[k] for k in sorted(heading_by_level)]
                         or None,
@@ -185,9 +176,9 @@ class HierarchicalChunker(BaseChunker):
                 yield c
 
         if self.merge_list_items and list_items:  # need to yield
-            yield Chunk(
+            yield DocChunk(
                 text=self.delim.join([i.text for i in list_items]),
-                meta=ChunkMeta(
+                meta=DocMeta(
                     doc_items=list_items,
                     headings=[heading_by_level[k] for k in sorted(heading_by_level)]
                     or None,
