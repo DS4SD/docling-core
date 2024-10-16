@@ -103,9 +103,11 @@ class TableCell(BaseModel):
         if isinstance(data, Dict):
             # Check if this is a native BoundingBox or a bbox from docling-ibm-models
             if (
-                "bbox" not in data
-                or data["bbox"] is None
-                or isinstance(data["bbox"], BoundingBox)
+                # "bbox" not in data
+                # or data["bbox"] is None
+                # or isinstance(data["bbox"], BoundingBox)
+                "text"
+                in data
             ):
                 return data
             text = data["bbox"].get("token", "")
