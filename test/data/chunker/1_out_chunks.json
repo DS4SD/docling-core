@@ -1495,6 +1495,43 @@
             }
         },
         {
+            "text": "Apple M3 Max, Thread budget.Thread budget = 4. Apple M3 Max, native backend.TTS = 177 s. Apple M3 Max, native backend.Pages/s = 1.27. Apple M3 Max, native backend.Mem = 6.20 GB. Apple M3 Max, pypdfium backend.TTS = 103 s. Apple M3 Max, pypdfium backend.Pages/s = 2.18. Apple M3 Max, pypdfium backend.Mem = 2.56 GB. (16 cores), Thread budget.Thread budget = 16. (16 cores), native backend.TTS = 167 s. (16 cores), native backend.Pages/s = 1.34. (16 cores), native backend.Mem = 6.20 GB. (16 cores), pypdfium backend.TTS = 92 s. (16 cores), pypdfium backend.Pages/s = 2.45. (16 cores), pypdfium backend.Mem = 2.56 GB. Intel(R) Xeon E5-2690, Thread budget.Thread budget = 4 16. Intel(R) Xeon E5-2690, native backend.TTS = 375 s 244 s. Intel(R) Xeon E5-2690, native backend.Pages/s = 0.60 0.92. Intel(R) Xeon E5-2690, native backend.Mem = 6.16 GB. Intel(R) Xeon E5-2690, pypdfium backend.TTS = 239 s 143 s. Intel(R) Xeon E5-2690, pypdfium backend.Pages/s = 0.94 1.57. Intel(R) Xeon E5-2690, pypdfium backend.Mem = 2.42 GB",
+            "meta": {
+                "doc_items": [
+                    {
+                        "self_ref": "#/tables/0",
+                        "parent": {
+                            "$ref": "#/body"
+                        },
+                        "children": [],
+                        "label": "table",
+                        "prov": [
+                            {
+                                "page_no": 5,
+                                "bbox": {
+                                    "l": 133.71340942382812,
+                                    "t": 635.0601806640625,
+                                    "r": 477.5060729980469,
+                                    "b": 542.3740844726562,
+                                    "coord_origin": "BOTTOMLEFT"
+                                },
+                                "charspan": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "headings": [
+                    "4 Performance"
+                ],
+                "captions": [
+                    "Table 1: Runtime characteristics of Docling with the standard model pipeline and settings, on our test dataset of 225 pages, on two different systems. OCR is disabled. We show the time-to-solution (TTS), computed throughput in pages per second, and the peak memory used (resident set size) for both the Docling-native PDF backend and for the pypdfium backend, using 4 and 16 threads."
+                ]
+            }
+        },
+        {
             "text": "Thanks to the high-quality, richly structured document conversion achieved by Docling, its output qualifies for numerous downstream applications. For example, Docling can provide a base for detailed enterprise document search, passage retrieval or classification use-cases, or support knowledge extraction pipelines, allowing specific treatment of different structures in the document, such as tables, figures, section structure or references. For popular generative AI application patterns, such as retrieval-augmented generation (RAG), we provide quackling , an open-source package which capitalizes on Docling's feature-rich document output to enable document-native optimized vector embedding and chunking. It plugs in seamlessly with LLM frameworks such as LlamaIndex [8]. Since Docling is fast, stable and cheap to run, it also makes for an excellent choice to build document-derived datasets. With its powerful table structure recognition, it provides significant benefit to automated knowledge-base construction [11, 10]. Docling is also integrated within the open IBM data prep kit [6], which implements scalable data transforms to build large-scale multi-modal training datasets.",
             "meta": {
                 "doc_items": [
@@ -3263,6 +3300,43 @@
             }
         },
         {
+            "text": "Caption, human.human = 84-89. Caption, MRCNN.R50 = 68.4. Caption, MRCNN.R101 = 71.5. Caption, FRCNN.R101 = 70.1. Caption, YOLO.v5x6 = 77.7. Footnote, human.human = 83-91. Footnote, MRCNN.R50 = 70.9. Footnote, MRCNN.R101 = 71.8. Footnote, FRCNN.R101 = 73.7. Footnote, YOLO.v5x6 = 77.2. Formula, human.human = 83-85. Formula, MRCNN.R50 = 60.1. Formula, MRCNN.R101 = 63.4. Formula, FRCNN.R101 = 63.5. Formula, YOLO.v5x6 = 66.2. List-item, human.human = 87-88. List-item, MRCNN.R50 = 81.2. List-item, MRCNN.R101 = 80.8. List-item, FRCNN.R101 = 81.0. List-item, YOLO.v5x6 = 86.2. Page-footer, human.human = 93-94. Page-footer, MRCNN.R50 = 61.6. Page-footer, MRCNN.R101 = 59.3. Page-footer, FRCNN.R101 = 58.9. Page-footer, YOLO.v5x6 = 61.1. Page-header, human.human = 85-89. Page-header, MRCNN.R50 = 71.9. Page-header, MRCNN.R101 = 70.0. Page-header, FRCNN.R101 = 72.0. Page-header, YOLO.v5x6 = 67.9. Picture, human.human = 69-71. Picture, MRCNN.R50 = 71.7. Picture, MRCNN.R101 = 72.7. Picture, FRCNN.R101 = . Picture, YOLO.v5x6 = 77.1. Section-header, human.human = 83-84. Section-header, MRCNN.R50 = 67.6. Section-header, MRCNN.R101 = 69.3. Section-header, FRCNN.R101 = 68.4. Section-header, YOLO.v5x6 = 74.6. Table, human.human = 77-81. Table, MRCNN.R50 = 82.2. Table, MRCNN.R101 = 82.9. Table, FRCNN.R101 = 82.2. Table, YOLO.v5x6 = 86.3. Text, human.human = 84-86. Text, MRCNN.R50 = 84.6. Text, MRCNN.R101 = 85.8. Text, FRCNN.R101 = 85.4. Text, YOLO.v5x6 = . , human.human = . , MRCNN.R50 = 76.7. , MRCNN.R101 = 80.4. , FRCNN.R101 = 79.9. , YOLO.v5x6 = 88.1. Title, human.human = 60-72. Title, MRCNN.R50 = . Title, MRCNN.R101 = . Title, FRCNN.R101 = . Title, YOLO.v5x6 = 82.7. All, human.human = 82-83. All, MRCNN.R50 = 72.4. All, MRCNN.R101 = 73.5. All, FRCNN.R101 = 73.4. All, YOLO.v5x6 = 76.8",
+            "meta": {
+                "doc_items": [
+                    {
+                        "self_ref": "#/tables/1",
+                        "parent": {
+                            "$ref": "#/body"
+                        },
+                        "children": [],
+                        "label": "table",
+                        "prov": [
+                            {
+                                "page_no": 8,
+                                "bbox": {
+                                    "l": 125.886474609375,
+                                    "t": 505.5043640136719,
+                                    "r": 223.0053253173828,
+                                    "b": 437.8017578125,
+                                    "coord_origin": "BOTTOMLEFT"
+                                },
+                                "charspan": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "headings": [
+                    "ACM Reference Format:"
+                ],
+                "captions": [
+                    "Table 2: Prediction performance (mAP@0.5-0.95) of object detection networks on DocLayNet test set. The MRCNN (Mask R-CNN) and FRCNN (Faster R-CNN) models with ResNet-50 or ResNet-101 backbone were trained based on the network architectures from the detectron2 model zoo (Mask R-CNN R50, R101-FPN 3x, Faster R-CNN R101-FPN 3x), with default configurations. The YOLO implementation utilized was YOLOv5x6 [13]. All models were initialised using pre-trained weights from the COCO 2017 dataset."
+                ]
+            }
+        },
+        {
             "text": "to avoid this at any cost in order to have clear, unbiased baseline numbers for human document-layout annotation. Third, we introduced the feature of snapping boxes around text segments to obtain a pixel-accurate annotation and again reduce time and effort. The CCS annotation tool automatically shrinks every user-drawn box to the minimum bounding-box around the enclosed text-cells for all purely text-based segments, which excludes only Table and $_{Picture}$. For the latter, we instructed annotation staffto minimise inclusion of surrounding whitespace while including all graphical lines. A downside of snapping boxes to enclosed text cells is that some wrongly parsed PDF pages cannot be annotated correctly and need to be skipped. Fourth, we established a way toflag pages as rejected for cases where no valid annotation according to the label guidelines could be achieved. Example cases for this would be PDF pages that render incorrectly or contain layouts that are impossible to capture with non-overlapping rectangles. Such rejected pages are not contained in thefinal dataset. With all these measures in place, experienced annotation staffmanaged to annotate a single page in a typical timeframe of 20s to 60s, depending on its complexity.",
             "meta": {
                 "doc_items": [
@@ -3524,6 +3598,40 @@
                                 "charspan": [
                                     0,
                                     419
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "headings": [
+                    "Baselines for Object Detection"
+                ]
+            }
+        },
+        {
+            "text": "Gaoon, noun = . Gaoon, Mrcnn = . Gaoon, MaCNN = . Gaoon, Frcne = . Gaoon, Yolo = . Foomolo, noun = . Foomolo, Mrcnn = . Foomolo, MaCNN = . Foomolo, Frcne = . Foomolo, Yolo = . Foula, noun = . Foula, Mrcnn = . Foula, MaCNN = . Foula, Frcne = . Foula, Yolo = . Ust-lern, noun = . Ust-lern, Mrcnn = . Ust-lern, MaCNN = . Ust-lern, Frcne = . Ust-lern, Yolo = . Page-locer, noun = . Page-locer, Mrcnn = . Page-locer, MaCNN = . Page-locer, Frcne = . Page-locer, Yolo = . Faqe-haje, noun = . Faqe-haje, Mrcnn = . Faqe-haje, MaCNN = . Faqe-haje, Frcne = . Faqe-haje, Yolo = . Pxlu, noun = . Pxlu, Mrcnn = . Pxlu, MaCNN = . Pxlu, Frcne = . Pxlu, Yolo = . Sonhoade, noun = . Sonhoade, Mrcnn = . Sonhoade, MaCNN = . Sonhoade, Frcne = . Sonhoade, Yolo = ",
+            "meta": {
+                "doc_items": [
+                    {
+                        "self_ref": "#/tables/2",
+                        "parent": {
+                            "$ref": "#/body"
+                        },
+                        "children": [],
+                        "label": "table",
+                        "prov": [
+                            {
+                                "page_no": 8,
+                                "bbox": {
+                                    "l": 366.86639404296875,
+                                    "t": 542.9662475585938,
+                                    "r": 460.80865478515625,
+                                    "b": 450.93499755859375,
+                                    "coord_origin": "BOTTOMLEFT"
+                                },
+                                "charspan": [
+                                    0,
+                                    0
                                 ]
                             }
                         ]
@@ -3837,6 +3945,43 @@
                 ],
                 "headings": [
                     "Baselines for Object Detection"
+                ]
+            }
+        },
+        {
+            "text": "Caption, Count. = 22524. Caption, % of Total.Train = 2.04. Caption, % of Total.Test = 1.77. Caption, % of Total.Val = 2.32. Caption, triple inter-annotator mAP @ 0.5-0.95 (%).All = 84-89. Caption, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = 40-61. Caption, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 86-92. Caption, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 94-99. Caption, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 95-99. Caption, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = 69-78. Caption, triple inter-annotator mAP @ 0.5-0.95 (%).T en = n/a. Footnote, Count. = 6318. Footnote, % of Total.Train = 0.60. Footnote, % of Total.Test = 0.31. Footnote, % of Total.Val = 0.58. Footnote, triple inter-annotator mAP @ 0.5-0.95 (%).All = 83-91. Footnote, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = n/a. Footnote, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 100. Footnote, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 62-88. Footnote, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 85-94. Footnote, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = n/a. Footnote, triple inter-annotator mAP @ 0.5-0.95 (%).T en = 82-97. Formula, Count. = 25027. Formula, % of Total.Train = 2.25. Formula, % of Total.Test = 1.90. Formula, % of Total.Val = 2.96. Formula, triple inter-annotator mAP @ 0.5-0.95 (%).All = 83-85. Formula, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = . Formula, triple inter-annotator mAP @ 0.5-0.95 (%).Man = n/a. Formula, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 84-87. Formula, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 86-96. Formula, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = . Formula, triple inter-annotator mAP @ 0.5-0.95 (%).T en = n/a. List-item, Count. = 185660. List-item, % of Total.Train = 17.19. List-item, % of Total.Test = 13.34. List-item, % of Total.Val = 15.82. List-item, triple inter-annotator mAP @ 0.5-0.95 (%).All = 87-88. List-item, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = 74-83. List-item, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 90-92. List-item, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 97-97. List-item, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 81-85. List-item, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = 75-88. List-item, triple inter-annotator mAP @ 0.5-0.95 (%).T en = 93-95. Page-footer, Count. = 70878. Page-footer, % of Total.Train = 6.51. Page-footer, % of Total.Test = 5.58. Page-footer, % of Total.Val = 6.00. Page-footer, triple inter-annotator mAP @ 0.5-0.95 (%).All = 93-94. Page-footer, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = 88-90. Page-footer, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 95-96. Page-footer, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 100. Page-footer, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 92-97. Page-footer, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = 100. Page-footer, triple inter-annotator mAP @ 0.5-0.95 (%).T en = 96-98. Page-header, Count. = 58022. Page-header, % of Total.Train = 5.10. Page-header, % of Total.Test = 6.70. Page-header, % of Total.Val = 5.06. Page-header, triple inter-annotator mAP @ 0.5-0.95 (%).All = 85-89. Page-header, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = 66-76. Page-header, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 90-94. Page-header, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 98-100. Page-header, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 91-92. Page-header, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = 97-99. Page-header, triple inter-annotator mAP @ 0.5-0.95 (%).T en = 81-86. Picture, Count. = 45976. Picture, % of Total.Train = 4.21. Picture, % of Total.Test = 2.78. Picture, % of Total.Val = 5.31. Picture, triple inter-annotator mAP @ 0.5-0.95 (%).All = 69-71. Picture, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = 56-59. Picture, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 82-86. Picture, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 69-82. Picture, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 80-95. Picture, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = 66-71. Picture, triple inter-annotator mAP @ 0.5-0.95 (%).T en = 59-76. Section-header, Count. = 142884. Section-header, % of Total.Train = 12.60. Section-header, % of Total.Test = 15.77. Section-header, % of Total.Val = 12.85. Section-header, triple inter-annotator mAP @ 0.5-0.95 (%).All = 83-84. Section-header, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = 76-81. Section-header, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 90-92. Section-header, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 94-95. Section-header, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 87-94. Section-header, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = 69-73. Section-header, triple inter-annotator mAP @ 0.5-0.95 (%).T en = 78-86. Table, Count. = 34733. Table, % of Total.Train = 3.20. Table, % of Total.Test = 2.27. Table, % of Total.Val = 3.60. Table, triple inter-annotator mAP @ 0.5-0.95 (%).All = 77-81. Table, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = 75-80. Table, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 83-86. Table, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 98-99. Table, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 58-80. Table, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = 79-84. Table, triple inter-annotator mAP @ 0.5-0.95 (%).T en = 70-85. Text, Count. = 510377. Text, % of Total.Train = 45.82. Text, % of Total.Test = 49.28. Text, % of Total.Val = 45.00. Text, triple inter-annotator mAP @ 0.5-0.95 (%).All = 84-86. Text, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = 81-86. Text, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 88-93. Text, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 89-93. Text, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 87-92. Text, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = 71-79. Text, triple inter-annotator mAP @ 0.5-0.95 (%).T en = 87-95. Title, Count. = 5071. Title, % of Total.Train = 0.47. Title, % of Total.Test = 0.30. Title, % of Total.Val = 0.50. Title, triple inter-annotator mAP @ 0.5-0.95 (%).All = 60-72. Title, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = 24-63. Title, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 50-63. Title, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 94-100. Title, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 82-96. Title, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = 68-79. Title, triple inter-annotator mAP @ 0.5-0.95 (%).T en = 24-56. Total, Count. = 1107470. Total, % of Total.Train = 941123. Total, % of Total.Test = 99816. Total, % of Total.Val = 66531. Total, triple inter-annotator mAP @ 0.5-0.95 (%).All = 82-83. Total, triple inter-annotator mAP @ 0.5-0.95 (%).Fin = 71-74. Total, triple inter-annotator mAP @ 0.5-0.95 (%).Man = 79-81. Total, triple inter-annotator mAP @ 0.5-0.95 (%).Sci = 89-94. Total, triple inter-annotator mAP @ 0.5-0.95 (%).Law = 86-91. Total, triple inter-annotator mAP @ 0.5-0.95 (%).Pat = 71-76. Total, triple inter-annotator mAP @ 0.5-0.95 (%).T en = 68-85",
+            "meta": {
+                "doc_items": [
+                    {
+                        "self_ref": "#/tables/3",
+                        "parent": {
+                            "$ref": "#/body"
+                        },
+                        "children": [],
+                        "label": "table",
+                        "prov": [
+                            {
+                                "page_no": 9,
+                                "bbox": {
+                                    "l": 110.8310546875,
+                                    "t": 560.6348876953125,
+                                    "r": 323.9291076660156,
+                                    "b": 477.7417297363281,
+                                    "coord_origin": "BOTTOMLEFT"
+                                },
+                                "charspan": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "headings": [
+                    "Baselines for Object Detection"
+                ],
+                "captions": [
+                    "Table 1: DocLayNet dataset overview. Along with the frequency of each class label, we present the relative occurrence (as % of row \"Total\") in the train, test and validation sets. The inter-annotator agreement is computed as the mAP@0.5-0.95 metric between pairwise annotations from the tripleannotated pages, from which we obtain accuracy ranges. Table 1: DocLayNet dataset overview. Along with the frequency of each class label, we present the relative occurr ence (as % of row \"Total\") in the train, test and validation sets. The inter-annotator agreement is computed as the mAP@0.5-0.95 metric between pairwise annotations from the triple-annotated pages, from which we obtain accuracy ranges. B"
                 ]
             }
         },
