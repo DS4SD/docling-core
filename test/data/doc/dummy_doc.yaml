@@ -136,8 +136,9 @@ pictures: # All pictures...
     data: # PictureData Type
       classification:
         provenance: model1
-        predicted_class: "illustration"
-        confidence: 0.78
+        predicted_classes:
+          - class_name: "illustration"
+            confidence: 0.78
       description:
         text: "..."
         provenance: "model2"
