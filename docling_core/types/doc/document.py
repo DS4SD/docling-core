@@ -4,6 +4,7 @@ import base64
 import mimetypes
 import re
 import typing
+from datetime import datetime
 from io import BytesIO
 from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
 
@@ -23,7 +24,7 @@ from tabulate import tabulate
 from typing_extensions import Annotated, Self
 
 from docling_core.search.package import VERSION_PATTERN
-from docling_core.types.base import _JSON_POINTER_REGEX
+from docling_core.types.base import _JSON_POINTER_REGEX, UniqueList
 from docling_core.types.doc import BoundingBox, Size
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 from docling_core.types.legacy_doc.tokens import DocumentToken
@@ -778,7 +779,16 @@ class PageItem(BaseModel):
 
 
 class DescriptionItem(BaseModel):
-    """DescriptionItem."""
+    """Metadata fields describing a document."""
+
+    title: Optional[str] = None
+    author: Optional[str] = None
+    company: Optional[str] = None
+    category: Optional[str] = None
+    keywords: Optional[UniqueList[str]] = None
+    comment: Optional[str] = None
+    created: Optional[datetime] = None
+    modified: Optional[datetime] = None
 
 
 class DoclingDocument(BaseModel):
@@ -788,7 +798,7 @@ class DoclingDocument(BaseModel):
     version: Annotated[str, StringConstraints(pattern=VERSION_PATTERN, strict=True)] = (
         CURRENT_VERSION
     )
-    description: DescriptionItem
+    description: Optional[DescriptionItem] = None
     name: str  # The working name of this document, without extensions
     # (could be taken from originating doc, or just "Untitled 1")
     origin: Optional[DocumentOrigin] = (

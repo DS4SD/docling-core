@@ -1,4 +1,5 @@
 from collections import deque
+from datetime import datetime, timezone
 
 import pytest
 import yaml
@@ -414,3 +415,56 @@ def test_version_doc():
         description=DescriptionItem(), name="Untitled 1", version=comp_version
     )
     assert doc.version == CURRENT_VERSION
+
+
+def test_description_item():
+    # no description
+    doc = DoclingDocument(name="Test document")
+    assert doc.description is None
+
+    # set description
+    desc = DescriptionItem(
+        title=(
+            "DocLayNet: A Large Human-Annotated Dataset for Document-Layout " "Analysis"
+        ),
+        author=(
+            "Birgit Pfitzmann, Christoph Auer, Michele Dolfi, Ahmed S. Nassar, and "
+            "Peter Staar"
+        ),
+        company="IBM Research",
+        category=(
+            "-  Information systems  ->  Document structure; -  Applied computing  "
+            "->  Document analysis; -  Computing methodologies  ->  Machine learning; "
+            "Computer vision; Object detection;"
+        ),
+        keywords=[
+            "PDF document conversion",
+            "layout segmentation",
+            "object-detection",
+            "data set",
+            "Machine Learning",
+        ],
+        created=datetime(
+            year=2022,
+            month=6,
+            day=15,
+            hour=12,
+            minute=57,
+            second=56,
+            tzinfo=timezone.utc,
+        ),
+        modified=datetime.now(tz=timezone.utc),
+    )
+    doc = DoclingDocument(description=desc, name="Test document")
+    assert doc.description is not None
+
+    # incompatible keywords
+    with pytest.raises(ValidationError, match="unique"):
+        desc = DescriptionItem(
+            keywords=["Machine Learning", "Machine Learning", "layout segmentation"]
+        )
+
+    # good and wrong date casting
+    desc = DescriptionItem(created="2024-10-16", modified=1729077211.437628)
+    with pytest.raises(ValidationError, match="valid datetime"):
+        desc = DescriptionItem(created=False)
