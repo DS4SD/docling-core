@@ -29,7 +29,8 @@ from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 from docling_core.types.legacy_doc.tokens import DocumentToken
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
-LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
+MAX_LEVEL_NR = 100
+LevelNumber = typing.Annotated[int, Field(ge=1, le=MAX_LEVEL_NR)]
 CURRENT_VERSION: Final = "1.0.0"
 
 DEFAULT_EXPORT_LABELS = {

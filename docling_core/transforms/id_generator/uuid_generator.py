@@ -12,7 +12,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from docling_core.transforms.id_generator import BaseIDGenerator
-from docling_core.types import Document as DLDocument
+from docling_core.types.doc import DoclingDocument as DLDocument
 
 
 class UUIDGenerator(BaseModel, BaseIDGenerator):

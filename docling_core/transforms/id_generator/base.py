@@ -8,7 +8,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from docling_core.types import Document as DLDocument
+from docling_core.types.doc import DoclingDocument as DLDocument
 
 
 class BaseIDGenerator(ABC):

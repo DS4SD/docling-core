@@ -11,7 +11,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from docling_core.types import Document as DLDocument
+from docling_core.types.doc import DoclingDocument as DLDocument
 
 
 class BaseMetadataExtractor(BaseModel, ABC):
