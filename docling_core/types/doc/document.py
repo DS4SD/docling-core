@@ -1423,7 +1423,7 @@ class DoclingDocument(BaseModel):
                         + f"item-{i} at level {level}: {item.label}: {item.text[0:80]}"
                     )
 
-                elif item.label in [DocItemLabel.PARAGRAPH]:
+                elif item.label in [DocItemLabel.PARAGRAPH, DocItemLabel.TEXT]:
                     result.append(
                         indent * level
                         + f"item-{i} at level {level}: {item.label}: {item.text[0:80]}"
@@ -1466,7 +1466,8 @@ class DoclingDocument(BaseModel):
                 elif item.label in [DocItemLabel.CAPTION]:
                     continue
                 else:
-                    result.append(f"item-{i} at level {level}: {item.label}: ignored")
+                    result.append(indent * (level + 1)
+                                  + f"item-{i} at level {level}: {item.label}: ignored")
             else:
                 result.append("ERROR -> dont know what to do with it")
 
