@@ -1399,9 +1399,23 @@ class DoclingDocument(BaseModel):
 
         return doctags
 
-    def to_indented_text(self, indent="  "):
+    def to_indented_text(self, indent="  ", max_text_len: int = -1):
         """Export the document to indented text to expose hierarchy."""
         result = []
+
+        def get_text(text: str, max_text_len: int):
+
+            middle = " ... "
+
+            if max_text_len == -1:
+                return text
+            elif len(text) < max_text_len + len(middle):
+                return text
+            else:
+                tbeg = int((max_text_len - len(middle)) / 2)
+                tend = int(max_text_len - tbeg)
+
+                return text[0:tbeg] + middle + text[-tend:]
 
         for i, (item, level) in enumerate(self.iterate_items(with_groups=True)):
             if isinstance(item, GroupItem):
@@ -1411,46 +1425,84 @@ class DoclingDocument(BaseModel):
                 )
 
             elif isinstance(item, DocItem):
-                if item.label in [DocItemLabel.TITLE]:
+                # if item.label in [DocItemLabel.TITLE]:
+                if item.label in [DocItemLabel.TITLE] and isinstance(item, TextItem):
+                    text = get_text(text=item.text, max_text_len=max_text_len)
+
                     result.append(
                         indent * level
-                        + f"item-{i} at level {level}: {item.label}: {item.text[0:80]}"
+                        + f"item-{i} at level {level}: {item.label}: {text}"
                     )
 
-                elif item.label in [DocItemLabel.SECTION_HEADER]:
+                elif item.label in [DocItemLabel.SECTION_HEADER] and isinstance(
+                    item, SectionHeaderItem
+                ):
+                    text = get_text(text=item.text, max_text_len=max_text_len)
+
                     result.append(
                         indent * level
-                        + f"item-{i} at level {level}: {item.label}: {item.text[0:80]}"
+                        + f"item-{i} at level {level}: {item.label}: {text}"
                     )
 
-                elif item.label in [DocItemLabel.PARAGRAPH, DocItemLabel.TEXT]:
+                elif item.label in [
+                    DocItemLabel.PARAGRAPH,
+                    DocItemLabel.TEXT,
+                ] and isinstance(item, TextItem):
+                    text = get_text(text=item.text, max_text_len=max_text_len)
+
                     result.append(
                         indent * level
-                        + f"item-{i} at level {level}: {item.label}: {item.text[0:80]}"
+                        + f"item-{i} at level {level}: {item.label}: {text}"
                     )
 
-                elif item.label in [DocItemLabel.LIST_ITEM]:
+                elif item.label in [DocItemLabel.FORMULA] and isinstance(
+                    item, TextItem
+                ):
+                    text = get_text(text=item.text, max_text_len=max_text_len)
+
                     result.append(
                         indent * level
-                        + f"item-{i} at level {level}: {item.label}: {item.text[0:80]}"
+                        + f"item-{i} at level {level}: {item.label}: {text}"
                     )
 
-                elif item.label in [DocItemLabel.TABLE]:
+                elif item.label in [DocItemLabel.CODE] and isinstance(item, TextItem):
+                    text = get_text(text=item.text, max_text_len=max_text_len)
+
+                    result.append(
+                        indent * level
+                        + f"item-{i} at level {level}: {item.label}: {text}"
+                    )
+
+                elif item.label in [DocItemLabel.LIST_ITEM] and isinstance(
+                    item, ListItem
+                ):
+                    text = get_text(text=item.text, max_text_len=max_text_len)
+
+                    result.append(
+                        indent * level
+                        + f"item-{i} at level {level}: {item.label}: {text}"
+                    )
+
+                elif item.label in [DocItemLabel.TABLE] and isinstance(item, TableItem):
                     result.append(
                         indent * level
                         + f"item-{i} at level {level}: {item.label} with "
                         + f"[{item.data.num_rows}x{item.data.num_cols}]"
                     )
-                    grid = []
+                    grid: list[list[str]] = []
                     for i, row in enumerate(item.data.grid):
                         grid.append([])
                         for j, cell in enumerate(row):
                             if j < 10:
-                                grid[-1].append(cell.text[0:16].strip())
+                                text = get_text(text=cell.text, max_text_len=16)
+                                # grid[-1].append(cell.text[0:16].strip())
+                                grid[-1].append(text)
 
                     result.append("\n" + tabulate(grid) + "\n")
 
-                elif item.label in [DocItemLabel.PICTURE]:
+                elif item.label in [DocItemLabel.PICTURE] and isinstance(
+                    item, PictureItem
+                ):
                     result.append(
                         indent * level + f"item-{i} at level {level}: {item.label}"
                     )
@@ -1466,8 +1518,10 @@ class DoclingDocument(BaseModel):
                 elif item.label in [DocItemLabel.CAPTION]:
                     continue
                 else:
-                    result.append(indent * (level + 1)
-                                  + f"item-{i} at level {level}: {item.label}: ignored")
+                    result.append(
+                        indent * (level + 1)
+                        + f"item-{i} at level {level}: {item.label}: ignored"
+                    )
             else:
                 result.append("ERROR -> dont know what to do with it")
 
