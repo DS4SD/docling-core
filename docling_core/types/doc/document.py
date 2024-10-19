@@ -1399,6 +1399,56 @@ class DoclingDocument(BaseModel):
 
         return doctags
 
+    def to_indented_text(self, indent = '  '):
+
+        result = []
+    
+        for i, (item, level) in enumerate(self.iterate_items(with_groups=True)):
+            if isinstance(item, GroupItem):
+                result.append(indent*level + f"item-{i} at level {level}: {item.label}: group {item.name}")
+
+            elif isinstance(item, DocItem):
+                if item.label in [DocItemLabel.TITLE]:
+                    result.append(indent*level + f"item-{i} at level {level}: {item.label}: {item.text[0:80]}")
+                
+                elif item.label in [DocItemLabel.SECTION_HEADER]:
+                    result.append(indent*level + f"item-{i} at level {level}: {item.label}: {item.text[0:80]}")
+                
+                elif item.label in [DocItemLabel.PARAGRAPH]:
+                    result.append(indent*level + f"item-{i} at level {level}: {item.label}: {item.text[0:80]}")
+
+                elif item.label in [DocItemLabel.LIST_ITEM]:
+                    result.append(indent*level + f"item-{i} at level {level}: {item.label}: {item.text[0:80]}")
+                
+                elif item.label in [DocItemLabel.TABLE]:
+                    result.append(indent*level + f"item-{i} at level {level}: {item.label} with [{item.data.num_rows}x{item.data.num_cols}]")
+                    grid=[]
+                    for i,row in enumerate(item.data.grid):
+                        grid.append([])
+                        for j,cell in enumerate(row):
+                            if j<10:
+                                grid[-1].append(cell.text[0:16].strip())
+
+                    result.append("\n"+tabulate(grid)+"\n")
+
+                elif item.label in [DocItemLabel.PICTURE]:
+                    result.append(indent*level + f"item-{i} at level {level}: {item.label}")
+                    
+                    for _ in item.captions:
+                        caption = _.resolve(doc)
+                        result.append(indent*(level+1) + f"item-{i} at level {level+1}: {caption.label}: {caption.text}")
+
+                elif item.label in [DocItemLabel.CAPTION]:
+                    continue
+                else:
+                    result.append(f"item-{i} at level {level}: {item.label}: ignored")
+            else:
+                result.append("ERROR -> dont know what to do with it")
+
+        return "\n".join(result)
+    
+
+    
     def add_page(
         self, page_no: int, size: Size, image: Optional[ImageRef] = None
     ) -> PageItem:
