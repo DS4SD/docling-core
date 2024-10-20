@@ -1106,7 +1106,7 @@ class DoclingDocument(BaseModel):
         """export_to_dict."""
         return self.model_dump(mode="json", by_alias=True, exclude_none=True)
 
-    def export_to_markdown(  # noqa: C901
+    def export_to_markdown_v1(  # noqa: C901
         self,
         delim: str = "\n\n",
         from_element: int = 0,
@@ -1268,6 +1268,160 @@ class DoclingDocument(BaseModel):
         result = delim.join(md_texts)
         return result
 
+    def export_to_markdown_v2(  # noqa: C901
+        self,
+        delim: str = "\n\n",
+        from_element: int = 0,
+        to_element: Optional[int] = None,
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+        strict_text: bool = False,
+        image_placeholder: str = "<!-- image -->",
+    ) -> str:
+        r"""Serialize to Markdown."""
+        mdtext=""
+        mdtexts = []
+
+        list_level_start = None
+        
+        for ix, (item, level) in enumerate(self.iterate_items(self.body)):
+
+            if isinstance(list_level_start, int) and (not isinstance(item, ListItem)):
+                list_level_start = None
+            
+            if isinstance(item, GroupItem) and item.label in [GroupLabel.LIST, GroupLabel.ORDERED_LIST]:
+                if list_level_start==None:
+                    list_level_start = level
+
+            elif isinstance(item, GroupItem):
+                continue
+            
+            elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
+                text = f"# {item.text}\n"
+                mdtexts.append(text)
+
+            elif isinstance(item, SectionHeaderItem):
+                marker = "#"*level
+                if len(marker)<2:
+                    marker = "##"
+                
+                text = f"{marker} {item.text}\n"
+                mdtexts.append(text)
+
+            elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
+                text = f"```\n{text.item}\n```\n"
+                mdtexts.append(text)
+                
+            elif isinstance(item, TextItem) and item.label in [DocItemLabel.CAPTION]:
+                # captions are printed in picture and table ... skipping for now
+                continue
+
+            elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
+                indent = "    "*(level-list_level_start)
+                marker = "-"
+                text = f"{indent}{marker} {item.text}"
+                mdtexts.append(text)
+
+            elif isinstance(item, TextItem):
+                text = f"{item.text}\n"
+                mdtexts.append(text)
+
+            elif isinstance(item, TableItem):
+
+                for _ in item.captions:
+                    caption = _.resolve(self)
+                    text = f"{caption.text}"
+                    mdtexts.append(text)
+
+                grid: list[list[str]] = []
+                for i, row in enumerate(item.data.grid):
+                    grid.append([])
+                    for j, cell in enumerate(row):
+                        grid[-1].append(cell.text)
+
+                result.append("\n" + tabulate(grid) + "\n")
+
+            elif isinstance(item, PictureItem):
+
+                for _ in item.captions:
+                    caption = _.resolve(self)
+                    text = f"{caption.text}"
+                    mdtexts.append(text)
+
+                if image_placeholder=="<!-- image -->":
+                    mdtexts.append(image_placeholder)
+                    
+                elif image_placeholder.starts_with("![") and item.image!=None:
+                    text = f"![Local Image]({item.image.uri})"
+                    mdtexts.append(text)
+                    
+            elif isinstance(item, DocItem):
+                text = "<missing-text>"
+                mdtexts.append(text)                
+
+        mdtext = "\n".join(mdtexts)                
+        return mdtext
+    
+    def export_to_markdown(  # noqa: C901
+        self,
+        delim: str = "\n\n",
+        from_element: int = 0,
+        to_element: Optional[int] = None,
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+        strict_text: bool = False,
+        image_placeholder: str = "<!-- image -->",
+        version: str = "v1",
+    ) -> str:
+        r"""Serialize to Markdown.
+
+        Operates on a slice of the document's main_text as defined through arguments
+        main_text_start and main_text_stop; defaulting to the whole main_text.
+
+        :param delim: Delimiter to use when concatenating the various
+                Markdown parts. Defaults to "\n\n".
+        :type delim: str
+        :param from_element: Body slicing start index (inclusive).
+                Defaults to 0.
+        :type from_element: int
+        :param to_element: Body slicing stop index
+                (exclusive). Defaults to None.
+        :type to_element: Optional[int]
+        :param delim: str:  (Default value = "\n\n")
+        :param from_element: int:  (Default value = 0)
+        :param to_element: Optional[int]:  (Default value = None)
+        :param labels: set[DocItemLabel]
+        :param "subtitle-level-1":
+        :param "paragraph":
+        :param "caption":
+        :param "table":
+        :param "Text":
+        :param "text":
+        :param ]:
+        :param strict_text: bool:  (Default value = False)
+        :param image_placeholder str:  (Default value = "<!-- image -->")
+            the placeholder to include to position images in the markdown.
+        :returns: The exported Markdown representation.
+        :rtype: str
+        """
+        if version=="v1":
+            return self.export_to_markdown_v1(
+                delim,
+                from_element,
+                to_element,
+                labels,
+                strict_text=strict_text,
+                image_placeholder="",
+            )
+        else:
+            return self.export_to_markdown_v2(
+                delim,
+                from_element,
+                to_element,
+                labels,
+                strict_text=strict_text,
+                image_placeholder="",
+            )            
+            
+    
     def export_to_text(  # noqa: C901
         self,
         delim: str = "\n\n",
@@ -1276,7 +1430,7 @@ class DoclingDocument(BaseModel):
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
     ) -> str:
         """export_to_text."""
-        return self.export_to_markdown(
+        return self.export_to_markdown_v1(
             delim,
             from_element,
             to_element,
