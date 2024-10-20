@@ -1278,7 +1278,6 @@ class DoclingDocument(BaseModel):
         image_placeholder: str = "<!-- image -->",
     ) -> str:
         r"""Serialize to Markdown."""
-        mdtext = ""
         mdtexts = []
 
         list_level_start = -1
@@ -1286,6 +1285,7 @@ class DoclingDocument(BaseModel):
         for ix, (item, level) in enumerate(self.iterate_items(self.body)):
 
             if isinstance(list_level_start, int) and (not isinstance(item, ListItem)):
+                mdtexts.append("\n")
                 list_level_start = -1
 
             if isinstance(item, GroupItem) and item.label in [
@@ -1345,7 +1345,7 @@ class DoclingDocument(BaseModel):
                     for j, cell in enumerate(row):
                         grid[-1].append(cell.text)
 
-                mdtexts.append("\n" + tabulate(grid) + "\n")
+                mdtexts.append(tabulate(grid) + "\n")
 
             elif isinstance(item, PictureItem):
 
@@ -1360,14 +1360,14 @@ class DoclingDocument(BaseModel):
                 elif image_placeholder.startswith("![") and isinstance(
                     item.image, ImageRef
                 ):
-                    text = f"\n![Local Image]({item.image.uri})\n"
+                    text = f"![Local Image]({item.image.uri})\n"
                     mdtexts.append(text)
 
             elif isinstance(item, DocItem):
                 text = "<missing-text>"
                 mdtexts.append(text)
 
-        mdtext = "\n".join(mdtexts)
+        mdtext = ("\n".join(mdtexts)).strip()
         return mdtext
 
     def export_to_markdown(  # noqa: C901
