@@ -1278,45 +1278,52 @@ class DoclingDocument(BaseModel):
         image_placeholder: str = "<!-- image -->",
     ) -> str:
         r"""Serialize to Markdown."""
-        mdtext=""
+        mdtext = ""
         mdtexts = []
 
-        list_level_start = None
-        
+        list_level_start = -1
+
         for ix, (item, level) in enumerate(self.iterate_items(self.body)):
 
             if isinstance(list_level_start, int) and (not isinstance(item, ListItem)):
-                list_level_start = None
-            
-            if isinstance(item, GroupItem) and item.label in [GroupLabel.LIST, GroupLabel.ORDERED_LIST]:
-                if list_level_start==None:
+                list_level_start = -1
+
+            if isinstance(item, GroupItem) and item.label in [
+                GroupLabel.LIST,
+                GroupLabel.ORDERED_LIST,
+            ]:
+                if list_level_start == -1:
                     list_level_start = level
 
             elif isinstance(item, GroupItem):
                 continue
-            
+
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
                 text = f"# {item.text}\n"
                 mdtexts.append(text)
 
             elif isinstance(item, SectionHeaderItem):
-                marker = "#"*level
-                if len(marker)<2:
+                marker = "#" * level
+                if len(marker) < 2:
                     marker = "##"
-                
+
                 text = f"{marker} {item.text}\n"
                 mdtexts.append(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
-                text = f"```\n{text.item}\n```\n"
+                text = f"```\n{item.text}\n```\n"
                 mdtexts.append(text)
-                
+
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CAPTION]:
                 # captions are printed in picture and table ... skipping for now
                 continue
 
             elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
-                indent = "    "*(level-list_level_start)
+
+                indent = ""
+                if list_level_start != -1:
+                    indent = "    " * (level - list_level_start)
+
                 marker = "-"
                 text = f"{indent}{marker} {item.text}"
                 mdtexts.append(text)
@@ -1338,7 +1345,7 @@ class DoclingDocument(BaseModel):
                     for j, cell in enumerate(row):
                         grid[-1].append(cell.text)
 
-                result.append("\n" + tabulate(grid) + "\n")
+                mdtexts.append("\n" + tabulate(grid) + "\n")
 
             elif isinstance(item, PictureItem):
 
@@ -1347,20 +1354,22 @@ class DoclingDocument(BaseModel):
                     text = f"{caption.text}"
                     mdtexts.append(text)
 
-                if image_placeholder=="<!-- image -->":
-                    mdtexts.append(image_placeholder)
-                    
-                elif image_placeholder.starts_with("![") and item.image!=None:
-                    text = f"![Local Image]({item.image.uri})"
+                if image_placeholder == "<!-- image -->":
+                    mdtexts.append("\n" + image_placeholder + "\n")
+
+                elif image_placeholder.startswith("![") and isinstance(
+                    item.image, ImageRef
+                ):
+                    text = f"\n![Local Image]({item.image.uri})\n"
                     mdtexts.append(text)
-                    
+
             elif isinstance(item, DocItem):
                 text = "<missing-text>"
-                mdtexts.append(text)                
+                mdtexts.append(text)
 
-        mdtext = "\n".join(mdtexts)                
+        mdtext = "\n".join(mdtexts)
         return mdtext
-    
+
     def export_to_markdown(  # noqa: C901
         self,
         delim: str = "\n\n",
@@ -1402,7 +1411,7 @@ class DoclingDocument(BaseModel):
         :returns: The exported Markdown representation.
         :rtype: str
         """
-        if version=="v1":
+        if version == "v1":
             return self.export_to_markdown_v1(
                 delim,
                 from_element,
@@ -1419,9 +1428,8 @@ class DoclingDocument(BaseModel):
                 labels,
                 strict_text=strict_text,
                 image_placeholder="",
-            )            
-            
-    
+            )
+
     def export_to_text(  # noqa: C901
         self,
         delim: str = "\n\n",
