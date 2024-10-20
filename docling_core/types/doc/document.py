@@ -1284,7 +1284,7 @@ class DoclingDocument(BaseModel):
 
         for ix, (item, level) in enumerate(self.iterate_items(self.body)):
 
-            if isinstance(list_level_start, int) and (not isinstance(item, ListItem)):
+            if list_level_start != -1 and (not isinstance(item, ListItem)):
                 mdtexts.append("\n")
                 list_level_start = -1
 
