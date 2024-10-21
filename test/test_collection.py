@@ -5,9 +5,9 @@
 
 """Test the pydantic models in module types."""
 import glob
-import yaml
 
 import pytest
+import yaml
 from pydantic import ValidationError
 
 from docling_core.types import Generic, Record
@@ -149,10 +149,10 @@ def test_document_export_to_tokens():
 def test_document_export_to_markdown_v2():
     """Test the Document Tokens export."""
     doc = None
-    
+
     with open("test/data/doc/2206.01062.yaml") as fr:
         doc = DoclingDocument.model_validate(yaml.safe_load(fr.read()))
-    
+
     mddoc = doc.export_to_markdown(version="v1")
     print(mddoc)
 
