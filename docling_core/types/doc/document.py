@@ -1108,13 +1108,12 @@ class DoclingDocument(BaseModel):
 
     def export_to_markdown(  # noqa: C901
         self,
-        delim: str = "\n\n",
+        delim: str = "\n",
         from_element: int = 0,
-        to_element: Optional[int] = None,
+        to_element: int = 1000000,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         strict_text: bool = False,
         image_placeholder: str = "<!-- image -->",
-        include_headers_footers: bool = False,
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -1149,19 +1148,14 @@ class DoclingDocument(BaseModel):
         """
         mdtexts: list[str] = []
 
-        excluded_labels = []
-        if not include_headers_footers:
-            excluded_labels = [
-                DocItemLabel.PAGE_FOOTER,
-                DocItemLabel.PAGE_HEADER,
-                DocItemLabel.FOOTNOTE,
-            ]
-
         list_level_start = -1
 
         for ix, (item, level) in enumerate(
             self.iterate_items(self.body, with_groups=True)
         ):
+
+            if ix < from_element and to_element <= ix:
+                continue  # skip as many items as you want
 
             if list_level_start != -1 and not isinstance(item, ListItem):
                 if len(mdtexts) > 0:  # append to last list-item a newline
@@ -1181,7 +1175,11 @@ class DoclingDocument(BaseModel):
                 continue
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
-                marker = "#"
+
+                marker = ""
+                if strict_text:
+                    marker = "#"
+
                 text = f"{marker} {item.text}\n"
                 mdtexts.append(text)
 
@@ -1189,9 +1187,12 @@ class DoclingDocument(BaseModel):
                 isinstance(item, TextItem)
                 and item.label in [DocItemLabel.SECTION_HEADER]
             ) or isinstance(item, SectionHeaderItem):
-                marker = "#" * level
-                if len(marker) < 2:
-                    marker = "##"
+
+                marker = ""
+                if strict_text:
+                    marker = "#" * level
+                    if len(marker) < 2:
+                        marker = "##"
 
                 text = f"{marker} {item.text}\n"
                 mdtexts.append(text)
@@ -1210,7 +1211,10 @@ class DoclingDocument(BaseModel):
                 if list_level_start != -1:
                     indent = "    " * (level - list_level_start)
 
-                if item.enumerated:
+                marker = ""
+                if strict_text:
+                    marker = ""
+                elif item.enumerated:
                     marker = item.marker
                 else:
                     marker = "-"
@@ -1218,12 +1222,12 @@ class DoclingDocument(BaseModel):
                 text = f"{indent}{marker} {item.text}"
                 mdtexts.append(text)
 
-            elif isinstance(item, TextItem) and item.label not in excluded_labels:
+            elif isinstance(item, TextItem) and item.label in labels:
                 if len(item.text):
                     text = f"{item.text}\n"
                     mdtexts.append(text)
 
-            elif isinstance(item, TableItem):
+            elif isinstance(item, TableItem) and not strict_text:
 
                 for _ in item.captions:
                     caption = _.resolve(self)
@@ -1233,7 +1237,7 @@ class DoclingDocument(BaseModel):
                 md_table = item.export_to_markdown()
                 mdtexts.append(md_table + "\n")
 
-            elif isinstance(item, PictureItem):
+            elif isinstance(item, PictureItem) and not strict_text:
 
                 for _ in item.captions:
                     caption = _.resolve(self)
@@ -1249,18 +1253,18 @@ class DoclingDocument(BaseModel):
                     text = f"![Local Image]({item.image.uri})\n"
                     mdtexts.append(text)
 
-            elif isinstance(item, DocItem) and item.label not in excluded_labels:
+            elif isinstance(item, DocItem) and item.label in labels:
                 text = "<missing-text>"
                 mdtexts.append(text)
 
-        mdtext = ("\n".join(mdtexts)).strip()
+        mdtext = (delim.join(mdtexts)).strip()
         return mdtext
 
     def export_to_text(  # noqa: C901
         self,
         delim: str = "\n\n",
         from_element: int = 0,
-        to_element: Optional[int] = None,
+        to_element: int = 1000000,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
     ) -> str:
         """export_to_text."""
