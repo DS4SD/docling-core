@@ -5,6 +5,7 @@
 
 """Test the pydantic models in module types."""
 import glob
+import yaml
 
 import pytest
 from pydantic import ValidationError
@@ -147,12 +148,15 @@ def test_document_export_to_tokens():
 
 def test_document_export_to_markdown_v2():
     """Test the Document Tokens export."""
-    with open("test/data/doc/2206.01062.yaml") as src_obj:
-        src_data = src_obj.read()
+    doc = None
+    
+    with open("test/data/doc/2206.01062.yaml") as fr:
+        doc = DoclingDocument.model_validate(yaml.safe_load(fr.read()))
+    
+    mddoc = doc.export_to_markdown(version="v1")
+    print(mddoc)
 
-    doc = DoclingDocument.model_validate(src_data)
-    mddoc = doc.export_to_markdown(version=v2)
-
+    mddoc = doc.export_to_markdown(version="v2")
     print(mddoc)
 
     assert True, "default"

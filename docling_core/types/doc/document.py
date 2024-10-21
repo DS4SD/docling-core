@@ -1302,7 +1302,8 @@ class DoclingDocument(BaseModel):
                 continue
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
-                text = f"# {item.text}\n"
+                marker = "#"
+                text = f"{marker} {item.text}\n"
                 mdtexts.append(text)
 
             elif isinstance(item, SectionHeaderItem):
@@ -1425,7 +1426,7 @@ class DoclingDocument(BaseModel):
                 to_element,
                 labels,
                 strict_text=strict_text,
-                image_placeholder="",
+                image_placeholder=image_placeholder,
             )
 
     def export_to_text(  # noqa: C901
