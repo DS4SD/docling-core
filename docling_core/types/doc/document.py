@@ -3,6 +3,7 @@
 import base64
 import mimetypes
 import re
+import sys
 import typing
 from io import BytesIO
 from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
@@ -25,6 +26,7 @@ from typing_extensions import Annotated, Self
 from docling_core.search.package import VERSION_PATTERN
 from docling_core.types.base import _JSON_POINTER_REGEX
 from docling_core.types.doc import BoundingBox, Size
+from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 from docling_core.types.legacy_doc.tokens import DocumentToken
 
@@ -1110,10 +1112,11 @@ class DoclingDocument(BaseModel):
         self,
         delim: str = "\n",
         from_element: int = 0,
-        to_element: int = 1000000,
+        to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         strict_text: bool = False,
         image_placeholder: str = "<!-- image -->",
+        image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -1217,7 +1220,7 @@ class DoclingDocument(BaseModel):
                 elif item.enumerated:
                     marker = item.marker
                 else:
-                    marker = "-"
+                    marker = "-"  # Markdown needs only dash as item marker.
 
                 text = f"{indent}{marker} {item.text}"
                 mdtexts.append(text)
@@ -1229,28 +1232,41 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, TableItem) and not strict_text:
 
-                for _ in item.captions:
-                    caption = _.resolve(self)
-                    text = f"{caption.text}"
-                    mdtexts.append(text)
+                mdtexts.append(item.caption_text(self))
+
+                # for _ in item.captions:
+                #    caption = _.resolve(self)
+                #    text = f"{caption.text}"
+                #    mdtexts.append(text)
 
                 md_table = item.export_to_markdown()
                 mdtexts.append(md_table + "\n")
 
             elif isinstance(item, PictureItem) and not strict_text:
 
-                for _ in item.captions:
-                    caption = _.resolve(self)
-                    text = f"{caption.text}"
-                    mdtexts.append(text)
+                mdtexts.append(item.caption_text(self))
 
-                if image_placeholder == "<!-- image -->":
+                # for _ in item.captions:
+                #    caption = _.resolve(self)
+                #    text = f"{caption.text}"
+                #    mdtexts.append(text)
+
+                if image_mode == ImageRefMode.PLACEHOLDER:
                     mdtexts.append("\n" + image_placeholder + "\n")
 
-                elif image_placeholder.startswith("![") and isinstance(
+                elif image_mode == ImageRefMode.EMBEDDED and isinstance(
                     item.image, ImageRef
                 ):
                     text = f"![Local Image]({item.image.uri})\n"
+                    mdtexts.append(text)
+                elif image_mode == ImageRefMode.EMBEDDED and not isinstance(
+                    item.image, ImageRef
+                ):  # item.image is not available
+                    text = (
+                        "<!-- 🖼️❌ Image not available. "
+                        "Please use `PdfPipelineOptions(generate_picture_images=True)`"
+                        " --> "
+                    )
                     mdtexts.append(text)
 
             elif isinstance(item, DocItem) and item.label in labels:
