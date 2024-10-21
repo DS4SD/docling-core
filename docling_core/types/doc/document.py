@@ -1278,20 +1278,23 @@ class DoclingDocument(BaseModel):
         image_placeholder: str = "<!-- image -->",
     ) -> str:
         r"""Serialize to Markdown."""
-        mdtexts = []
+        mdtexts: list[str] = []
 
         list_level_start = -1
 
         for ix, (item, level) in enumerate(self.iterate_items(self.body)):
 
             if list_level_start != -1 and (not isinstance(item, ListItem)):
-                mdtexts.append("\n")
+                if len(mdtexts) > 0:  # append to last list-item a newline
+                    mdtexts[-1] += "\n"
+
                 list_level_start = -1
 
             if isinstance(item, GroupItem) and item.label in [
                 GroupLabel.LIST,
                 GroupLabel.ORDERED_LIST,
             ]:
+                # if no list has yet been started, log the level
                 if list_level_start == -1:
                     list_level_start = level
 
@@ -1339,13 +1342,8 @@ class DoclingDocument(BaseModel):
                     text = f"{caption.text}"
                     mdtexts.append(text)
 
-                grid: list[list[str]] = []
-                for i, row in enumerate(item.data.grid):
-                    grid.append([])
-                    for j, cell in enumerate(row):
-                        grid[-1].append(cell.text)
-
-                mdtexts.append(tabulate(grid) + "\n")
+                md_table = item.export_to_markdown()
+                mdtexts.append(md_table + "\n")
 
             elif isinstance(item, PictureItem):
 
