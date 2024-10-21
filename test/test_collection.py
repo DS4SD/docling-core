@@ -7,11 +7,9 @@
 import glob
 
 import pytest
-import yaml
 from pydantic import ValidationError
 
 from docling_core.types import Generic, Record
-from docling_core.types.doc import DoclingDocument
 from docling_core.types.legacy_doc.document import ExportedCCSDocument as Document
 
 GENERATE = False
@@ -144,22 +142,6 @@ def test_document_export_to_tokens():
         gold_data = gold_obj.read().strip()
 
     assert xml == gold_data
-
-
-def test_document_export_to_markdown_v2():
-    """Test the Document Tokens export."""
-    doc = None
-
-    with open("test/data/doc/2206.01062.yaml") as fr:
-        doc = DoclingDocument.model_validate(yaml.safe_load(fr.read()))
-
-    mddoc = doc.export_to_markdown(version="v1")
-    print(mddoc)
-
-    mddoc = doc.export_to_markdown(version="v2")
-    print(mddoc)
-
-    assert True, "default"
 
 
 def test_record():

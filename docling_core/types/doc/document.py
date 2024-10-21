@@ -1106,7 +1106,7 @@ class DoclingDocument(BaseModel):
         """export_to_dict."""
         return self.model_dump(mode="json", by_alias=True, exclude_none=True)
 
-    def export_to_markdown_v1(  # noqa: C901
+    def export_to_markdown(  # noqa: C901
         self,
         delim: str = "\n\n",
         from_element: int = 0,
@@ -1114,6 +1114,7 @@ class DoclingDocument(BaseModel):
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         strict_text: bool = False,
         image_placeholder: str = "<!-- image -->",
+        include_headers_footers: bool = False,
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -1146,139 +1147,15 @@ class DoclingDocument(BaseModel):
         :returns: The exported Markdown representation.
         :rtype: str
         """
-        has_title = False
-        prev_text = ""
-        md_texts: list[str] = []
-
-        # collect all captions embedded in table and figure objects
-        # to avoid repeating them
-        embedded_captions = set()
-        skip_count = 0
-        for ix, (item, level) in enumerate(self.iterate_items(self.body)):
-            if skip_count < from_element:
-                skip_count += 1
-                continue  # skip as many items as you want
-
-            if to_element and ix >= to_element:
-                break
-
-            if (
-                isinstance(item, (TableItem, PictureItem))
-                and len(item.captions) > 0
-                and item.label in labels
-            ):
-                caption = item.caption_text(self)
-                if caption:
-                    embedded_captions.add(caption)
-
-        skip_count = 0
-        for ix, (item, level) in enumerate(self.iterate_items(self.body)):
-            if skip_count < from_element:
-                skip_count += 1
-                continue  # skip as many items as you want
-
-            if to_element and ix >= to_element:
-                break
-
-            markdown_text = ""
-
-            if isinstance(item, DocItem):
-                item_type = item.label
-
-                if isinstance(item, TextItem) and item_type in labels:
-                    text = item.text
-
-                    # skip captions of they are embedded in the actual
-                    # floating object
-                    if item_type == DocItemLabel.CAPTION and text in embedded_captions:
-                        continue
-
-                    # ignore repeated text
-                    if prev_text == text or text is None:
-                        continue
-                    else:
-                        prev_text = text
-
-                    # first title match
-                    if item_type == DocItemLabel.TITLE and not has_title:
-                        if strict_text:
-                            markdown_text = f"{text}"
-                        else:
-                            markdown_text = f"# {text}"
-                        has_title = True
-
-                    # secondary titles
-                    elif item_type in {
-                        DocItemLabel.TITLE,
-                        DocItemLabel.SECTION_HEADER,
-                    } or (has_title and item_type == DocItemLabel.TITLE):
-                        if strict_text:
-                            markdown_text = f"{text}"
-                        else:
-                            markdown_text = f"## {text}"
-
-                    # secondary titles
-                    elif isinstance(item, ListItem):
-                        if item.enumerated:
-                            marker = item.marker
-                        else:
-                            marker = "-"
-
-                        markdown_text = f"{marker} {text}"
-
-                    # normal text
-                    else:
-                        markdown_text = text
-
-                elif isinstance(item, TableItem) and item.data and item_type in labels:
-                    parts = []
-
-                    # Compute the caption
-                    if caption := item.caption_text(self):
-                        parts.append(caption)
-                        parts.append("\n")
-
-                    # Rendered the item
-                    if not strict_text:
-                        md_table = item.export_to_markdown()
-                        if md_table:
-                            parts.append(item.export_to_markdown())
-
-                    # Combine parts
-                    markdown_text = "\n".join(parts)
-
-                elif isinstance(item, PictureItem) and item_type in labels:
-                    parts = []
-
-                    # Compute the caption
-                    if caption := item.caption_text(self):
-                        parts.append(caption)
-                        parts.append("\n")
-
-                    # Rendered the item
-                    if not strict_text:
-                        parts.append(f"{image_placeholder}")
-
-                    # Combine parts
-                    markdown_text = "\n".join(parts)
-
-            if markdown_text:
-                md_texts.append(markdown_text)
-
-        result = delim.join(md_texts)
-        return result
-
-    def export_to_markdown_v2(  # noqa: C901
-        self,
-        delim: str = "\n\n",
-        from_element: int = 0,
-        to_element: Optional[int] = None,
-        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
-        strict_text: bool = False,
-        image_placeholder: str = "<!-- image -->",
-    ) -> str:
-        r"""Serialize to Markdown."""
         mdtexts: list[str] = []
+
+        excluded_labels = []
+        if not include_headers_footers:
+            excluded_labels = [
+                DocItemLabel.PAGE_FOOTER,
+                DocItemLabel.PAGE_HEADER,
+                DocItemLabel.FOOTNOTE,
+            ]
 
         list_level_start = -1
 
@@ -1341,11 +1218,7 @@ class DoclingDocument(BaseModel):
                 text = f"{indent}{marker} {item.text}"
                 mdtexts.append(text)
 
-            elif isinstance(item, TextItem) and item.label not in [
-                DocItemLabel.PAGE_HEADER,
-                DocItemLabel.PAGE_FOOTER,
-                DocItemLabel.FOOTNOTE,
-            ]:
+            elif isinstance(item, TextItem) and item.label not in excluded_labels:
                 if len(item.text):
                     text = f"{item.text}\n"
                     mdtexts.append(text)
@@ -1376,72 +1249,12 @@ class DoclingDocument(BaseModel):
                     text = f"![Local Image]({item.image.uri})\n"
                     mdtexts.append(text)
 
-            # elif isinstance(item, DocItem):
-            #    text = "<missing-text>"
-            #    mdtexts.append(text)
+            elif isinstance(item, DocItem) and item.label not in excluded_labels:
+                text = "<missing-text>"
+                mdtexts.append(text)
 
         mdtext = ("\n".join(mdtexts)).strip()
         return mdtext
-
-    def export_to_markdown(  # noqa: C901
-        self,
-        delim: str = "\n\n",
-        from_element: int = 0,
-        to_element: Optional[int] = None,
-        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
-        strict_text: bool = False,
-        image_placeholder: str = "<!-- image -->",
-        version: str = "v1",
-    ) -> str:
-        r"""Serialize to Markdown.
-
-        Operates on a slice of the document's main_text as defined through arguments
-        main_text_start and main_text_stop; defaulting to the whole main_text.
-
-        :param delim: Delimiter to use when concatenating the various
-                Markdown parts. Defaults to "\n\n".
-        :type delim: str
-        :param from_element: Body slicing start index (inclusive).
-                Defaults to 0.
-        :type from_element: int
-        :param to_element: Body slicing stop index
-                (exclusive). Defaults to None.
-        :type to_element: Optional[int]
-        :param delim: str:  (Default value = "\n\n")
-        :param from_element: int:  (Default value = 0)
-        :param to_element: Optional[int]:  (Default value = None)
-        :param labels: set[DocItemLabel]
-        :param "subtitle-level-1":
-        :param "paragraph":
-        :param "caption":
-        :param "table":
-        :param "Text":
-        :param "text":
-        :param ]:
-        :param strict_text: bool:  (Default value = False)
-        :param image_placeholder str:  (Default value = "<!-- image -->")
-            the placeholder to include to position images in the markdown.
-        :returns: The exported Markdown representation.
-        :rtype: str
-        """
-        if version == "v1":
-            return self.export_to_markdown_v1(
-                delim,
-                from_element,
-                to_element,
-                labels,
-                strict_text=strict_text,
-                image_placeholder="",
-            )
-        else:
-            return self.export_to_markdown_v2(
-                delim,
-                from_element,
-                to_element,
-                labels,
-                strict_text=strict_text,
-                image_placeholder=image_placeholder,
-            )
 
     def export_to_text(  # noqa: C901
         self,
@@ -1451,7 +1264,7 @@ class DoclingDocument(BaseModel):
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
     ) -> str:
         """export_to_text."""
-        return self.export_to_markdown_v1(
+        return self.export_to_markdown(
             delim,
             from_element,
             to_element,
