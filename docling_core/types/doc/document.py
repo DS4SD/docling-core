@@ -1306,8 +1306,10 @@ class DoclingDocument(BaseModel):
                 text = f"{marker} {item.text}\n"
                 mdtexts.append(text)
 
-            elif (isinstance(item, TextItem) and item.label in [DocItemLabel.SECTION_HEADER]) or \
-                 isinstance(item, SectionHeaderItem):
+            elif (
+                isinstance(item, TextItem)
+                and item.label in [DocItemLabel.SECTION_HEADER]
+            ) or isinstance(item, SectionHeaderItem):
                 marker = "#" * level
                 if len(marker) < 2:
                     marker = "##"
