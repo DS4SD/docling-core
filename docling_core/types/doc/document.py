@@ -1387,7 +1387,7 @@ class DoclingDocument(BaseModel):
 
         return doctags
 
-    def export_to_indented_text(self, indent="  ", max_text_len: int = -1):
+    def _export_to_indented_text(self, indent="  ", max_text_len: int = -1):
         """Export the document to indented text to expose hierarchy."""
         result = []
 
