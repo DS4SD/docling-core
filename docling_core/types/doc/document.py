@@ -1282,9 +1282,11 @@ class DoclingDocument(BaseModel):
 
         list_level_start = -1
 
-        for ix, (item, level) in enumerate(self.iterate_items(self.body)):
+        for ix, (item, level) in enumerate(
+            self.iterate_items(self.body, with_groups=True)
+        ):
 
-            if list_level_start != -1 and (not isinstance(item, ListItem)):
+            if list_level_start != -1 and not isinstance(item, ListItem):
                 if len(mdtexts) > 0:  # append to last list-item a newline
                     mdtexts[-1] += "\n"
 
@@ -1331,13 +1333,22 @@ class DoclingDocument(BaseModel):
                 if list_level_start != -1:
                     indent = "    " * (level - list_level_start)
 
-                marker = "-"
+                if item.enumerated:
+                    marker = item.marker
+                else:
+                    marker = "-"
+
                 text = f"{indent}{marker} {item.text}"
                 mdtexts.append(text)
 
-            elif isinstance(item, TextItem):
-                text = f"{item.text}\n"
-                mdtexts.append(text)
+            elif isinstance(item, TextItem) and item.label not in [
+                DocItemLabel.PAGE_HEADER,
+                DocItemLabel.PAGE_FOOTER,
+                DocItemLabel.FOOTNOTE,
+            ]:
+                if len(item.text):
+                    text = f"{item.text}\n"
+                    mdtexts.append(text)
 
             elif isinstance(item, TableItem):
 
@@ -1365,9 +1376,9 @@ class DoclingDocument(BaseModel):
                     text = f"![Local Image]({item.image.uri})\n"
                     mdtexts.append(text)
 
-            elif isinstance(item, DocItem):
-                text = "<missing-text>"
-                mdtexts.append(text)
+            # elif isinstance(item, DocItem):
+            #    text = "<missing-text>"
+            #    mdtexts.append(text)
 
         mdtext = ("\n".join(mdtexts)).strip()
         return mdtext
