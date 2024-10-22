@@ -1118,6 +1118,7 @@ class DoclingDocument(BaseModel):
         strict_text: bool = False,
         image_placeholder: str = "<!-- image -->",
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
+        indent: int = 4,
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -1147,6 +1148,7 @@ class DoclingDocument(BaseModel):
         :param strict_text: bool:  (Default value = False)
         :param image_placeholder str:  (Default value = "<!-- image -->")
             the placeholder to include to position images in the markdown.
+        :param indent: int (default=4): indent of the nested lists
         :returns: The exported Markdown representation.
         :rtype: str
         """
@@ -1229,9 +1231,8 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
                 in_list = True
                 # Calculate indent based on list_nesting_level
-                indent = "    " * (
-                    list_nesting_level - 1
-                )  # -1 because level 1 needs no indent
+                # -1 because level 1 needs no indent
+                list_indent = " " * (indent * (list_nesting_level - 1))
 
                 marker = ""
                 if strict_text:
@@ -1241,7 +1242,7 @@ class DoclingDocument(BaseModel):
                 else:
                     marker = "-"  # Markdown needs only dash as item marker.
 
-                text = f"{indent}{marker} {item.text}"
+                text = f"{list_indent}{marker} {item.text}"
                 mdtexts.append(text)
 
             elif isinstance(item, TextItem) and item.label in labels:
