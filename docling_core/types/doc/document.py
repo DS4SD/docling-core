@@ -1411,7 +1411,9 @@ class DoclingDocument(BaseModel):
 
         return doctags
 
-    def _export_to_indented_text(self, indent="  ", max_text_len: int = -1):
+    def _export_to_indented_text(
+        self, indent="  ", max_text_len: int = -1, explicit_tables: bool = False
+    ):
         """Export the document to indented text to expose hierarchy."""
         result = []
 
@@ -1491,15 +1493,16 @@ class DoclingDocument(BaseModel):
                         + f"{caption.text}"
                     )
 
-                grid: list[list[str]] = []
-                for i, row in enumerate(item.data.grid):
-                    grid.append([])
-                    for j, cell in enumerate(row):
-                        if j < 10:
-                            text = get_text(text=cell.text, max_text_len=16)
-                            grid[-1].append(text)
+                if explicit_tables:
+                    grid: list[list[str]] = []
+                    for i, row in enumerate(item.data.grid):
+                        grid.append([])
+                        for j, cell in enumerate(row):
+                            if j < 10:
+                                text = get_text(text=cell.text, max_text_len=16)
+                                grid[-1].append(text)
 
-                result.append("\n" + tabulate(grid) + "\n")
+                    result.append("\n" + tabulate(grid) + "\n")
 
             elif isinstance(item, PictureItem):
 
