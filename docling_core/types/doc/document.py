@@ -1212,7 +1212,7 @@ class DoclingDocument(BaseModel):
 
                 indent = ""
                 if list_level_start != -1:
-                    indent = "    " * (level - list_level_start)
+                    indent = "    " * (level - list_level_start - 1)
 
                 marker = ""
                 if strict_text:
