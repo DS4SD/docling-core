@@ -1170,14 +1170,13 @@ class DoclingDocument(BaseModel):
                 continue  # skip as many items as you want
 
             # Handle newlines between different types of content
-            if len(mdtexts) > 0:
-                # Add newline after non-list items, but only if we're not in a list
-                if not isinstance(item, (ListItem, GroupItem)) and not in_list:
-                    mdtexts[-1] += "\n"
-                # Add newline when transitioning from list to non-list content
-                elif not isinstance(item, (ListItem, GroupItem)) and in_list:
-                    mdtexts[-1] += "\n"
-                    in_list = False
+            if (
+                len(mdtexts) > 0
+                and not isinstance(item, (ListItem, GroupItem))
+                and in_list
+            ):
+                mdtexts[-1] += "\n"
+                in_list = False
 
             if isinstance(item, GroupItem) and item.label in [
                 GroupLabel.LIST,
@@ -1208,7 +1207,7 @@ class DoclingDocument(BaseModel):
                     if len(marker) < 2:
                         marker = "##"
                 text = f"{marker} {item.text}\n"
-                mdtexts.append(text.strip())
+                mdtexts.append(text.strip() + "\n")
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
                 in_list = False
@@ -1247,7 +1246,7 @@ class DoclingDocument(BaseModel):
                 in_list = False
                 mdtexts.append(item.caption_text(self))
                 md_table = item.export_to_markdown()
-                mdtexts.append(md_table + "\n")
+                mdtexts.append("\n" + md_table + "\n")
 
             elif isinstance(item, PictureItem) and not strict_text:
                 in_list = False
@@ -1276,6 +1275,9 @@ class DoclingDocument(BaseModel):
                 mdtexts.append(text)
 
         mdtext = (delim.join(mdtexts)).strip()
+        mdtext = re.sub(
+            r"\n\n\n+", "\n\n", mdtext
+        )  # remove cases of double or more empty lines.
         return mdtext
 
     def export_to_text(  # noqa: C901
