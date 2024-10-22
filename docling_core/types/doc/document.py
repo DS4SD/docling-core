@@ -1222,7 +1222,7 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
                 in_list = True
                 # Calculate indent based on list_nesting_level
-                indent = "  " * (
+                indent = "    " * (
                     list_nesting_level - 1
                 )  # -1 because level 1 needs no indent
 
