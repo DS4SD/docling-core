@@ -1183,6 +1183,13 @@ class DoclingDocument(BaseModel):
                 GroupLabel.LIST,
                 GroupLabel.ORDERED_LIST,
             ]:
+
+                if (
+                    list_nesting_level == 0
+                ):  # Check if we're still in the same nesting level.
+                    # In that case a new list starts.
+                    mdtexts.append("\n")  # Add a blank line
+
                 # Increment list nesting level when entering a new list
                 list_nesting_level += 1
                 in_list = True
