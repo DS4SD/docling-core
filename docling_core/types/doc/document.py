@@ -1180,11 +1180,11 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
 
                 marker = ""
-                if strict_text:
+                if not strict_text:
                     marker = "#"
 
                 text = f"{marker} {item.text}\n"
-                mdtexts.append(text)
+                mdtexts.append(text.strip())
 
             elif (
                 isinstance(item, TextItem)
@@ -1192,13 +1192,13 @@ class DoclingDocument(BaseModel):
             ) or isinstance(item, SectionHeaderItem):
 
                 marker = ""
-                if strict_text:
+                if not strict_text:
                     marker = "#" * level
                     if len(marker) < 2:
                         marker = "##"
 
                 text = f"{marker} {item.text}\n"
-                mdtexts.append(text)
+                mdtexts.append(text.strip())
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
                 text = f"```\n{item.text}\n```\n"
@@ -1234,22 +1234,12 @@ class DoclingDocument(BaseModel):
 
                 mdtexts.append(item.caption_text(self))
 
-                # for _ in item.captions:
-                #    caption = _.resolve(self)
-                #    text = f"{caption.text}"
-                #    mdtexts.append(text)
-
                 md_table = item.export_to_markdown()
                 mdtexts.append(md_table + "\n")
 
             elif isinstance(item, PictureItem) and not strict_text:
 
                 mdtexts.append(item.caption_text(self))
-
-                # for _ in item.captions:
-                #    caption = _.resolve(self)
-                #    text = f"{caption.text}"
-                #    mdtexts.append(text)
 
                 if image_mode == ImageRefMode.PLACEHOLDER:
                     mdtexts.append("\n" + image_placeholder + "\n")
