@@ -1150,39 +1150,50 @@ class DoclingDocument(BaseModel):
         :rtype: str
         """
         mdtexts: list[str] = []
-
-        list_level_start = -1
+        list_nesting_level = 0  # Track the current list nesting level
+        previous_level = 0  # Track the previous item's level
+        in_list = False  # Track if we're currently processing list items
 
         for ix, (item, level) in enumerate(
             self.iterate_items(self.body, with_groups=True)
         ):
+            # If we've moved to a lower level, we're exiting one or more groups
+            if level < previous_level:
+                # Calculate how many levels we've exited
+                level_difference = previous_level - level
+                # Decrement list_nesting_level for each list group we've exited
+                list_nesting_level = max(0, list_nesting_level - level_difference)
+
+            previous_level = level  # Update previous_level for next iteration
 
             if ix < from_element and to_element <= ix:
                 continue  # skip as many items as you want
 
-            if list_level_start != -1 and not isinstance(item, ListItem):
-                if len(mdtexts) > 0:  # append to last list-item a newline
+            # Handle newlines between different types of content
+            if len(mdtexts) > 0:
+                # Add newline after non-list items, but only if we're not in a list
+                if not isinstance(item, (ListItem, GroupItem)) and not in_list:
                     mdtexts[-1] += "\n"
-
-                list_level_start = -1
+                # Add newline when transitioning from list to non-list content
+                elif not isinstance(item, (ListItem, GroupItem)) and in_list:
+                    mdtexts[-1] += "\n"
+                    in_list = False
 
             if isinstance(item, GroupItem) and item.label in [
                 GroupLabel.LIST,
                 GroupLabel.ORDERED_LIST,
             ]:
-                # if no list has yet been started, log the level
-                if list_level_start == -1:
-                    list_level_start = level
+                # Increment list nesting level when entering a new list
+                list_nesting_level += 1
+                in_list = True
+                continue
 
             elif isinstance(item, GroupItem):
                 continue
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
-
-                marker = ""
-                if not strict_text:
-                    marker = "#"
-
+                in_list = False
+                marker = "" if strict_text else "#"
                 text = f"{marker} {item.text}\n"
                 mdtexts.append(text.strip())
 
@@ -1190,17 +1201,17 @@ class DoclingDocument(BaseModel):
                 isinstance(item, TextItem)
                 and item.label in [DocItemLabel.SECTION_HEADER]
             ) or isinstance(item, SectionHeaderItem):
-
+                in_list = False
                 marker = ""
                 if not strict_text:
                     marker = "#" * level
                     if len(marker) < 2:
                         marker = "##"
-
                 text = f"{marker} {item.text}\n"
                 mdtexts.append(text.strip())
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
+                in_list = False
                 text = f"```\n{item.text}\n```\n"
                 mdtexts.append(text)
 
@@ -1209,10 +1220,11 @@ class DoclingDocument(BaseModel):
                 continue
 
             elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
-
-                indent = ""
-                if list_level_start != -1:
-                    indent = "    " * (level - list_level_start - 1)
+                in_list = True
+                # Calculate indent based on list_nesting_level
+                indent = "  " * (
+                    list_nesting_level - 1
+                )  # -1 because level 1 needs no indent
 
                 marker = ""
                 if strict_text:
@@ -1226,24 +1238,23 @@ class DoclingDocument(BaseModel):
                 mdtexts.append(text)
 
             elif isinstance(item, TextItem) and item.label in labels:
+                in_list = False
                 if len(item.text):
                     text = f"{item.text}\n"
                     mdtexts.append(text)
 
             elif isinstance(item, TableItem) and not strict_text:
-
+                in_list = False
                 mdtexts.append(item.caption_text(self))
-
                 md_table = item.export_to_markdown()
                 mdtexts.append(md_table + "\n")
 
             elif isinstance(item, PictureItem) and not strict_text:
-
+                in_list = False
                 mdtexts.append(item.caption_text(self))
 
                 if image_mode == ImageRefMode.PLACEHOLDER:
                     mdtexts.append("\n" + image_placeholder + "\n")
-
                 elif image_mode == ImageRefMode.EMBEDDED and isinstance(
                     item.image, ImageRef
                 ):
@@ -1251,7 +1262,7 @@ class DoclingDocument(BaseModel):
                     mdtexts.append(text)
                 elif image_mode == ImageRefMode.EMBEDDED and not isinstance(
                     item.image, ImageRef
-                ):  # item.image is not available
+                ):
                     text = (
                         "<!-- 🖼️❌ Image not available. "
                         "Please use `PdfPipelineOptions(generate_picture_images=True)`"
@@ -1260,6 +1271,7 @@ class DoclingDocument(BaseModel):
                     mdtexts.append(text)
 
             elif isinstance(item, DocItem) and item.label in labels:
+                in_list = False
                 text = "<missing-text>"
                 mdtexts.append(text)
 
