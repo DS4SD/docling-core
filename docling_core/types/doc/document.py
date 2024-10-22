@@ -97,68 +97,131 @@ class PictureMiscData(BaseModel):
     content: Dict[str, Any]
 
 
-class ChartElement(BaseModel):
-    """ChartElement"""
+class Line(BaseModel):
+    """
+    Represents a line in a line chart.
+
+    Attributes:
+        label (str): The label for the line.
+        values (List[Tuple[float, float]]): A list of (x, y) coordinate pairs
+            representing the line's data points.
+    """
 
     label: str
+    values: List[Tuple[float, float]]
 
 
-class Line(ChartElement):
-    """Line"""
+class Bar(BaseModel):
+    """
+    Represents a bar in a bar chart.
 
-    x_axis: List[float]
-    y_axis: List[float]
+    Attributes:
+        label (str): The label for the bar.
+        values (float): The value associated with the bar.
+    """
 
-    @field_validator("y_axis")
-    def check_same_length(cls, v, values):
-        if "x_axis" in values and len(v) != len(values["x_axis"]):
-            raise ValueError("x_axis and y_axis must have the same length")
-        return v
+    label: str
+    values: float
 
 
-class Bar(ChartElement):
-    """Bar"""
+class StackedBar(BaseModel):
+    """
+    Represents a stacked bar in a stacked bar chart.
 
+    Attributes:
+        label (str): The label for the stacked bar.
+        values (List[float]): A list of values representing different segments
+            of the stacked bar.
+        units (List[str]): A list of names for each segment of the stacked bar.
+    """
+    
+    label: str
     values: List[float]
     units: List[str]
 
 
-class Slice(ChartElement):
-    """Slice"""
+class Slice(BaseModel):
+    """
+    Represents a slice in a pie chart.
 
+    Attributes:
+        label (str): The label for the slice.
+        value (float): The value represented by the slice.
+    """
+
+    label: str
     value: float
 
 
 class PictureChartData(BaseModel):
-    """PictureChartData"""
+    """
+    Base class for picture chart data.
 
-    kind: str
+    Attributes:
+        title (str): The title of the chart.
+    """
     title: str
 
 
-class XYChartData(PictureChartData):
-    """XYChartData"""
+class PictureLineChartData(PictureChartData):
+    """
+    Represents data for a line chart.
 
-    x_axis_label: str
-    y_axis_label: str
-
-
-class PictureLineChartData(XYChartData):
-    """PictureLineChartData"""
+    Attributes:
+        kind (Literal["line_chart_data"]): The type of the chart.
+        x_axis_label (str): The label for the x-axis.
+        y_axis_label (str): The label for the y-axis.
+        lines (List[Line]): A list of lines in the chart.
+    """
 
     kind: Literal["line_chart_data"] = "line_chart_data"
+    x_axis_label: str
+    y_axis_label: str
     lines: List[Line]
 
 
-class PictureBarChartData(XYChartData):
-    """PictureBarChartData"""
+class PictureBarChartData(PictureChartData):
+    """
+    Represents data for a bar chart.
+
+    Attributes:
+        kind (Literal["bar_chart_data"]): The type of the chart.
+        x_axis_label (str): The label for the x-axis.
+        y_axis_label (str): The label for the y-axis.
+        bars (List[Bar]): A list of bars in the chart.
+    """
 
     kind: Literal["bar_chart_data"] = "bar_chart_data"
+    x_axis_label: str
+    y_axis_label: str
     bars: List[Bar]
 
 
+class PictureStackedBarChartData(PictureChartData):
+    """
+    Represents data for a stacked bar chart.
+
+    Attributes:
+        kind (Literal["stacked_bar_chart_data"]): The type of the chart.
+        x_axis_label (str): The label for the x-axis.
+        y_axis_label (str): The label for the y-axis.
+        stacked_bars (List[StackedBar]): A list of stacked bars in the chart.
+    """
+
+    kind: Literal["stacked_bar_chart_data"] = "stacked_bar_chart_data"
+    x_axis_label: str
+    y_axis_label: str
+    stacked_bars: List[StackedBar]
+
+
 class PicturePieChartData(PictureChartData):
-    """PicturePieChartData"""
+    """
+    Represents data for a pie chart.
+
+    Attributes:
+        kind (Literal["pie_chart_data"]): The type of the chart.
+        slices (List[Slice]): A list of slices in the pie chart.
+    """
 
     kind: Literal["pie_chart_data"] = "pie_chart_data"
     slices: List[Slice]
@@ -172,6 +235,7 @@ PictureDataType = Annotated[
         PictureMiscData,
         PictureLineChartData,
         PictureBarChartData,
+        PictureStackedBarChartData,
         PicturePieChartData,
     ],
     Field(discriminator="kind"),
