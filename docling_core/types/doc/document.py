@@ -1157,8 +1157,6 @@ class DoclingDocument(BaseModel):
         previous_level = 0  # Track the previous item's level
         in_list = False  # Track if we're currently processing list items
 
-        
-        
         for ix, (item, level) in enumerate(
             self.iterate_items(self.body, with_groups=True)
         ):
@@ -1226,7 +1224,8 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
                 in_list = True
                 # Calculate indent based on list_nesting_level
-                indent = " " * indent * (list_nesting_level - 1)  # -1 because level 1 needs no indent
+                # -1 because level 1 needs no indent
+                list_indent = " " * (indent * (list_nesting_level - 1))
 
                 marker = ""
                 if strict_text:
@@ -1236,7 +1235,7 @@ class DoclingDocument(BaseModel):
                 else:
                     marker = "-"  # Markdown needs only dash as item marker.
 
-                text = f"{indent}{marker} {item.text}"
+                text = f"{list_indent}{marker} {item.text}"
                 mdtexts.append(text)
 
             elif isinstance(item, TextItem) and item.label in labels:
