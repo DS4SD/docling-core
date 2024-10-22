@@ -97,12 +97,82 @@ class PictureMiscData(BaseModel):
     content: Dict[str, Any]
 
 
+class ChartElement(BaseModel):
+    """ChartElement"""
+
+    label: str
+
+
+class Line(ChartElement):
+    """Line"""
+
+    x_axis: List[float]
+    y_axis: List[float]
+
+    @field_validator("y_axis")
+    def check_same_length(cls, v, values):
+        if "x_axis" in values and len(v) != len(values["x_axis"]):
+            raise ValueError("x_axis and y_axis must have the same length")
+        return v
+
+
+class Bar(ChartElement):
+    """Bar"""
+
+    values: List[float]
+    units: List[str]
+
+
+class Slice(ChartElement):
+    """Slice"""
+
+    value: float
+
+
+class PictureChartData(BaseModel):
+    """PictureChartData"""
+
+    kind: str
+    title: str
+
+
+class XYChartData(PictureChartData):
+    """XYChartData"""
+
+    x_axis_label: str
+    y_axis_label: str
+
+
+class PictureLineChartData(XYChartData):
+    """PictureLineChartData"""
+
+    kind: Literal["line_chart_data"] = "line_chart_data"
+    lines: List[Line]
+
+
+class PictureBarChartData(XYChartData):
+    """PictureBarChartData"""
+
+    kind: Literal["bar_chart_data"] = "bar_chart_data"
+    bars: List[Bar]
+
+
+class PicturePieChartData(PictureChartData):
+    """PicturePieChartData"""
+
+    kind: Literal["pie_chart_data"] = "pie_chart_data"
+    slices: List[Slice]
+
+
 PictureDataType = Annotated[
     Union[
         PictureClassificationData,
         PictureDescriptionData,
         PictureMoleculeData,
         PictureMiscData,
+        PictureLineChartData,
+        PictureBarChartData,
+        PicturePieChartData,
     ],
     Field(discriminator="kind"),
 ]
