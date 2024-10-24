@@ -5,6 +5,7 @@
 
 """File-related utilities."""
 
+import importlib
 import tempfile
 from pathlib import Path
 from typing import Union
@@ -14,7 +15,7 @@ from pydantic import AnyHttpUrl, TypeAdapter, ValidationError
 
 
 def resolve_file_source(
-    source: Union[Path, AnyHttpUrl, str], custom_headers: dict[str, str] = {}
+    source: Union[Path, AnyHttpUrl, str], headers: dict[str, str] = {}
 ) -> Path:
     """Resolves the source (URL, path) of a file to a local file path.
 
@@ -32,10 +33,14 @@ def resolve_file_source(
     try:
         http_url: AnyHttpUrl = TypeAdapter(AnyHttpUrl).validate_python(source)
 
-        if "User-Agent" not in custom_headers:
-            custom_headers["User-Agent"] = "docling/v2"
+        # make all header keys lower case
+        req_headers = {k.lower(): v for k, v in headers.items()}
+        # add user-agent is not set
+        if "user-agent" not in req_headers:
+            agent_name = f"docling-core/{importlib.metadata.version('docling-core')}"
+            req_headers["user-agent"] = agent_name
 
-        res = requests.get(http_url, stream=True, headers=custom_headers)
+        res = requests.get(http_url, stream=True, headers=req_headers)
         res.raise_for_status()
         fname = None
         # try to get filename from response header
