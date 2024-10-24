@@ -595,7 +595,7 @@ class TableItem(FloatingItem):
                 # make sure that md tables are not broken
                 # due to newline chars in the text
                 text = col.text
-                text = text.replace("\n", "")
+                text = text.replace("\n", " ")
                 tmp.append(text)
 
             table.append(tmp)
