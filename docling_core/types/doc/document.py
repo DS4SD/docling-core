@@ -1298,8 +1298,9 @@ class DoclingDocument(BaseModel):
         # That means we need to escape it, to properly reflect content in the markdown
         def escape_underscores(text):
             # Replace "_" with "\_" only if it's not already escaped
-            escaped_text = re.sub(r'(?<!\\)_', r'\_', text)
+            escaped_text = re.sub(r"(?<!\\)_", r"\_", text)
             return escaped_text
+
         mdtext = escape_underscores(mdtext)
 
         return mdtext
