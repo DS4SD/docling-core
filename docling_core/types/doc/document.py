@@ -1207,8 +1207,8 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
                 in_list = False
                 marker = "" if strict_text else "#"
-                text = f"{marker} {item.text}\n"
-                mdtexts.append(text.strip())
+                text = f"{marker} {item.text}"
+                mdtexts.append(text.strip() + "\n")
 
             elif (
                 isinstance(item, TextItem)
