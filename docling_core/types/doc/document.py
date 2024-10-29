@@ -1465,28 +1465,28 @@ class DoclingDocument(BaseModel):
             if isinstance(item, GroupItem):
                 result.append(
                     indent * level
-                    + f"item-{i} at level {level}: {item.label}: group {item.name}"
+                    + f"item-{i} at level {level}: {item.label.name}: group {item.name}"
                 )
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
                 text = get_text(text=item.text, max_text_len=max_text_len)
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label}: {text}"
+                    indent * level + f"item-{i} at level {level}: {item.label.name}: {text}"
                 )
 
             elif isinstance(item, SectionHeaderItem):
                 text = get_text(text=item.text, max_text_len=max_text_len)
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label}: {text}"
+                    indent * level + f"item-{i} at level {level}: {item.label.name}: {text}"
                 )
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
                 text = get_text(text=item.text, max_text_len=max_text_len)
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label}: {text}"
+                    indent * level + f"item-{i} at level {level}: {item.label.name}: {text}"
                 )
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CAPTION]:
@@ -1497,21 +1497,21 @@ class DoclingDocument(BaseModel):
                 text = get_text(text=item.text, max_text_len=max_text_len)
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label}: {text}"
+                    indent * level + f"item-{i} at level {level}: {item.label.name}: {text}"
                 )
 
             elif isinstance(item, TextItem):
                 text = get_text(text=item.text, max_text_len=max_text_len)
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label}: {text}"
+                    indent * level + f"item-{i} at level {level}: {item.label.name}: {text}"
                 )
 
             elif isinstance(item, TableItem):
 
                 result.append(
                     indent * level
-                    + f"item-{i} at level {level}: {item.label} with "
+                    + f"item-{i} at level {level}: {item.label.name} with "
                     + f"[{item.data.num_rows}x{item.data.num_cols}]"
                 )
 
@@ -1519,7 +1519,7 @@ class DoclingDocument(BaseModel):
                     caption = _.resolve(self)
                     result.append(
                         indent * (level + 1)
-                        + f"item-{i} at level {level + 1}: {caption.label}: "
+                        + f"item-{i} at level {level + 1}: {caption.label.name}: "
                         + f"{caption.text}"
                     )
 
@@ -1537,21 +1537,21 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, PictureItem):
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label}"
+                    indent * level + f"item-{i} at level {level}: {item.label.name}"
                 )
 
                 for _ in item.captions:
                     caption = _.resolve(self)
                     result.append(
                         indent * (level + 1)
-                        + f"item-{i} at level {level + 1}: {caption.label}: "
+                        + f"item-{i} at level {level + 1}: {caption.label.name}: "
                         + f"{caption.text}"
                     )
 
             elif isinstance(item, DocItem):
                 result.append(
                     indent * (level + 1)
-                    + f"item-{i} at level {level}: {item.label}: ignored"
+                    + f"item-{i} at level {level}: {item.label.name}: ignored"
                 )
 
         return "\n".join(result)
