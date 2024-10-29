@@ -1,5 +1,7 @@
 """Models for the Docling Document data type."""
 
+import textwrap
+
 import base64
 import mimetypes
 import re
@@ -1125,6 +1127,7 @@ class DoclingDocument(BaseModel):
         image_placeholder: str = "<!-- image -->",
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
         indent: int = 4,
+        text_width: int = -1,
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -1251,20 +1254,23 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, TextItem) and item.label in labels:
                 in_list = False
-                if len(item.text):
+                if len(item.text) and text_width>0:
+                    wrapped_text = textwrap.fill(text, width=text_width)
+                    mdtexts.append(wrapped_text + "\n")
+                elif len(item.text):
                     text = f"{item.text}\n"
                     mdtexts.append(text)
-
+                
             elif isinstance(item, TableItem) and not strict_text:
                 in_list = False
                 mdtexts.append(item.caption_text(self))
                 md_table = item.export_to_markdown()
                 mdtexts.append("\n" + md_table + "\n")
-
+                
             elif isinstance(item, PictureItem) and not strict_text:
                 in_list = False
                 mdtexts.append(item.caption_text(self))
-
+                
                 if image_mode == ImageRefMode.PLACEHOLDER:
                     mdtexts.append("\n" + image_placeholder + "\n")
                 elif image_mode == ImageRefMode.EMBEDDED and isinstance(
@@ -1281,7 +1287,7 @@ class DoclingDocument(BaseModel):
                         " --> "
                     )
                     mdtexts.append(text)
-
+                
             elif isinstance(item, DocItem) and item.label in labels:
                 in_list = False
                 text = "<missing-text>"
