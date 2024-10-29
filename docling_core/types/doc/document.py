@@ -1472,21 +1472,24 @@ class DoclingDocument(BaseModel):
                 text = get_text(text=item.text, max_text_len=max_text_len)
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label.name}: {text}"
+                    indent * level
+                    + f"item-{i} at level {level}: {item.label.name}: {text}"
                 )
 
             elif isinstance(item, SectionHeaderItem):
                 text = get_text(text=item.text, max_text_len=max_text_len)
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label.name}: {text}"
+                    indent * level
+                    + f"item-{i} at level {level}: {item.label.name}: {text}"
                 )
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
                 text = get_text(text=item.text, max_text_len=max_text_len)
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label.name}: {text}"
+                    indent * level
+                    + f"item-{i} at level {level}: {item.label.name}: {text}"
                 )
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CAPTION]:
@@ -1497,14 +1500,16 @@ class DoclingDocument(BaseModel):
                 text = get_text(text=item.text, max_text_len=max_text_len)
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label.name}: {text}"
+                    indent * level
+                    + f"item-{i} at level {level}: {item.label.name}: {text}"
                 )
 
             elif isinstance(item, TextItem):
                 text = get_text(text=item.text, max_text_len=max_text_len)
 
                 result.append(
-                    indent * level + f"item-{i} at level {level}: {item.label.name}: {text}"
+                    indent * level
+                    + f"item-{i} at level {level}: {item.label.name}: {text}"
                 )
 
             elif isinstance(item, TableItem):
