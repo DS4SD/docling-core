@@ -129,15 +129,15 @@ class StackedBar(BaseModel):
     Represents a stacked bar in a stacked bar chart.
 
     Attributes:
-        label (str): The label for the stacked bar.
-        values (List[float]): A list of values representing different segments
-            of the stacked bar.
-        units (List[str]): A list of names for each segment of the stacked bar.
+        label (List[str]): The labels for the stacked bars. Multiple values are stored
+            in cases where the chart is "double stacked," meaning bars are stacked both
+            horizontally and vertically.
+        values (List[Tuple[str, int]]): A list of values representing different segments
+            of the stacked bar along with their label.
     """
-    
-    label: str
-    values: List[float]
-    units: List[str]
+
+    label: List[str]
+    values: List[Tuple[str, int]]
 
 
 class Slice(BaseModel):
@@ -153,6 +153,18 @@ class Slice(BaseModel):
     value: float
 
 
+class Point(BaseModel):
+    """
+    Represents a point in a scatter chart.
+
+    Attributes:
+        value (Tuple[float, float]): A (x, y) coordinate pair representing a point in a
+            chart.
+    """
+    
+    value: Tuple[float, float]
+
+
 class PictureChartData(BaseModel):
     """
     Base class for picture chart data.
@@ -160,12 +172,13 @@ class PictureChartData(BaseModel):
     Attributes:
         title (str): The title of the chart.
     """
+    
     title: str
 
 
 class PictureLineChartData(PictureChartData):
     """
-    Represents data for a line chart.
+    Represents data of a line chart.
 
     Attributes:
         kind (Literal["line_chart_data"]): The type of the chart.
@@ -182,7 +195,7 @@ class PictureLineChartData(PictureChartData):
 
 class PictureBarChartData(PictureChartData):
     """
-    Represents data for a bar chart.
+    Represents data of a bar chart.
 
     Attributes:
         kind (Literal["bar_chart_data"]): The type of the chart.
@@ -199,7 +212,7 @@ class PictureBarChartData(PictureChartData):
 
 class PictureStackedBarChartData(PictureChartData):
     """
-    Represents data for a stacked bar chart.
+    Represents data of a stacked bar chart.
 
     Attributes:
         kind (Literal["stacked_bar_chart_data"]): The type of the chart.
@@ -216,7 +229,7 @@ class PictureStackedBarChartData(PictureChartData):
 
 class PicturePieChartData(PictureChartData):
     """
-    Represents data for a pie chart.
+    Represents data of a pie chart.
 
     Attributes:
         kind (Literal["pie_chart_data"]): The type of the chart.
@@ -225,6 +238,23 @@ class PicturePieChartData(PictureChartData):
 
     kind: Literal["pie_chart_data"] = "pie_chart_data"
     slices: List[Slice]
+
+
+class PictureScatterChartData(PictureChartData):
+    """
+    Represents data of a scatter chart.
+
+    Attributes:
+        kind (Literal["scatter_chart_data"]): The type of the chart.
+        x_axis_label (str): The label for the x-axis.
+        y_axis_label (str): The label for the y-axis.
+        points (List[Point]): A list of points in the scatter chart.
+    """
+
+    kind: Literal["scatter_chart_data"] = "scatter_chart_data"
+    x_axis_label: str
+    y_axis_label: str
+    points: List[Point]
 
 
 PictureDataType = Annotated[
@@ -237,6 +267,7 @@ PictureDataType = Annotated[
         PictureBarChartData,
         PictureStackedBarChartData,
         PicturePieChartData,
+        PictureScatterChartData,
     ],
     Field(discriminator="kind"),
 ]
