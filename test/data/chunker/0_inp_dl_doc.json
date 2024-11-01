@@ -547,7 +547,7 @@
                 "$ref": "#/body"
             },
             "children": [],
-            "label": "section_header",
+            "label": "title",
             "prov": [
                 {
                     "page_no": 1,

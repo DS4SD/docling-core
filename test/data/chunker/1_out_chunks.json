@@ -235,6 +235,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -276,6 +277,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -317,6 +319,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -358,6 +361,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -399,6 +403,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -440,6 +445,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -481,6 +487,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -522,6 +529,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -563,6 +571,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -604,6 +613,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -645,6 +655,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "1 Introduction"
                 ],
                 "origin": {
@@ -686,6 +697,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "2 Getting Started"
                 ],
                 "origin": {
@@ -727,6 +739,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "2 Getting Started"
                 ],
                 "origin": {
@@ -768,6 +781,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "2 Getting Started"
                 ],
                 "origin": {
@@ -809,6 +823,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "2 Getting Started"
                 ],
                 "origin": {
@@ -850,6 +865,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3 Processing pipeline"
                 ],
                 "origin": {
@@ -891,6 +907,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -932,6 +949,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -973,6 +991,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -1014,6 +1033,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -1055,6 +1075,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -1096,6 +1117,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -1137,6 +1159,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3.2 AI models"
                 ],
                 "origin": {
@@ -1178,6 +1201,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Layout Analysis Model"
                 ],
                 "origin": {
@@ -1219,6 +1243,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Layout Analysis Model"
                 ],
                 "origin": {
@@ -1260,6 +1285,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Table Structure Recognition"
                 ],
                 "origin": {
@@ -1301,6 +1327,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Table Structure Recognition"
                 ],
                 "origin": {
@@ -1342,6 +1369,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Table Structure Recognition"
                 ],
                 "origin": {
@@ -1383,6 +1411,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "OCR"
                 ],
                 "origin": {
@@ -1424,6 +1453,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "OCR"
                 ],
                 "origin": {
@@ -1465,6 +1495,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3.3 Assembly"
                 ],
                 "origin": {
@@ -1506,6 +1537,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3.4 Extensibility"
                 ],
                 "origin": {
@@ -1547,6 +1579,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "3.4 Extensibility"
                 ],
                 "origin": {
@@ -1588,6 +1621,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "4 Performance"
                 ],
                 "origin": {
@@ -1629,6 +1663,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "4 Performance"
                 ],
                 "origin": {
@@ -1670,6 +1705,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "4 Performance"
                 ],
                 "origin": {
@@ -1711,6 +1747,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "4 Performance"
                 ],
                 "origin": {
@@ -1752,6 +1789,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "4 Performance"
                 ],
                 "origin": {
@@ -1793,6 +1831,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "4 Performance"
                 ],
                 "origin": {
@@ -1834,6 +1873,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "4 Performance"
                 ],
                 "captions": [
@@ -1878,6 +1918,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "5 Applications"
                 ],
                 "origin": {
@@ -1919,6 +1960,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "6 Future work and contributions"
                 ],
                 "origin": {
@@ -1960,6 +2002,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "6 Future work and contributions"
                 ],
                 "origin": {
@@ -2001,6 +2044,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2042,6 +2086,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2083,6 +2128,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2124,6 +2170,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2165,6 +2212,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2206,6 +2254,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2247,6 +2296,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2288,6 +2338,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2329,6 +2380,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2370,6 +2422,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2411,6 +2464,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2452,6 +2506,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2493,6 +2548,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2534,6 +2590,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2575,6 +2632,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2616,6 +2674,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2657,6 +2716,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2698,6 +2758,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2739,6 +2800,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "References"
                 ],
                 "origin": {
@@ -2780,6 +2842,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Appendix"
                 ],
                 "origin": {
@@ -2821,6 +2884,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
                 ],
                 "origin": {
@@ -2862,6 +2926,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
                 ],
                 "origin": {
@@ -2903,6 +2968,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
                 ],
                 "origin": {
@@ -2944,6 +3010,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
                 ],
                 "origin": {
@@ -2985,6 +3052,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
                 ],
                 "origin": {
@@ -3026,6 +3094,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ABSTRACT"
                 ],
                 "origin": {
@@ -3067,6 +3136,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "CCS CONCEPTS"
                 ],
                 "origin": {
@@ -3108,6 +3178,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "CCS CONCEPTS"
                 ],
                 "origin": {
@@ -3149,6 +3220,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
                 ],
                 "origin": {
@@ -3190,6 +3262,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
                 ],
                 "origin": {
@@ -3231,6 +3304,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
                 ],
                 "origin": {
@@ -3272,6 +3346,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
                 ],
                 "origin": {
@@ -3313,6 +3388,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis"
                 ],
                 "origin": {
@@ -3354,6 +3430,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ABSTRACT"
                 ],
                 "origin": {
@@ -3395,6 +3472,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "CCS CONCEPTS"
                 ],
                 "origin": {
@@ -3436,6 +3514,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "CCS CONCEPTS"
                 ],
                 "origin": {
@@ -3477,6 +3556,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "CCS CONCEPTS"
                 ],
                 "origin": {
@@ -3518,6 +3598,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "CCS CONCEPTS"
                 ],
                 "origin": {
@@ -3559,6 +3640,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "KEYWORDS"
                 ],
                 "origin": {
@@ -3600,6 +3682,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "origin": {
@@ -3641,6 +3724,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "origin": {
@@ -3682,6 +3766,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "KEYWORDS"
                 ],
                 "origin": {
@@ -3723,6 +3808,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "origin": {
@@ -3764,6 +3850,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "origin": {
@@ -3805,6 +3892,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "origin": {
@@ -3846,6 +3934,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "origin": {
@@ -3887,6 +3976,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "origin": {
@@ -3928,6 +4018,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "origin": {
@@ -3969,6 +4060,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "origin": {
@@ -4010,6 +4102,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "captions": [
@@ -4054,6 +4147,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "ACM Reference Format:"
                 ],
                 "origin": {
@@ -4095,6 +4189,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "5 EXPERIMENTS"
                 ],
                 "origin": {
@@ -4136,6 +4231,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "5 EXPERIMENTS"
                 ],
                 "origin": {
@@ -4177,6 +4273,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "5 EXPERIMENTS"
                 ],
                 "origin": {
@@ -4218,6 +4315,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "5 EXPERIMENTS"
                 ],
                 "origin": {
@@ -4259,6 +4357,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "5 EXPERIMENTS"
                 ],
                 "origin": {
@@ -4300,6 +4399,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4341,6 +4441,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4382,6 +4483,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4423,6 +4525,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4464,6 +4567,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "5 EXPERIMENTS"
                 ],
                 "origin": {
@@ -4505,6 +4609,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "5 EXPERIMENTS"
                 ],
                 "origin": {
@@ -4546,6 +4651,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "5 EXPERIMENTS"
                 ],
                 "origin": {
@@ -4587,6 +4693,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "5 EXPERIMENTS"
                 ],
                 "origin": {
@@ -4628,6 +4735,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4669,6 +4777,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4710,6 +4819,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4751,6 +4861,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4792,6 +4903,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "captions": [
@@ -4836,6 +4948,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4877,6 +4990,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4918,6 +5032,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -4959,6 +5074,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -5000,6 +5116,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
@@ -5041,6 +5158,7 @@
                     }
                 ],
                 "headings": [
+                    "Docling Technical Report",
                     "Baselines for Object Detection"
                 ],
                 "origin": {
