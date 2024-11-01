@@ -818,6 +818,7 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -860,6 +861,7 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -902,6 +904,7 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -944,6 +947,7 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -986,6 +990,7 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -1028,6 +1033,7 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
                     "3.1 PDF backends"
                 ],
                 "origin": {
@@ -1070,6 +1076,7 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
                     "3.2 AI models"
                 ],
                 "origin": {
@@ -1112,6 +1119,8 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
+                    "3.2 AI models",
                     "Layout Analysis Model"
                 ],
                 "origin": {
@@ -1154,6 +1163,8 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
+                    "3.2 AI models",
                     "Layout Analysis Model"
                 ],
                 "origin": {
@@ -1196,6 +1207,8 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
+                    "3.2 AI models",
                     "Table Structure Recognition"
                 ],
                 "origin": {
@@ -1238,6 +1251,8 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
+                    "3.2 AI models",
                     "Table Structure Recognition"
                 ],
                 "origin": {
@@ -1280,6 +1295,8 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
+                    "3.2 AI models",
                     "Table Structure Recognition"
                 ],
                 "origin": {
@@ -1322,6 +1339,8 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
+                    "3.2 AI models",
                     "OCR"
                 ],
                 "origin": {
@@ -1364,6 +1383,8 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
+                    "3.2 AI models",
                     "OCR"
                 ],
                 "origin": {
@@ -1406,6 +1427,7 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
                     "3.3 Assembly"
                 ],
                 "origin": {
@@ -1448,6 +1470,7 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
                     "3.4 Extensibility"
                 ],
                 "origin": {
@@ -1490,6 +1513,7 @@
                 ],
                 "headings": [
                     "Docling Technical Report",
+                    "3 Processing pipeline",
                     "3.4 Extensibility"
                 ],
                 "origin": {
