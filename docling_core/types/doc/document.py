@@ -1273,6 +1273,7 @@ class DoclingDocument(BaseModel):
     def export_to_markdown(  # noqa: C901
         self,
         delim: str = "\n",
+        page_no: Optional[int] = None,
         from_element: int = 0,
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
@@ -1320,7 +1321,7 @@ class DoclingDocument(BaseModel):
         in_list = False  # Track if we're currently processing list items
 
         for ix, (item, level) in enumerate(
-            self.iterate_items(self.body, with_groups=True)
+            self.iterate_items(self.body, with_groups=True, page_no=page_no)
         ):
             # If we've moved to a lower level, we're exiting one or more groups
             if level < previous_level:
