@@ -1255,7 +1255,10 @@ class DoclingDocument(BaseModel):
                 # If the child is a NodeItem, recursively traverse it
                 if not isinstance(child, PictureItem) or traverse_pictures:
                     yield from self.iterate_items(
-                        child, _level=_level + 1, with_groups=with_groups, page_no=page_no
+                        child,
+                        _level=_level + 1,
+                        with_groups=with_groups,
+                        page_no=page_no,
                     )
 
     def print_element_tree(self):
@@ -1273,7 +1276,6 @@ class DoclingDocument(BaseModel):
     def export_to_markdown(  # noqa: C901
         self,
         delim: str = "\n",
-        page_no: Optional[int] = None,
         from_element: int = 0,
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
@@ -1282,6 +1284,7 @@ class DoclingDocument(BaseModel):
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
         indent: int = 4,
         text_width: int = -1,
+        page_no: Optional[int] = None,
     ) -> str:
         r"""Serialize to Markdown.
 
