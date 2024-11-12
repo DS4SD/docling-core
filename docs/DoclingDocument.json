@@ -363,6 +363,17 @@
           },
           "title": "Prov",
           "type": "array"
+        },
+        "image": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -416,6 +427,17 @@
           },
           "title": "Prov",
           "type": "array"
+        },
+        "image": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "orig": {
           "title": "Orig",
@@ -637,6 +659,17 @@
           "title": "Prov",
           "type": "array"
         },
+        "image": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "captions": {
           "default": [],
           "items": {
@@ -660,17 +693,6 @@
           },
           "title": "Footnotes",
           "type": "array"
-        },
-        "image": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ImageRef"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
         },
         "annotations": {
           "default": [],
@@ -1055,6 +1077,17 @@
           "title": "Prov",
           "type": "array"
         },
+        "image": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "orig": {
           "title": "Orig",
           "type": "string"
@@ -1236,6 +1269,17 @@
           "title": "Prov",
           "type": "array"
         },
+        "image": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "captions": {
           "default": [],
           "items": {
@@ -1259,17 +1303,6 @@
           },
           "title": "Footnotes",
           "type": "array"
-        },
-        "image": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ImageRef"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
         },
         "data": {
           "$ref": "#/$defs/TableData"
@@ -1320,6 +1353,17 @@
           },
           "title": "Prov",
           "type": "array"
+        },
+        "image": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "orig": {
           "title": "Orig",
