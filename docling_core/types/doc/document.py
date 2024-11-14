@@ -551,6 +551,23 @@ class DocItem(
 
         return location
 
+    def get_image(self, doc: "DoclingDocument") -> Optional[PILImage.Image]:
+        """Returns the image of this DocItem if the document stores page images."""
+        if not len(self.prov):
+            return None
+
+        page = doc.pages.get(self.prov[0].page_no)
+        if page is None or page.size is None or page.image is None:
+            return None
+
+        page_image = page.image.pil_image
+        crop_bbox = (
+            self.prov[0]
+            .bbox.to_top_left_origin(page_height=page.size.height)
+            .scaled(scale=page_image.height / page.size.height)
+        )
+        return page_image.crop(crop_bbox.as_tuple())
+
 
 class TextItem(DocItem):
     """TextItem."""
@@ -632,6 +649,12 @@ class FloatingItem(DocItem):
         for cap in self.captions:
             text += cap.resolve(doc).text
         return text
+
+    def get_image(self, doc: "DoclingDocument") -> Optional[PILImage.Image]:
+        """Returns the image corresponding to FloatingItem."""
+        if self.image is not None:
+            return self.image.pil_image
+        return super().get_image(doc=doc)
 
 
 class PictureItem(FloatingItem):
