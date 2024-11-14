@@ -518,7 +518,6 @@ class DocItem(
 
     label: DocItemLabel
     prov: List[ProvenanceItem] = []
-    image: Optional[ImageRef] = None
 
     def get_location_tokens(
         self,
@@ -625,6 +624,7 @@ class FloatingItem(DocItem):
     captions: List[RefItem] = []
     references: List[RefItem] = []
     footnotes: List[RefItem] = []
+    image: Optional[ImageRef] = None
 
     def caption_text(self, doc: "DoclingDocument") -> str:
         """Computes the caption as a single text."""
