@@ -5,7 +5,7 @@
 
 """Define base classes for chunking."""
 from abc import ABC, abstractmethod
-from typing import Any, ClassVar, Iterator
+from typing import Any, ClassVar, Iterator, Optional
 
 from pydantic import BaseModel
 
@@ -33,6 +33,9 @@ class BaseChunk(BaseModel):
     text: str
     meta: BaseMeta
 
+    emb_spec_text: Optional[str] = None  # if not set, `text` is used
+    gen_spec_text: Optional[str] = None  # if not set, get_text_for_embedding() is used
+
     def export_json_dict(self) -> dict[str, Any]:
         """Helper method for exporting non-None keys to JSON mode.
 
@@ -40,6 +43,22 @@ class BaseChunk(BaseModel):
             dict[str, Any]: The exported dictionary.
         """
         return self.model_dump(mode="json", by_alias=True, exclude_none=True)
+
+    def get_text_for_embedding(self) -> str:
+        """Get text for embedding. If not explicitly set, uses `text`.
+
+        Returns:
+            str: The text to embed.
+        """
+        return self.emb_spec_text or self.text
+
+    def get_text_for_generation(self) -> str:
+        """Get text for gen. If not explicitly set, uses `get_text_for_embedding()`.
+
+        Returns:
+            str: The text to pass to the generative model.
+        """
+        return self.gen_spec_text or self.get_text_for_embedding()
 
 
 class BaseChunker(BaseModel, ABC):
