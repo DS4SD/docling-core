@@ -1518,6 +1518,216 @@ class DoclingDocument(BaseModel):
             image_placeholder="",
         )
 
+    def export_to_html(  # noqa: C901
+        self,
+        from_element: int = 0,
+        to_element: int = sys.maxsize,
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+        strict_text: bool = False,
+        image_placeholder: str = "<!-- image -->",
+        image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
+        page_no: Optional[int] = None,
+    ) -> str:
+        r"""Serialize to HTML."""
+
+        def update_lists(in_list:bool, in_ordered_list:bool, list_nesting_level:int, html_texts: list[str]):
+            
+            while in_list and list_nesting_level>0:
+                if in_ordered_list:
+                    html_texts.append("</ol>")
+                else:
+                    html_texts.append("</ul>")
+                    
+                list_nesting_level -= 1
+                        
+            in_list = False            
+
+            return in_list, in_ordered_list, list_nesting_level, 
+            
+        
+        html_texts: list[str] = []
+        list_nesting_level = 0  # Track the current list nesting level
+        previous_level = 0  # Track the previous item's level
+
+        in_list = False  # Track if we're currently processing list items
+        in_ordered_list = False
+
+        
+        for ix, (item, level) in enumerate(
+            self.iterate_items(self.body, with_groups=True, page_no=page_no)
+        ):
+            # If we've moved to a lower level, we're exiting one or more groups
+            if level < previous_level:
+                # Calculate how many levels we've exited
+                level_difference = previous_level - level
+                # Decrement list_nesting_level for each list group we've exited
+                list_nesting_level = max(0, list_nesting_level - level_difference)
+
+            previous_level = level  # Update previous_level for next iteration
+
+            if ix < from_element or to_element <= ix:
+                continue  # skip as many items as you want
+
+            # Handle newlines between different types of content
+            if (
+                len(html_texts) > 0
+                and not isinstance(item, (ListItem, GroupItem))
+                and in_list
+            ):
+                html_texts[-1] += "\n"
+                in_list = False
+
+            if isinstance(item, GroupItem) and item.label in [
+                GroupLabel.ORDERED_LIST,
+            ]:
+
+                text = f"<ol>"
+                html_texts.append(text.strip())                
+
+                # Increment list nesting level when entering a new list
+                list_nesting_level += 1
+                in_list = True
+                in_ordered_list = True
+                
+            elif isinstance(item, GroupItem) and item.label in [
+                GroupLabel.LIST,
+            ]:
+
+                text = f"<ul>"
+                html_texts.append(text.strip())                
+                
+                # Increment list nesting level when entering a new list
+                list_nesting_level += 1
+                in_list = True
+                in_ordered_list = False
+
+            elif isinstance(item, GroupItem):
+                continue
+
+            elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
+                
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+                
+                text = f"<h1>{item.text}</h1>"
+                html_texts.append(text.strip())
+                
+            elif (
+                isinstance(item, TextItem)
+                and item.label in [DocItemLabel.SECTION_HEADER]
+            ) or isinstance(item, SectionHeaderItem):
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+                
+                text = f"<h{level+1}>{item.text}</h{level+1}>"
+                html_texts.append(text.strip())                
+                
+            elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)                
+                
+                text = f"```\n{item.text}\n```\n"
+                html_texts.append(text)
+
+            elif isinstance(item, TextItem) and item.label in [DocItemLabel.CAPTION]:
+                
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+                                
+                # captions are printed in picture and table ... skipping for now
+                continue
+
+            elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
+                
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+
+                text = f"<li>{item.text}</li>"
+                html_texts.append(text)
+                
+                """
+                # Calculate indent based on list_nesting_level
+                # -1 because level 1 needs no indent
+                list_indent = " " * (indent * (list_nesting_level - 1))
+
+                marker = ""
+                if strict_text:
+                    marker = ""
+                elif item.enumerated:
+                    marker = item.marker
+                else:
+                    marker = "-"  # Markdown needs only dash as item marker.
+
+                text = f"{list_indent}{marker} {item.text}"
+                html_texts.append(text)
+                """
+                continue
+                
+            elif isinstance(item, TextItem) and item.label in labels:
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+                
+                """
+                if len(item.text) and text_width > 0:
+                    wrapped_text = textwrap.fill(text, width=text_width)
+                    html_texts.append(wrapped_text + "\n")
+                elif len(item.text):
+                    text = f"{item.text}\n"
+                    html_texts.append(text)
+                """
+                
+                text = f"<p>{item.text}</p>"
+                html_texts.append(text.strip())
+                
+            elif isinstance(item, TableItem) and not strict_text:
+                
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+
+                """
+                html_texts.append(item.caption_text(self))
+                md_table = item.export_to_markdown()
+                html_texts.append("\n" + md_table + "\n")
+                """
+
+                html_texts.append(item.export_to_html())
+                
+            elif isinstance(item, PictureItem) and not strict_text:
+                
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+
+                """
+                html_texts.append(item.caption_text(self))
+
+                if image_mode == ImageRefMode.PLACEHOLDER:
+                    html_texts.append("\n" + image_placeholder + "\n")
+                elif image_mode == ImageRefMode.EMBEDDED and isinstance(
+                    item.image, ImageRef
+                ):
+                    text = f"![Local Image]({item.image.uri})\n"
+                    html_texts.append(text)
+                elif image_mode == ImageRefMode.EMBEDDED and not isinstance(
+                    item.image, ImageRef
+                ):
+                    text = (
+                        "<!-- 🖼️❌ Image not available. "
+                        "Please use `PdfPipelineOptions(generate_picture_images=True)`"
+                        " --> "
+                    )
+                    html_texts.append(text)
+                """
+                
+            elif isinstance(item, DocItem) and item.label in labels:
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+                
+                """
+                text = "<missing-text>"
+                html_texts.append(text)
+                """
+                
+        delim = "\n"
+                
+        html_text = (delim.join(html_texts)).strip()
+        return html_text
+        
+    
     def export_to_document_tokens(
         self,
         delim: str = "\n\n",
