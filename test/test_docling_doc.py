@@ -1,6 +1,8 @@
 from collections import deque
 from unittest.mock import Mock
 
+import os
+
 import pytest
 import yaml
 from PIL import Image as PILImage
@@ -137,8 +139,11 @@ def test_docitems():
 
 
 def test_reference_doc():
+
+    filename = "test/data/doc/dummy_doc.yaml"
+    
     # Read YAML file of manual reference doc
-    with open("test/data/doc/dummy_doc.yaml", "r") as fp:
+    with open(filename, "r") as fp:
         dict_from_yaml = yaml.safe_load(fp)
 
     doc = DoclingDocument.model_validate(dict_from_yaml)
@@ -170,38 +175,43 @@ def test_reference_doc():
     _test_serialize_and_reload(doc)
 
     # Call Export methods
-    _test_export_methods(doc)
+    _test_export_methods(doc, filename=filename)
 
 
 def test_parse_doc():
-    with open(
-        "test/data/doc/2206.01062.yaml",
-        "r",
-    ) as fp:
+
+    filename = "test/data/doc/2206.01062.yaml"
+    
+    with open(filename, "r") as fp:
         dict_from_yaml = yaml.safe_load(fp)
 
     doc = DoclingDocument.model_validate(dict_from_yaml)
 
-    _test_export_methods(doc)
+    _test_export_methods(doc, filename=filename)
     _test_serialize_and_reload(doc)
 
 
 def test_construct_doc():
 
+    filename = "test/data/doc/constructed_document.yaml"
+    
     doc = _construct_doc()
 
     assert doc.validate_tree(doc.body)
     assert doc.validate_tree(doc.furniture)
 
-    _test_export_methods(doc)
+    _test_export_methods(doc, filename=filename)
     _test_serialize_and_reload(doc)
 
 
 def test_construct_bad_doc():
+
+    filename = "test/data/doc/bad_doc.yaml"
+    
     doc = _construct_bad_doc()
     assert doc.validate_tree(doc.body) == False
 
-    _test_export_methods(doc)
+    _test_export_methods(doc, filename=filename)
     with pytest.raises(ValueError):
         _test_serialize_and_reload(doc)
 
@@ -216,16 +226,64 @@ def _test_serialize_and_reload(doc):
     assert doc_reload is not doc  # can't be identical
 
 
-def _test_export_methods(doc: DoclingDocument):
+def _test_export_methods(doc: DoclingDocument, filename:str):
     ### Iterate all elements
     doc.print_element_tree()
+
     ## Export stuff
-    doc.export_to_markdown()
-    doc.export_to_document_tokens()
+    md_pred = doc.export_to_markdown()
+
+    if os.path.exists(filename+".md"):
+        with open(filename+".md", "r") as fr:
+            md_true = fr.read()
+    
+        assert md_true==md_pred, "MD does not pass regression-test"
+    else:
+        with open(filename+".md", "w") as fw:
+            fw.write(md_pred)
+            
+        assert True    
+
+    # Test HTML export ...
+    
+    html_pred = doc.export_to_html()
+    
+    if os.path.exists(filename+".html"):
+        with open(filename+".html", "r") as fr:
+            html_true = fr.read()
+    
+        assert html_true==html_pred, "HTML does not pass regression-test"
+    else:
+        with open(filename+".html", "w") as fw:
+            fw.write(html_pred)
+            
+        assert True
+
+    # Test DocTags export ...
+        
+    doctags_pred = doc.export_to_document_tokens()
+
+    if os.path.exists(filename+".doctags"):
+        with open(filename+".doctags", "r") as fr:
+            doctags_true = fr.read()
+    
+        assert doctags_true==doctags_pred, "DOCTAGS does not pass regression-test"
+    else:
+        with open(filename+".doctags", "w") as fw:
+            fw.write(doctags_pred)
+            
+        assert True
+
+    # Test Tables export ...
+        
     for table in doc.tables:
-        table.export_to_html()
+        table.export_to_markdown()        
+        table.export_to_html(doc)
         table.export_to_dataframe()
         table.export_to_document_tokens(doc)
+
+    # Test Images export ...
+        
     for fig in doc.pictures:
         fig.export_to_document_tokens(doc)
 
@@ -248,10 +306,14 @@ def _construct_bad_doc():
 
 
 def _construct_doc() -> DoclingDocument:
+
     doc = DoclingDocument(name="Untitled 1")
+
+    title = doc.add_title(text="Title of the Document")  # can be done if such information is present, or ommitted.
+    
     # group, heading, paragraph, table, figure, title, list, provenance
-    doc.add_text(label=DocItemLabel.TEXT, text="Author 1\nAffiliation 1")
-    doc.add_text(label=DocItemLabel.TEXT, text="Author 2\nAffiliation 2")
+    doc.add_text(parent=title, label=DocItemLabel.TEXT, text="Author 1\nAffiliation 1")
+    doc.add_text(parent=title, label=DocItemLabel.TEXT, text="Author 2\nAffiliation 2")
 
     chapter1 = doc.add_group(
         label=GroupLabel.CHAPTER, name="Introduction"
@@ -267,20 +329,46 @@ def _construct_doc() -> DoclingDocument:
         label=DocItemLabel.TEXT,
         text="This paper introduces the biggest invention ever made. ...",
     )
-    mylist = doc.add_group(parent=chapter1, label=GroupLabel.LIST)
-    doc.add_text(
-        parent=mylist,
-        label=DocItemLabel.LIST_ITEM,
-        text="Cooks your favourite meal before you know you want it.",
+
+    mylist_level_1 = doc.add_group(parent=chapter1, label=GroupLabel.LIST)
+    
+    doc.add_list_item(
+        parent=mylist_level_1,
+        text="list item 1",
     )
-    doc.add_text(
-        parent=mylist, label=DocItemLabel.LIST_ITEM, text="Cleans up all your dishes."
+    doc.add_list_item(
+        parent=mylist_level_1,
+        text="list item 2"
     )
-    doc.add_text(
-        parent=mylist,
-        label=DocItemLabel.LIST_ITEM,
-        text="Drains your bank account without consent.",
+    doc.add_list_item(
+        parent=mylist_level_1,
+        text="list item 3",
     )
+
+    mylist_level_2 = doc.add_group(parent=mylist_level_1, label=GroupLabel.ORDERED_LIST)
+
+    doc.add_list_item(
+        parent=mylist_level_2,
+        text="list item 3.a",
+    )
+    doc.add_list_item(
+        parent=mylist_level_2,
+        text="list item 3.b"
+    )
+    doc.add_list_item(
+        parent=mylist_level_2,
+        text="list item 3.c",
+    )
+
+    doc.add_list_item(
+        parent=mylist_level_1,
+        text="list item 4",
+    )
+    
+    tab_caption = doc.add_text(
+        label=DocItemLabel.CAPTION, text="This is the caption of table 1."
+    )
+    
     # Make some table cells
     table_cells = []
     table_cells.append(
@@ -348,8 +436,8 @@ def _construct_doc() -> DoclingDocument:
             text="695944",
         )
     )
-    table_el = TableData(num_rows=3, num_cols=3, table_cells=table_cells)
-    doc.add_table(data=table_el)
+    table_data = TableData(num_rows=3, num_cols=3, table_cells=table_cells)
+    doc.add_table(data=table_data, caption=tab_caption)
 
     fig_caption = doc.add_text(
         label=DocItemLabel.CAPTION, text="This is the caption of figure 1."
