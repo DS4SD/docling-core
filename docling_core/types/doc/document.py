@@ -1530,21 +1530,29 @@ class DoclingDocument(BaseModel):
     ) -> str:
         r"""Serialize to HTML."""
 
-        def update_lists(in_list:bool, in_ordered_list:bool, list_nesting_level:int, html_texts: list[str]):
-            
-            while in_list and list_nesting_level>0:
+        def update_lists(
+            in_list: bool,
+            in_ordered_list: bool,
+            list_nesting_level: int,
+            html_texts: list[str],
+        ):
+
+            while in_list and list_nesting_level > 0:
                 if in_ordered_list:
                     html_texts.append("</ol>")
                 else:
                     html_texts.append("</ul>")
-                    
-                list_nesting_level -= 1
-                        
-            in_list = False            
 
-            return in_list, in_ordered_list, list_nesting_level, 
-            
-        
+                list_nesting_level -= 1
+
+            in_list = False
+
+            return (
+                in_list,
+                in_ordered_list,
+                list_nesting_level,
+            )
+
         html_texts: list[str] = []
         list_nesting_level = 0  # Track the current list nesting level
         previous_level = 0  # Track the previous item's level
@@ -1552,7 +1560,6 @@ class DoclingDocument(BaseModel):
         in_list = False  # Track if we're currently processing list items
         in_ordered_list = False
 
-        
         for ix, (item, level) in enumerate(
             self.iterate_items(self.body, with_groups=True, page_no=page_no)
         ):
@@ -1581,21 +1588,21 @@ class DoclingDocument(BaseModel):
                 GroupLabel.ORDERED_LIST,
             ]:
 
-                text = f"<ol>"
-                html_texts.append(text.strip())                
+                text = "<ol>"
+                html_texts.append(text.strip())
 
                 # Increment list nesting level when entering a new list
                 list_nesting_level += 1
                 in_list = True
                 in_ordered_list = True
-                
+
             elif isinstance(item, GroupItem) and item.label in [
                 GroupLabel.LIST,
             ]:
 
-                text = f"<ul>"
-                html_texts.append(text.strip())                
-                
+                text = "<ul>"
+                html_texts.append(text.strip())
+
                 # Increment list nesting level when entering a new list
                 list_nesting_level += 1
                 in_list = True
@@ -1605,43 +1612,63 @@ class DoclingDocument(BaseModel):
                 continue
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
-                
-                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
-                
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(
+                    in_list, in_ordered_list, list_nesting_level, html_texts
+                )
+
                 text = f"<h1>{item.text}</h1>"
                 html_texts.append(text.strip())
-                
-            elif (
-                isinstance(item, TextItem)
-                and item.label in [DocItemLabel.SECTION_HEADER]
-            ) or isinstance(item, SectionHeaderItem):
 
-                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
-                
-                text = f"<h{level+1}>{item.text}</h{level+1}>"
-                html_texts.append(text.strip())                
-                
+            elif isinstance(item, SectionHeaderItem):
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(
+                    in_list, in_ordered_list, list_nesting_level, html_texts
+                )
+
+                text = f"<h{(item.level)}>{item.text}</h{(item.level)}>"
+                html_texts.append(text.strip())
+
+            elif isinstance(item, TextItem) and item.label in [
+                DocItemLabel.SECTION_HEADER
+            ]:
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(
+                    in_list, in_ordered_list, list_nesting_level, html_texts
+                )
+
+                section_level: int = level + 1
+
+                text = f"<h{section_level}>{item.text}</h{section_level}>"
+                html_texts.append(text.strip())
+
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
 
-                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)                
-                
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(
+                    in_list, in_ordered_list, list_nesting_level, html_texts
+                )
+
                 text = f"```\n{item.text}\n```\n"
                 html_texts.append(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CAPTION]:
-                
-                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
-                                
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(
+                    in_list, in_ordered_list, list_nesting_level, html_texts
+                )
+
                 # captions are printed in picture and table ... skipping for now
                 continue
 
             elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
-                
-                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(
+                    in_list, in_ordered_list, list_nesting_level, html_texts
+                )
 
                 text = f"<li>{item.text}</li>"
                 html_texts.append(text)
-                
+
                 """
                 # Calculate indent based on list_nesting_level
                 # -1 because level 1 needs no indent
@@ -1659,11 +1686,13 @@ class DoclingDocument(BaseModel):
                 html_texts.append(text)
                 """
                 continue
-                
+
             elif isinstance(item, TextItem) and item.label in labels:
 
-                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
-                
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(
+                    in_list, in_ordered_list, list_nesting_level, html_texts
+                )
+
                 """
                 if len(item.text) and text_width > 0:
                     wrapped_text = textwrap.fill(text, width=text_width)
@@ -1672,13 +1701,15 @@ class DoclingDocument(BaseModel):
                     text = f"{item.text}\n"
                     html_texts.append(text)
                 """
-                
+
                 text = f"<p>{item.text}</p>"
                 html_texts.append(text.strip())
-                
+
             elif isinstance(item, TableItem) and not strict_text:
-                
-                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(
+                    in_list, in_ordered_list, list_nesting_level, html_texts
+                )
 
                 """
                 html_texts.append(item.caption_text(self))
@@ -1687,10 +1718,12 @@ class DoclingDocument(BaseModel):
                 """
 
                 html_texts.append(item.export_to_html())
-                
+
             elif isinstance(item, PictureItem) and not strict_text:
-                
-                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
+
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(
+                    in_list, in_ordered_list, list_nesting_level, html_texts
+                )
 
                 """
                 html_texts.append(item.caption_text(self))
@@ -1712,22 +1745,23 @@ class DoclingDocument(BaseModel):
                     )
                     html_texts.append(text)
                 """
-                
+
             elif isinstance(item, DocItem) and item.label in labels:
 
-                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(in_list, in_ordered_list, list_nesting_level, html_texts)
-                
+                in_list, in_ordered_list, list_nesting_level, html_texts = update_lists(
+                    in_list, in_ordered_list, list_nesting_level, html_texts
+                )
+
                 """
                 text = "<missing-text>"
                 html_texts.append(text)
                 """
-                
+
         delim = "\n"
-                
+
         html_text = (delim.join(html_texts)).strip()
         return html_text
-        
-    
+
     def export_to_document_tokens(
         self,
         delim: str = "\n\n",
