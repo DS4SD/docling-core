@@ -29,7 +29,7 @@ from docling_core.types.doc.document import (
 )
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 
-GENERATE = True
+GENERATE = False
 
 
 def test_doc_origin():
