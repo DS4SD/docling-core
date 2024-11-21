@@ -237,7 +237,8 @@ def _test_serialize_and_reload(doc):
     assert doc_reload == doc  # must be equal
     """
 
-    assert doc_reload is not doc  # can't be identical    
+    assert doc_reload is not doc  # can't be identical
+
 
 def _verify_regression_test(pred: str, filename: str, ext: str):
 

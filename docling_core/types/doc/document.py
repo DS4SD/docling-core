@@ -696,20 +696,20 @@ class PictureItem(FloatingItem):
         image_mode: ImageRefMode = ImageRefMode.EMBEDDED,
         filename: Optional[Path] = None,
     ):
-        r"""Export picture to HTML format."""
-
+        r"""Export picture to Markdown format."""
         if image_mode == ImageRefMode.PLACEHOLDER:
             text = "\n" + image_placeholder + "\n"
             return text
 
-        elif image_mode == ImageRefMode.EMBEDDED and isinstance(image, ImageRef):
-            text = f"![Local Image]({image.uri})\n"
+        elif image_mode == ImageRefMode.EMBEDDED and isinstance(self.image, ImageRef):
+            text = f"![Local Image]({self.image.uri})\n"
             return text
 
-        elif image_mode == ImageRefMode.EXPORTED_TO_PNG and isinstance(image, ImageRef):
-
+        elif image_mode == ImageRefMode.EXPORTED_TO_PNG and isinstance(
+            self.image, ImageRef
+        ):
             img = self.get_image(doc)
-            if filename is not None:
+            if (img is not None) and (filename is not None):
                 img.save(filename)
 
                 text = f"![Local Image]({filename})\n"
@@ -719,7 +719,7 @@ class PictureItem(FloatingItem):
                 return text
 
         elif image_mode == ImageRefMode.EMBEDDED and not isinstance(
-            item.image, ImageRef
+            self.image, ImageRef
         ):
             text = (
                 "<!-- 🖼️❌ Image not available. "
@@ -729,10 +729,12 @@ class PictureItem(FloatingItem):
             return text
 
     def export_to_html(
-        self, doc: "DoclingDocument", add_caption: bool = True, filename: Path = None
+        self,
+        doc: "DoclingDocument",
+        add_caption: bool = True,
+        filename: Optional[Path] = None,
     ):
         r"""Export picture to HTML format."""
-
         text = ""
         if add_caption and len(self.captions):
             text = self.caption_text(doc)
@@ -748,11 +750,12 @@ class PictureItem(FloatingItem):
             # as a base64 into the HTML
 
             imgb64 = self._image_to_base64(img)
-            return f'<figure>{caption_text}<img src="data:image/png;base64,{imgb64}"></figure>'
+            img_text = f'<img src="data:image/png;base64,{imgb64}">'
+            return f"<figure>{caption_text}{img_text}</figure>"
 
         elif img is not None and filename is not None:
 
-            img.save_image(filename)
+            img.save(filename)
             return f'<figure>{caption_text}<img src="{filename}"></figure>'
 
         else:
@@ -1765,7 +1768,7 @@ class DoclingDocument(BaseModel):
             if ix < from_element or to_element <= ix:
                 continue  # skip as many items as you want
 
-            if (not isinstance(item, GroupItem)) and (item.label not in labels):
+            if (isinstance(item, DocItem)) and (item.label not in labels):
                 continue  # skip any label that is not whitelisted
 
             if isinstance(item, GroupItem) and item.label in [
@@ -1845,7 +1848,7 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, TableItem):
 
-                html_texts.append(item.export_to_html(doc=self))
+                html_texts.append(item.export_to_html(doc=self, add_caption=True))
 
             elif isinstance(item, PictureItem):
 
@@ -1853,7 +1856,9 @@ class DoclingDocument(BaseModel):
                 if (image_dir is not None) and (image_dir.is_dir()):
                     filename = image_dir / f"image_{figcnt:06}.png"
 
-                html_texts.append(item.export_to_html(doc=self, filename=filename))
+                html_texts.append(
+                    item.export_to_html(doc=self, add_caption=True, filename=filename)
+                )
 
                 figcnt += 1
 
