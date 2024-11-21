@@ -692,7 +692,7 @@ class PictureItem(FloatingItem):
         doc: "DoclingDocument",
         add_caption:bool=True,
         image_placeholder: str = "<!-- image -->",
-        image_mode: ImageRefMode,            
+        image_mode: ImageRefMode = ImageRefMode.EMBEDDED,            
         filename: Path = None    
     ):
         r"""Export picture to HTML format."""
@@ -1459,9 +1459,9 @@ class DoclingDocument(BaseModel):
         texts=[]
         for ix, (item, level) in enumerate(self.iterate_items(with_groups=True)):
             if isinstance(item, GroupItem):
-                texts.append(" " * level, f"{ix}: {item.label.value} with name={item.name}")
+                texts.append(" " * level + f"{ix}: {item.label.value} with name={item.name}")
             elif isinstance(item, DocItem):
-                texts.append(" " * level, f"{ix}: {item.label.value}")
+                texts.append(" " * level + f"{ix}: {item.label.value}")
 
         return "\n".join(texts)
                 

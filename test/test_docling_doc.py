@@ -30,6 +30,8 @@ from docling_core.types.doc.document import (
 )
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 
+GENERATE = True
+
 
 def test_doc_origin():
 
@@ -224,71 +226,45 @@ def _test_serialize_and_reload(doc):
     # print(f"\n\n{yaml_dump}")
     doc_reload = DoclingDocument.model_validate(yaml.safe_load(yaml_dump))
 
+    yaml_dump_reload = yaml.safe_dump(doc_reload.model_dump(mode="json", by_alias=True))
+
+    assert yaml_dump==yaml_dump_reload, "yaml_dump!=yaml_dump_reload"
+    
     assert doc_reload == doc  # must be equal
     assert doc_reload is not doc  # can't be identical
 
 
+def _verify_regression_test(pred:str, filename:str, ext:str):
+
+    if os.path.exists(filename+f".{ext}") and not GENERATE:
+        with open(filename+f".{ext}", "r") as fr:
+            gt_true = fr.read()
+    
+        assert gt_true==pred, f"Does not pass regression-test for {filename}.{ext}"
+    else:
+        with open(filename+f".{ext}", "w") as fw:
+            fw.write(pred)
+            
+        assert True, "generating the ground-truth for regression test"    
+
 def _test_export_methods(doc: DoclingDocument, filename:str):
     ### Iterate all elements
     et_pred = doc.export_to_element_tree()
-
-    if os.path.exists(filename+".et") and not GENERATE:
-        with open(filename+".et", "r") as fr:
-            md_true = fr.read()
-    
-        assert md_true==md_pred, f"element-tree does not pass regression-test for {filename}.et"
-    else:
-        with open(filename+".et", "w") as fw:
-            fw.write(md_pred)
-            
-        assert True    
+    _verify_regression_test(et_pred, filename=filename, ext="et")
     
     ## Export stuff
     md_pred = doc.export_to_markdown()
+    _verify_regression_test(md_pred, filename=filename, ext="md")
 
-    if os.path.exists(filename+".md")  and not GENERATE:
-        with open(filename+".md", "r") as fr:
-            md_true = fr.read()
-    
-        assert md_true==md_pred, f"MD does not pass regression-test for {filename}.md"
-    else:
-        with open(filename+".md", "w") as fw:
-            fw.write(md_pred)
-            
-        assert True    
-
-    # Test HTML export ...
-    
+    # Test HTML export ...    
     html_pred = doc.export_to_html()
-    
-    if os.path.exists(filename+".html"):
-        with open(filename+".html", "r") as fr:
-            html_true = fr.read()
-    
-        assert html_true==html_pred, f"HTML does not pass regression-test for {filename}.html"
-    else:
-        with open(filename+".html", "w") as fw:
-            fw.write(html_pred)
-            
-        assert True
+    _verify_regression_test(html_pred, filename=filename, ext="html")    
 
     # Test DocTags export ...
-        
     doctags_pred = doc.export_to_document_tokens()
-
-    if os.path.exists(filename+".doctags"):
-        with open(filename+".doctags", "r") as fr:
-            doctags_true = fr.read()
+    _verify_regression_test(html_pred, filename=filename, ext="dt")
     
-        assert doctags_true==doctags_pred, f"DOCTAGS does not pass regression-test for {filename}.doctags"
-    else:
-        with open(filename+".doctags", "w") as fw:
-            fw.write(doctags_pred)
-            
-        assert True
-
-    # Test Tables export ...
-        
+    # Test Tables export ...        
     for table in doc.tables:
         table.export_to_markdown()        
         table.export_to_html(doc)
