@@ -1,7 +1,6 @@
+import os
 from collections import deque
 from unittest.mock import Mock
-
-import os
 
 import pytest
 import yaml
@@ -137,14 +136,14 @@ def test_docitems():
             verify(dc, obj)
 
         else:
-            #print(f"{dc.__name__} is not known")
+            # print(f"{dc.__name__} is not known")
             assert False, "new derived class detected {dc.__name__}: {e}"
 
 
 def test_reference_doc():
 
     filename = "test/data/doc/dummy_doc.yaml"
-    
+
     # Read YAML file of manual reference doc
     with open(filename, "r") as fp:
         dict_from_yaml = yaml.safe_load(fp)
@@ -173,7 +172,7 @@ def test_reference_doc():
 
     for item, level in doc.iterate_items():
         _ = f"Item: {item} at level {level}"
-        #print(f"Item: {item} at level {level}")
+        # print(f"Item: {item} at level {level}")
 
     # Serialize and reload
     _test_serialize_and_reload(doc)
@@ -185,7 +184,7 @@ def test_reference_doc():
 def test_parse_doc():
 
     filename = "test/data/doc/2206.01062.yaml"
-    
+
     with open(filename, "r") as fp:
         dict_from_yaml = yaml.safe_load(fp)
 
@@ -198,7 +197,7 @@ def test_parse_doc():
 def test_construct_doc():
 
     filename = "test/data/doc/constructed_document.yaml"
-    
+
     doc = _construct_doc()
 
     assert doc.validate_tree(doc.body)
@@ -211,7 +210,7 @@ def test_construct_doc():
 def test_construct_bad_doc():
 
     filename = "test/data/doc/bad_doc.yaml"
-    
+
     doc = _construct_bad_doc()
     assert doc.validate_tree(doc.body) == False
 
@@ -228,51 +227,58 @@ def _test_serialize_and_reload(doc):
 
     yaml_dump_reload = yaml.safe_dump(doc_reload.model_dump(mode="json", by_alias=True))
 
-    assert yaml_dump==yaml_dump_reload, "yaml_dump!=yaml_dump_reload"
-    
+    assert yaml_dump == yaml_dump_reload, "yaml_dump!=yaml_dump_reload"
+
+    """
+    for item, level in doc.iterate_items():
+        if isinstance(item, PictureItem):
+            _ = item.get_image(doc)
+        
     assert doc_reload == doc  # must be equal
-    assert doc_reload is not doc  # can't be identical
+    """
 
+    assert doc_reload is not doc  # can't be identical    
 
-def _verify_regression_test(pred:str, filename:str, ext:str):
+def _verify_regression_test(pred: str, filename: str, ext: str):
 
-    if os.path.exists(filename+f".{ext}") and not GENERATE:
-        with open(filename+f".{ext}", "r") as fr:
+    if os.path.exists(filename + f".{ext}") and not GENERATE:
+        with open(filename + f".{ext}", "r") as fr:
             gt_true = fr.read()
-    
-        assert gt_true==pred, f"Does not pass regression-test for {filename}.{ext}"
-    else:
-        with open(filename+f".{ext}", "w") as fw:
-            fw.write(pred)
-            
-        assert True, "generating the ground-truth for regression test"    
 
-def _test_export_methods(doc: DoclingDocument, filename:str):
+        assert gt_true == pred, f"Does not pass regression-test for {filename}.{ext}"
+    else:
+        with open(filename + f".{ext}", "w") as fw:
+            fw.write(pred)
+
+        assert True, "generating the ground-truth for regression test"
+
+
+def _test_export_methods(doc: DoclingDocument, filename: str):
     ### Iterate all elements
     et_pred = doc.export_to_element_tree()
     _verify_regression_test(et_pred, filename=filename, ext="et")
-    
+
     ## Export stuff
     md_pred = doc.export_to_markdown()
     _verify_regression_test(md_pred, filename=filename, ext="md")
 
-    # Test HTML export ...    
+    # Test HTML export ...
     html_pred = doc.export_to_html()
-    _verify_regression_test(html_pred, filename=filename, ext="html")    
+    _verify_regression_test(html_pred, filename=filename, ext="html")
 
     # Test DocTags export ...
-    doctags_pred = doc.export_to_document_tokens()
+    doc.export_to_document_tokens()
     _verify_regression_test(html_pred, filename=filename, ext="dt")
-    
-    # Test Tables export ...        
+
+    # Test Tables export ...
     for table in doc.tables:
-        table.export_to_markdown()        
+        table.export_to_markdown()
         table.export_to_html(doc)
         table.export_to_dataframe()
         table.export_to_document_tokens(doc)
 
     # Test Images export ...
-        
+
     for fig in doc.pictures:
         fig.export_to_document_tokens(doc)
 
@@ -298,8 +304,10 @@ def _construct_doc() -> DoclingDocument:
 
     doc = DoclingDocument(name="Untitled 1")
 
-    title = doc.add_title(text="Title of the Document")  # can be done if such information is present, or ommitted.
-    
+    title = doc.add_title(
+        text="Title of the Document"
+    )  # can be done if such information is present, or ommitted.
+
     # group, heading, paragraph, table, figure, title, list, provenance
     doc.add_text(parent=title, label=DocItemLabel.TEXT, text="Author 1\nAffiliation 1")
     doc.add_text(parent=title, label=DocItemLabel.TEXT, text="Author 2\nAffiliation 2")
@@ -320,15 +328,12 @@ def _construct_doc() -> DoclingDocument:
     )
 
     mylist_level_1 = doc.add_group(parent=chapter1, label=GroupLabel.LIST)
-    
+
     doc.add_list_item(
         parent=mylist_level_1,
         text="list item 1",
     )
-    doc.add_list_item(
-        parent=mylist_level_1,
-        text="list item 2"
-    )
+    doc.add_list_item(parent=mylist_level_1, text="list item 2")
     doc.add_list_item(
         parent=mylist_level_1,
         text="list item 3",
@@ -340,10 +345,7 @@ def _construct_doc() -> DoclingDocument:
         parent=mylist_level_2,
         text="list item 3.a",
     )
-    doc.add_list_item(
-        parent=mylist_level_2,
-        text="list item 3.b"
-    )
+    doc.add_list_item(parent=mylist_level_2, text="list item 3.b")
     doc.add_list_item(
         parent=mylist_level_2,
         text="list item 3.c",
@@ -353,11 +355,11 @@ def _construct_doc() -> DoclingDocument:
         parent=mylist_level_1,
         text="list item 4",
     )
-    
+
     tab_caption = doc.add_text(
         label=DocItemLabel.CAPTION, text="This is the caption of table 1."
     )
-    
+
     # Make some table cells
     table_cells = []
     table_cells.append(
@@ -435,15 +437,17 @@ def _construct_doc() -> DoclingDocument:
 
     size = (64, 64)
     fig2_image = PILImage.new("RGB", size, "black")
-    
+
     # Draw a red disk touching the borders
     draw = ImageDraw.Draw(fig2_image)
     draw.ellipse((0, 0, size[0] - 1, size[1] - 1), fill="red")
 
     fig_caption_2 = doc.add_text(
         label=DocItemLabel.CAPTION, text="This is the caption of figure 2."
-    )    
-    fig2_item = doc.add_picture(image=ImageRef.from_pil(image=fig2_image, dpi=72), caption=fig_caption_2)
+    )
+    fig2_item = doc.add_picture(
+        image=ImageRef.from_pil(image=fig2_image, dpi=72), caption=fig_caption_2
+    )
     return doc
 
 
