@@ -6,6 +6,7 @@ import os
 import pytest
 import yaml
 from PIL import Image as PILImage
+from PIL import ImageDraw
 from pydantic import ValidationError
 
 from docling_core.types.doc.document import (
@@ -134,7 +135,7 @@ def test_docitems():
             verify(dc, obj)
 
         else:
-            print(f"{dc.__name__} is not known")
+            #print(f"{dc.__name__} is not known")
             assert False, "new derived class detected {dc.__name__}: {e}"
 
 
@@ -169,7 +170,8 @@ def test_reference_doc():
     # Iterate all elements
 
     for item, level in doc.iterate_items():
-        print(f"Item: {item} at level {level}")
+        _ = f"Item: {item} at level {level}"
+        #print(f"Item: {item} at level {level}")
 
     # Serialize and reload
     _test_serialize_and_reload(doc)
@@ -228,16 +230,27 @@ def _test_serialize_and_reload(doc):
 
 def _test_export_methods(doc: DoclingDocument, filename:str):
     ### Iterate all elements
-    doc.print_element_tree()
+    et_pred = doc.export_to_element_tree()
 
+    if os.path.exists(filename+".et") and not GENERATE:
+        with open(filename+".et", "r") as fr:
+            md_true = fr.read()
+    
+        assert md_true==md_pred, f"element-tree does not pass regression-test for {filename}.et"
+    else:
+        with open(filename+".et", "w") as fw:
+            fw.write(md_pred)
+            
+        assert True    
+    
     ## Export stuff
     md_pred = doc.export_to_markdown()
 
-    if os.path.exists(filename+".md"):
+    if os.path.exists(filename+".md")  and not GENERATE:
         with open(filename+".md", "r") as fr:
             md_true = fr.read()
     
-        assert md_true==md_pred, "MD does not pass regression-test"
+        assert md_true==md_pred, f"MD does not pass regression-test for {filename}.md"
     else:
         with open(filename+".md", "w") as fw:
             fw.write(md_pred)
@@ -252,7 +265,7 @@ def _test_export_methods(doc: DoclingDocument, filename:str):
         with open(filename+".html", "r") as fr:
             html_true = fr.read()
     
-        assert html_true==html_pred, "HTML does not pass regression-test"
+        assert html_true==html_pred, f"HTML does not pass regression-test for {filename}.html"
     else:
         with open(filename+".html", "w") as fw:
             fw.write(html_pred)
@@ -267,7 +280,7 @@ def _test_export_methods(doc: DoclingDocument, filename:str):
         with open(filename+".doctags", "r") as fr:
             doctags_true = fr.read()
     
-        assert doctags_true==doctags_pred, "DOCTAGS does not pass regression-test"
+        assert doctags_true==doctags_pred, f"DOCTAGS does not pass regression-test for {filename}.doctags"
     else:
         with open(filename+".doctags", "w") as fw:
             fw.write(doctags_pred)
@@ -439,18 +452,28 @@ def _construct_doc() -> DoclingDocument:
     table_data = TableData(num_rows=3, num_cols=3, table_cells=table_cells)
     doc.add_table(data=table_data, caption=tab_caption)
 
-    fig_caption = doc.add_text(
+    fig_caption_1 = doc.add_text(
         label=DocItemLabel.CAPTION, text="This is the caption of figure 1."
     )
-    fig_item = doc.add_picture(caption=fig_caption)
+    fig_item = doc.add_picture(caption=fig_caption_1)
 
-    fig2_image = PILImage.new(mode="RGB", size=(2, 2), color=(0, 0, 0))
-    fig2_item = doc.add_picture(image=ImageRef.from_pil(image=fig2_image, dpi=72))
+    size = (64, 64)
+    fig2_image = PILImage.new("RGB", size, "black")
+    
+    # Draw a red disk touching the borders
+    draw = ImageDraw.Draw(fig2_image)
+    draw.ellipse((0, 0, size[0] - 1, size[1] - 1), fill="red")
+
+    fig_caption_2 = doc.add_text(
+        label=DocItemLabel.CAPTION, text="This is the caption of figure 2."
+    )    
+    fig2_item = doc.add_picture(image=ImageRef.from_pil(image=fig2_image, dpi=72), caption=fig_caption_2)
     return doc
 
 
 def test_pil_image():
     doc = DoclingDocument(name="Untitled 1")
+
     fig_image = PILImage.new(mode="RGB", size=(2, 2), color=(0, 0, 0))
     fig_item = doc.add_picture(image=ImageRef.from_pil(image=fig_image, dpi=72))
 

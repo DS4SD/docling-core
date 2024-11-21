@@ -12,8 +12,9 @@ class ImageRefMode(str, Enum):
 
     PLACEHOLDER = "placeholder"
     EMBEDDED = "embedded"
+    EXPORTED_TO_PNG = "exported_to_png"
 
-
+    
 class CoordOrigin(str, Enum):
     """CoordOrigin."""
 
