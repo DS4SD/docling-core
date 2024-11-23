@@ -8,6 +8,8 @@ from PIL import Image as PILImage
 from PIL import ImageDraw
 from pydantic import ValidationError
 
+from pathlib import Path
+
 from docling_core.types.doc.document import (
     CURRENT_VERSION,
     BoundingBox,
@@ -28,6 +30,7 @@ from docling_core.types.doc.document import (
     TextItem,
 )
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
+from docling_core.types.doc.base import ImageRefMode
 
 GENERATE = False
 
@@ -627,3 +630,20 @@ def test_floatingitem_get_image():
         retured_image is not None
         and retured_image.tobytes() == floating_item_image.tobytes()
     )
+
+
+def test_save_to_disk():
+
+    doc: DoclingDocument = _construct_doc()
+
+    new_doc = doc.save_images_to_disk(image_dir=Path("./test/data/constructed_images/"))
+    img_paths = new_doc.list_images_on_disk()
+    assert len(img_paths)==1, "len(img_paths)!=1"
+
+    md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.PLACEHOLDER)
+    
+    md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.EMBEDDED)
+    
+    html_pred = new_doc.export_to_html()
+    
+    assert True
