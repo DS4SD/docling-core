@@ -4,6 +4,7 @@ import base64
 import json
 import mimetypes
 import os
+from pathlib import Path
 import re
 import sys
 import textwrap
@@ -1740,16 +1741,29 @@ class DoclingDocument(BaseModel):
         """export_to_dict."""
         return self.model_dump(mode="json", by_alias=True, exclude_none=True)
 
-    def save_to_json_file(self, document_json_path, indent: int=4) -> int:
-        """export_to_json."""
-        with open(document_json_path, 'w') as f:
-            return f.write(self.model_dump_json(indent=indent))
+    def save_to_json_file(self, path: Union[str, Path], indent: int=4) -> int:
+        """
+        export_to_json.
+        :param path: The file path to write this DoclingDocument to as .json.
+        :type delim: Union[str, Path]
+        """
+        with open(path, 'w') as f:
+            json.dump(self.export_to_dict(), f, indent=indent)
     
     @classmethod
-    def load_from_json_file(cls, document_json_path):
-        """load_from_json."""
-        with open(document_json_path, 'r') as f:
-            return cls(**json.load(f))
+    def load_from_json_file(cls, path: Union[str, Path]) -> "DoclingDocument":
+        """
+        load_from_json.
+        :param path: The file path to load a saved DoclingDocument from a .json.
+        :type delim: Union[str, Path]
+        
+        :returns: The loaded DoclingDocument.
+        :rtype: DoclingDocument
+        
+        """
+        with open(path, 'r') as f:
+            # return cls(**json.load(f))
+            return cls.model_validate_json(f.read())
 
     def export_to_markdown(  # noqa: C901
         self,
