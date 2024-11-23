@@ -1741,11 +1741,13 @@ class DoclingDocument(BaseModel):
         """export_to_dict."""
         return self.model_dump(mode="json", by_alias=True, exclude_none=True)
 
-    def save_to_json_file(self, path: Union[str, Path], indent: int=4) -> int:
+    def save_to_json_file(self, path: Union[str, Path], indent: int=4):
         """
         export_to_json.
         :param path: The file path to write this DoclingDocument to as .json.
         :type delim: Union[str, Path]
+        :param indent: The number of spaces to use for indentation in the .json file (Default value = 4).
+        :type delim: int
         """
         with open(path, 'w') as f:
             json.dump(self.export_to_dict(), f, indent=indent)
@@ -1762,7 +1764,6 @@ class DoclingDocument(BaseModel):
         
         """
         with open(path, 'r') as f:
-            # return cls(**json.load(f))
             return cls.model_validate_json(f.read())
 
     def export_to_markdown(  # noqa: C901
