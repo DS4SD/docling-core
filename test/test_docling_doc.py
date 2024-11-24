@@ -1,9 +1,8 @@
 import os
 from collections import deque
 from pathlib import Path
-from unittest.mock import Mock
-
 from typing import List
+from unittest.mock import Mock
 
 import pytest
 import yaml
@@ -633,13 +632,14 @@ def test_floatingitem_get_image():
     )
 
 
-def _normalise_string_wrt_filepaths(instr:str, paths:List[Path]):
+def _normalise_string_wrt_filepaths(instr: str, paths: List[Path]):
 
     for p in paths:
         instr = instr.replace(str(p), str(p.name))
 
     return instr
-    
+
+
 def test_save_to_disk():
 
     doc: DoclingDocument = _construct_doc()
@@ -717,9 +717,9 @@ def test_save_to_disk():
           html_pred,
           "\n -------------/EMBEDDED----------\n")
     """
-    
+
     html_pred = new_doc.export_to_html(image_mode=ImageRefMode.REFERENCED)
-    html_pred = _normalise_string_wrt_filepaths(html_pred, img_paths)        
+    html_pred = _normalise_string_wrt_filepaths(html_pred, img_paths)
     _verify_regression_test(
         pred=html_pred,
         filename="test/data/doc/constructed_doc_ref",

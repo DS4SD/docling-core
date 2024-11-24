@@ -814,8 +814,8 @@ class PictureItem(FloatingItem):
             if (
                 isinstance(self.image, ImageRef)
                 and isinstance(self.image.uri, AnyUrl)
-                and str(self.image.uri).startswith("file://") 
-                and True #self.image.uri.exists()
+                and str(self.image.uri).startswith("file://")
+                and True  # self.image.uri.exists()
             ):
                 img_text = f'<img src="{str(self.image.uri)}">'
                 return f"<figure>{caption_text}{img_text}</figure>"
@@ -1557,16 +1557,16 @@ class DoclingDocument(BaseModel):
                         loc_path = image_dir / f"image_{imgcnt:06}_{imghash}.png"
                         abs_path = Path(loc_path).resolve()
 
-                        #print("saving abs-path: ", abs_path)
+                        # print("saving abs-path: ", abs_path)
                         img.save(abs_path)
                         uri = f"file://{abs_path}"
-                        
-                        #print("uri: ", str(abs_path))
+
+                        # print("uri: ", str(abs_path))
                         item.image.uri = AnyUrl(uri)
 
                         # if item.image._pil is not None:
                         #    item.image._pil.close()
-                        
+
                     imgcnt += 1
 
         return result
