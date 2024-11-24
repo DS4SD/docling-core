@@ -1,5 +1,6 @@
 import os
 from collections import deque
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
@@ -8,8 +9,7 @@ from PIL import Image as PILImage
 from PIL import ImageDraw
 from pydantic import ValidationError
 
-from pathlib import Path
-
+from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.document import (
     CURRENT_VERSION,
     BoundingBox,
@@ -30,7 +30,6 @@ from docling_core.types.doc.document import (
     TextItem,
 )
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
-from docling_core.types.doc.base import ImageRefMode
 
 GENERATE = False
 
@@ -635,82 +634,87 @@ def test_floatingitem_get_image():
 def test_save_to_disk():
 
     doc: DoclingDocument = _construct_doc()
-    
-    #md_pred = doc.export_to_markdown(image_mode=ImageRefMode.PLACEHOLDER)
-    #print("\n -------------PLACEHOLDER----------\n", md_pred)
-    
+
+    # md_pred = doc.export_to_markdown(image_mode=ImageRefMode.PLACEHOLDER)
+    # print("\n -------------PLACEHOLDER----------\n", md_pred)
+
     md_pred = doc.export_to_markdown(image_mode=ImageRefMode.EMBEDDED)
-    _verify_regression_test(pred=md_pred,
-                            filename="test/data/doc/constructed_doc_orig",
-                            ext="embedded.md")
+    _verify_regression_test(
+        pred=md_pred, filename="test/data/doc/constructed_doc_orig", ext="embedded.md"
+    )
     """
     print("\n -------------EMBEDDED----------\n",
           md_pred,
           "\n -------------/EMBEDDED----------\n")
     """
-    
+
     html_pred = doc.export_to_html(image_mode=ImageRefMode.EMBEDDED)
-    _verify_regression_test(pred=html_pred,
-                            filename="test/data/doc/constructed_doc_orig",
-                            ext="embedded.html")
+    _verify_regression_test(
+        pred=html_pred,
+        filename="test/data/doc/constructed_doc_orig",
+        ext="embedded.html",
+    )
     """
     print("\n -------------EMBEDDED----------\n",
           html_pred,
           "\n -------------/EMBEDDED----------\n")
     """
-    
-    #md_pred = doc.export_to_markdown(image_mode=ImageRefMode.REFERENCED)
-    #print("\n -------------REFERENCED----------\n", md_pred)
-    
+
+    # md_pred = doc.export_to_markdown(image_mode=ImageRefMode.REFERENCED)
+    # print("\n -------------REFERENCED----------\n", md_pred)
+
     new_doc = doc.save_images_to_disk(image_dir=Path("./test/data/constructed_images/"))
-    
+
     img_paths = new_doc.list_images_on_disk()
-    assert len(img_paths)==1, "len(img_paths)!=1"
+    print(img_paths)
     
-    #md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.PLACEHOLDER)
-    #print("\n -------------PLACEHOLDER----------\n", md_pred)
-    
+    assert len(img_paths) == 1, "len(img_paths)!=1"
+
+    # md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.PLACEHOLDER)
+    # print("\n -------------PLACEHOLDER----------\n", md_pred)
+
     md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.EMBEDDED)
-    _verify_regression_test(pred=md_pred,
-                            filename="test/data/doc/constructed_doc_ref",
-                            ext="embedded.md")
+    _verify_regression_test(
+        pred=md_pred, filename="test/data/doc/constructed_doc_ref", ext="embedded.md"
+    )
     """
     print("\n -------------EMBEDDED----------\n",
           md_pred,
           "\n -------------/EMBEDDED----------\n")
     """
-    
+
     md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.REFERENCED)
-    _verify_regression_test(pred=md_pred,
-                            filename="test/data/doc/constructed_doc_ref",
-                            ext="referenced.md")
+    _verify_regression_test(
+        pred=md_pred, filename="test/data/doc/constructed_doc_ref", ext="referenced.md"
+    )
     """
     print("\n -------------REFERENCED----------\n",
           md_pred,
           "\n -------------/REFERENCED----------\n")
     """
-    
-    #html_pred = new_doc.export_to_html(image_mode=ImageRefMode.PLACEHOLDER)
-    #print("\n -------------PLACEHOLDER----------\n", html_pred)
-    
+
+    # html_pred = new_doc.export_to_html(image_mode=ImageRefMode.PLACEHOLDER)
+    # print("\n -------------PLACEHOLDER----------\n", html_pred)
+
     html_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.EMBEDDED)
-    _verify_regression_test(pred=html_pred,
-                            filename="test/data/doc/constructed_doc_ref",
-                            ext="embedded.html")
-    """
+    _verify_regression_test(
+        pred=html_pred,
+        filename="test/data/doc/constructed_doc_ref",
+        ext="embedded.html",
+    )
     print("\n -------------EMBEDDED----------\n",
           html_pred,
           "\n -------------/EMBEDDED----------\n")
-    """
-    
+
     html_pred = new_doc.export_to_html(image_mode=ImageRefMode.REFERENCED)
-    _verify_regression_test(pred=html_pred,
-                            filename="test/data/doc/constructed_doc_ref",
-                            ext="referenced.html")
-    """
+    _verify_regression_test(
+        pred=html_pred,
+        filename="test/data/doc/constructed_doc_ref",
+        ext="referenced.html",
+    )
     print("\n -------------REFERENCED----------\n",
           html_pred,
           "\n -------------/REFERENCED----------\n")
-    """
-    
+
+
     assert True
