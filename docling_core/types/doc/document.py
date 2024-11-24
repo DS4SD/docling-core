@@ -1557,11 +1557,11 @@ class DoclingDocument(BaseModel):
                         loc_path = image_dir / f"image_{imgcnt:06}_{imghash}.png"
                         abs_path = Path(loc_path).resolve()
 
-                        print("saving abs-path: ", abs_path)
+                        #print("saving abs-path: ", abs_path)
                         img.save(abs_path)
                         uri = f"file://{abs_path}"
                         
-                        print("uri: ", str(abs_path))
+                        #print("uri: ", str(abs_path))
                         item.image.uri = AnyUrl(uri)
 
                         # if item.image._pil is not None:

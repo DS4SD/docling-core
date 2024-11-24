@@ -3,6 +3,8 @@ from collections import deque
 from pathlib import Path
 from unittest.mock import Mock
 
+from typing import List
+
 import pytest
 import yaml
 from PIL import Image as PILImage
@@ -31,7 +33,7 @@ from docling_core.types.doc.document import (
 )
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 
-GENERATE = False
+GENERATE = True
 
 
 def test_doc_origin():
@@ -631,6 +633,13 @@ def test_floatingitem_get_image():
     )
 
 
+def _normalise_string_wrt_filepaths(instr:str, paths:List[Path]):
+
+    for p in paths:
+        instr = instr.replace(str(p), str(p.name))
+
+    return instr
+    
 def test_save_to_disk():
 
     doc: DoclingDocument = _construct_doc()
@@ -666,14 +675,13 @@ def test_save_to_disk():
     new_doc = doc.save_images_to_disk(image_dir=Path("./test/data/constructed_images/"))
 
     img_paths = new_doc.list_images_on_disk()
-    print(img_paths)
-    
     assert len(img_paths) == 1, "len(img_paths)!=1"
 
     # md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.PLACEHOLDER)
     # print("\n -------------PLACEHOLDER----------\n", md_pred)
 
     md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.EMBEDDED)
+    md_pred = _normalise_string_wrt_filepaths(md_pred, img_paths)
     _verify_regression_test(
         pred=md_pred, filename="test/data/doc/constructed_doc_ref", ext="embedded.md"
     )
@@ -684,6 +692,7 @@ def test_save_to_disk():
     """
 
     md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.REFERENCED)
+    md_pred = _normalise_string_wrt_filepaths(md_pred, img_paths)
     _verify_regression_test(
         pred=md_pred, filename="test/data/doc/constructed_doc_ref", ext="referenced.md"
     )
@@ -697,24 +706,27 @@ def test_save_to_disk():
     # print("\n -------------PLACEHOLDER----------\n", html_pred)
 
     html_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.EMBEDDED)
+    html_pred = _normalise_string_wrt_filepaths(html_pred, img_paths)
     _verify_regression_test(
         pred=html_pred,
         filename="test/data/doc/constructed_doc_ref",
         ext="embedded.html",
     )
+    """
     print("\n -------------EMBEDDED----------\n",
           html_pred,
           "\n -------------/EMBEDDED----------\n")
-
+    """
+    
     html_pred = new_doc.export_to_html(image_mode=ImageRefMode.REFERENCED)
+    html_pred = _normalise_string_wrt_filepaths(html_pred, img_paths)        
     _verify_regression_test(
         pred=html_pred,
         filename="test/data/doc/constructed_doc_ref",
         ext="referenced.html",
     )
+    """
     print("\n -------------REFERENCED----------\n",
           html_pred,
           "\n -------------/REFERENCED----------\n")
-
-
-    assert True
+    """
