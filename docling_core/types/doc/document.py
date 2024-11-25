@@ -753,8 +753,9 @@ class PictureItem(FloatingItem):
 
             if (
                 isinstance(self.image, ImageRef)
-                and isinstance(self.image.uri, Path)
-                and self.image.uri.exists()
+                and isinstance(self.image.uri, AnyUrl)
+                and str(self.image.uri).startswith("file://")
+                and True  # self.image.uri.exists()
             ):
                 text = f"\n![Local Image]({self.image.uri})\n"
                 return text
@@ -1669,7 +1670,7 @@ class DoclingDocument(BaseModel):
         elif image_mode == ImageRefMode.REFERENCED:
             new_doc = self.save_pictures_to_disk(image_dir=image_dir)
         elif image_mode == ImageRefMode.EMBEDDED:
-            self.load_pictures_from_disk()
+            new_doc = self.load_pictures_from_disk()
         else:
             raise ValueError("Unsupported ImageRefMode")
 

@@ -632,6 +632,15 @@ def test_floatingitem_get_image():
     )
 
 
+def test_save_pictures():
+
+    doc: DoclingDocument = _construct_doc()
+
+    new_doc = doc.save_pictures_to_disk(image_dir=Path("./test/data/constructed_images/"))
+
+    img_paths = new_doc.list_images_on_disk()
+    assert len(img_paths) == 1, "len(img_paths)!=1"
+
 def _normalise_string_wrt_filepaths(instr: str, paths: List[Path]):
 
     for p in paths:
@@ -639,94 +648,60 @@ def _normalise_string_wrt_filepaths(instr: str, paths: List[Path]):
 
     return instr
 
+def _verify_saved_output(filename:str, paths: List[Path]):
 
+    pred = ""
+    with open(filename, "r") as fr:
+        pred = fr.read()
+
+    pred = _normalise_string_wrt_filepaths(pred, paths=paths)
+        
+    if GENERATE:
+        with open(str(filename)+".gt", "w") as fw:
+            fw.write(pred)
+    else:
+        gt = ""
+        with open(str(filename)+".gt", "r") as fr:
+            gt = fr.read()        
+            
+        assert pred==gt, f"pred!=gt for {filename}"
+    
 def test_save_to_disk():
 
     doc: DoclingDocument = _construct_doc()
 
-    # md_pred = doc.export_to_markdown(image_mode=ImageRefMode.PLACEHOLDER)
-    # print("\n -------------PLACEHOLDER----------\n", md_pred)
+    doc_with_references = doc.save_pictures_to_disk(image_dir=Path("./test/data/constructed_images/"))
 
-    md_pred = doc.export_to_markdown(image_mode=ImageRefMode.EMBEDDED)
-    _verify_regression_test(
-        pred=md_pred, filename="test/data/doc/constructed_doc_orig", ext="embedded.md"
-    )
-    """
-    print("\n -------------EMBEDDED----------\n",
-          md_pred,
-          "\n -------------/EMBEDDED----------\n")
-    """
+    # paths will be different on different machines, so needs to be kept!
+    paths = doc_with_references.list_images_on_disk()
+    assert len(paths) == 1, "len(img_paths)!=1"
+    
+    ### MarkDown
+    
+    filename = Path("test/data/doc/constructed_doc.placeholder.md")
+    doc.save_to_markdown(filename=filename, image_mode=ImageRefMode.PLACEHOLDER)
+    _verify_saved_output(filename=filename, paths=paths)
+    
+    filename = Path("test/data/doc/constructed_doc.embedded.md")
+    doc.save_to_markdown(filename=filename, image_mode=ImageRefMode.EMBEDDED)
+    _verify_saved_output(filename=filename, paths=paths)
+    
+    filename = Path("test/data/doc/constructed_doc.referenced.md")
+    doc.save_to_markdown(filename=filename, image_mode=ImageRefMode.REFERENCED)
+    _verify_saved_output(filename=filename, paths=paths)
+    
+    ### HTML
 
-    html_pred = doc.export_to_html(image_mode=ImageRefMode.EMBEDDED)
-    _verify_regression_test(
-        pred=html_pred,
-        filename="test/data/doc/constructed_doc_orig",
-        ext="embedded.html",
-    )
-    """
-    print("\n -------------EMBEDDED----------\n",
-          html_pred,
-          "\n -------------/EMBEDDED----------\n")
-    """
-
-    # md_pred = doc.export_to_markdown(image_mode=ImageRefMode.REFERENCED)
-    # print("\n -------------REFERENCED----------\n", md_pred)
-
-    new_doc = doc.save_picture_to_disk(image_dir=Path("./test/data/constructed_images/"))
-
-    img_paths = new_doc.list_images_on_disk()
-    assert len(img_paths) == 1, "len(img_paths)!=1"
-
-    # md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.PLACEHOLDER)
-    # print("\n -------------PLACEHOLDER----------\n", md_pred)
-
-    md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.EMBEDDED)
-    md_pred = _normalise_string_wrt_filepaths(md_pred, img_paths)
-    _verify_regression_test(
-        pred=md_pred, filename="test/data/doc/constructed_doc_ref", ext="embedded.md"
-    )
-    """
-    print("\n -------------EMBEDDED----------\n",
-          md_pred,
-          "\n -------------/EMBEDDED----------\n")
-    """
-
-    md_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.REFERENCED)
-    md_pred = _normalise_string_wrt_filepaths(md_pred, img_paths)
-    _verify_regression_test(
-        pred=md_pred, filename="test/data/doc/constructed_doc_ref", ext="referenced.md"
-    )
-    """
-    print("\n -------------REFERENCED----------\n",
-          md_pred,
-          "\n -------------/REFERENCED----------\n")
-    """
-
-    # html_pred = new_doc.export_to_html(image_mode=ImageRefMode.PLACEHOLDER)
-    # print("\n -------------PLACEHOLDER----------\n", html_pred)
-
-    html_pred = new_doc.export_to_markdown(image_mode=ImageRefMode.EMBEDDED)
-    html_pred = _normalise_string_wrt_filepaths(html_pred, img_paths)
-    _verify_regression_test(
-        pred=html_pred,
-        filename="test/data/doc/constructed_doc_ref",
-        ext="embedded.html",
-    )
-    """
-    print("\n -------------EMBEDDED----------\n",
-          html_pred,
-          "\n -------------/EMBEDDED----------\n")
-    """
-
-    html_pred = new_doc.export_to_html(image_mode=ImageRefMode.REFERENCED)
-    html_pred = _normalise_string_wrt_filepaths(html_pred, img_paths)
-    _verify_regression_test(
-        pred=html_pred,
-        filename="test/data/doc/constructed_doc_ref",
-        ext="referenced.html",
-    )
-    """
-    print("\n -------------REFERENCED----------\n",
-          html_pred,
-          "\n -------------/REFERENCED----------\n")
-    """
+    filename = Path("test/data/doc/constructed_doc.placeholder.html")
+    doc.save_to_html(filename=filename, image_mode=ImageRefMode.PLACEHOLDER)
+    _verify_saved_output(filename=filename, paths=paths)
+    
+    filename = Path("test/data/doc/constructed_doc.embedded.html")
+    doc.save_to_html(filename=filename, image_mode=ImageRefMode.EMBEDDED)
+    _verify_saved_output(filename=filename, paths=paths)
+    
+    filename = Path("test/data/doc/constructed_doc.referenced.html")
+    doc.save_to_html(filename=filename, image_mode=ImageRefMode.REFERENCED)    
+    _verify_saved_output(filename=filename, paths=paths)
+    
+    assert True
