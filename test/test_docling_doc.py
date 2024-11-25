@@ -636,11 +636,9 @@ def test_save_pictures():
 
     doc: DoclingDocument = _construct_doc()
 
-    new_doc = doc.save_pictures_to_disk(
-        image_dir=Path("./test/data/constructed_images/")
-    )
+    new_doc = doc._with_pictures_refs(image_dir=Path("./test/data/constructed_images/"))
 
-    img_paths = new_doc.list_images_on_disk()
+    img_paths = new_doc._list_images_on_disk()
     assert len(img_paths) == 1, "len(img_paths)!=1"
 
 
@@ -677,30 +675,30 @@ def test_save_to_disk():
 
     image_dir = Path("./test/data/constructed_images/")
 
-    doc_with_references = doc.save_pictures_to_disk(
+    doc_with_references = doc._with_pictures_refs(
         image_dir=image_dir  # Path("./test/data/constructed_images/")
     )
 
     # paths will be different on different machines, so needs to be kept!
-    paths = doc_with_references.list_images_on_disk()
+    paths = doc_with_references._list_images_on_disk()
     assert len(paths) == 1, "len(paths)!=1"
 
     ### MarkDown
 
     filename = Path("test/data/doc/constructed_doc.placeholder.md")
-    doc.save_to_markdown(
+    doc.save_as_markdown(
         filename=filename, image_dir=image_dir, image_mode=ImageRefMode.PLACEHOLDER
     )
     _verify_saved_output(filename=filename, paths=paths)
 
     filename = Path("test/data/doc/constructed_doc.embedded.md")
-    doc.save_to_markdown(
+    doc.save_as_markdown(
         filename=filename, image_dir=image_dir, image_mode=ImageRefMode.EMBEDDED
     )
     _verify_saved_output(filename=filename, paths=paths)
 
     filename = Path("test/data/doc/constructed_doc.referenced.md")
-    doc.save_to_markdown(
+    doc.save_as_markdown(
         filename=filename, image_dir=image_dir, image_mode=ImageRefMode.REFERENCED
     )
     _verify_saved_output(filename=filename, paths=paths)
@@ -708,19 +706,19 @@ def test_save_to_disk():
     ### HTML
 
     filename = Path("test/data/doc/constructed_doc.placeholder.html")
-    doc.save_to_html(
+    doc.save_as_html(
         filename=filename, image_dir=image_dir, image_mode=ImageRefMode.PLACEHOLDER
     )
     _verify_saved_output(filename=filename, paths=paths)
 
     filename = Path("test/data/doc/constructed_doc.embedded.html")
-    doc.save_to_html(
+    doc.save_as_html(
         filename=filename, image_dir=image_dir, image_mode=ImageRefMode.EMBEDDED
     )
     _verify_saved_output(filename=filename, paths=paths)
 
     filename = Path("test/data/doc/constructed_doc.referenced.html")
-    doc.save_to_html(
+    doc.save_as_html(
         filename=filename, image_dir=image_dir, image_mode=ImageRefMode.REFERENCED
     )
     _verify_saved_output(filename=filename, paths=paths)

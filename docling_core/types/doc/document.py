@@ -12,6 +12,7 @@ import typing
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
+from urllib.parse import unquote, urlparse
 
 import pandas as pd
 from PIL import Image as PILImage
@@ -453,10 +454,12 @@ class ImageRef(BaseModel):
             encoded_img = str(self.uri).split(",")[1]
             decoded_img = base64.b64decode(encoded_img)
             self._pil = PILImage.open(BytesIO(decoded_img))
-        else:
-            self._pil = PILImage.open(str(self.uri))
+        elif str(self.uri).startswith("file:"):
+            parsed_url = urlparse(str(self.uri))
+            self._pil = PILImage.open(unquote(parsed_url.path))
+        # else: Handle http request or other protocols...
 
-        return self._pil
+        return self._pil  # type: ignore # mypy can't resolve this.
 
     @field_validator("mimetype")
     @classmethod
@@ -754,7 +757,7 @@ class PictureItem(FloatingItem):
             if (
                 isinstance(self.image, ImageRef)
                 and isinstance(self.image.uri, AnyUrl)
-                and str(self.image.uri).startswith("file://")
+                and str(self.image.uri).startswith("file:")
                 and True  # self.image.uri.exists()
             ):
                 text = f"\n![Local Image]({self.image.uri})\n"
@@ -816,7 +819,7 @@ class PictureItem(FloatingItem):
             if (
                 isinstance(self.image, ImageRef)
                 and isinstance(self.image.uri, AnyUrl)
-                and str(self.image.uri).startswith("file://")
+                and str(self.image.uri).startswith("file:")
                 and True  # self.image.uri.exists()
             ):
                 img_text = f'<img src="{str(self.image.uri)}">'
@@ -1539,7 +1542,7 @@ class DoclingDocument(BaseModel):
                 if item.image is not None and item.image._pil is not None:
                     item.image._pil.close()
 
-    def list_images_on_disk(self) -> List[Path]:
+    def _list_images_on_disk(self) -> List[Path]:
         """List all images on disk."""
         result: List[Path] = []
 
@@ -1551,15 +1554,19 @@ class DoclingDocument(BaseModel):
                 elif (
                     item.image is not None
                     and isinstance(item.image.uri, AnyUrl)
-                    and str(item.image.uri).startswith("file://")
+                    and str(item.image.uri).startswith("file:")
                 ):
-                    local_path = Path(str(item.image.uri).replace("file://", ""))
+                    local_path = Path(str(item.image.uri).replace("file:", ""))
                     result.append(local_path)
 
         return result
 
-    def load_pictures_from_disk(self) -> "DoclingDocument":
-        """Load images from disk."""
+    def _with_embedded_pictures(self) -> "DoclingDocument":
+        """Document with embedded images.
+
+        Creates a copy of this document where all pictures referenced
+        through a file URI are turned into base64 embedded form.
+        """
         result: DoclingDocument = copy.deepcopy(self)
 
         for ix, (item, level) in enumerate(result.iterate_items(with_groups=True)):
@@ -1568,19 +1575,22 @@ class DoclingDocument(BaseModel):
                 if (
                     item.image is not None
                     and isinstance(item.image.uri, AnyUrl)
-                    and str(item.image.uri).startswith("file://")
+                    and str(item.image.uri).startswith("file:")
                 ):
-
                     tmp_image = PILImage.open(str(item.image.uri))
                     item.image = ImageRef.from_pil(tmp_image, dpi=item.image.dpi)
 
         return result
 
-    def save_pictures_to_disk(self, image_dir: Path) -> "DoclingDocument":
-        """Save images to disk."""
+    def _with_pictures_refs(self, image_dir: Path) -> "DoclingDocument":
+        """Document with images as refs.
+
+        Creates a copy of this document where all picture data is
+        saved to image_dir and referenced through file URIs.
+        """
         result: DoclingDocument = copy.deepcopy(self)
 
-        imgcnt = 0
+        img_count = 0
         image_dir.mkdir(parents=True, exist_ok=True)
 
         if image_dir.is_dir():
@@ -1589,9 +1599,8 @@ class DoclingDocument(BaseModel):
 
                     if item.image is not None:
                         img = item.image.pil_image
-                        imghash = item._image_to_hexhash()
 
-                        loc_path = image_dir / f"image_{imgcnt:06}_{imghash}.png"
+                        loc_path = image_dir / f"image_{img_count:06}.png"
                         abs_path = Path(loc_path).resolve()
 
                         # print("saving abs-path: ", abs_path)
@@ -1604,7 +1613,7 @@ class DoclingDocument(BaseModel):
                         # if item.image._pil is not None:
                         #    item.image._pil.close()
 
-                    imgcnt += 1
+                    img_count += 1
 
         return result
 
@@ -1633,15 +1642,7 @@ class DoclingDocument(BaseModel):
         """Export to dict."""
         return self.model_dump(mode="json", by_alias=True, exclude_none=True)
 
-    def export_to_json(self) -> Dict:
-        """Export to json."""
-        return self.model_dump(mode="json", by_alias=True, exclude_none=True)
-
-    def export_to_yaml(self) -> Dict:
-        """Export to yaml."""
-        return self.model_dump(mode="yaml", by_alias=True, exclude_none=True)
-
-    def save_to_markdown(
+    def save_as_markdown(
         self,
         filename: Path,
         image_dir: Optional[Path] = None,
@@ -1660,7 +1661,7 @@ class DoclingDocument(BaseModel):
         if image_dir is None:
             # Remove the extension and add '_pictures'
             image_dir = filename.with_suffix("")
-            image_dir = image_dir.with_name(image_dir.stem + "_pictures")
+            image_dir = image_dir.with_name(image_dir.stem + "_images")
 
             os.makedirs(image_dir, exist_ok=True)
 
@@ -1668,9 +1669,9 @@ class DoclingDocument(BaseModel):
         if image_mode == ImageRefMode.PLACEHOLDER:
             new_doc = self
         elif image_mode == ImageRefMode.REFERENCED:
-            new_doc = self.save_pictures_to_disk(image_dir=image_dir)
+            new_doc = self._with_pictures_refs(image_dir=image_dir)
         elif image_mode == ImageRefMode.EMBEDDED:
-            new_doc = self.load_pictures_from_disk()
+            new_doc = self._with_embedded_pictures()
         else:
             raise ValueError("Unsupported ImageRefMode")
 
@@ -1896,7 +1897,7 @@ class DoclingDocument(BaseModel):
             image_placeholder="",
         )
 
-    def save_to_html(
+    def save_as_html(
         self,
         filename: Path,
         image_dir: Optional[Path] = None,
@@ -1912,7 +1913,7 @@ class DoclingDocument(BaseModel):
         if image_dir is None:
             # Remove the extension and add '_pictures'
             image_dir = filename.with_suffix("")
-            image_dir = image_dir.with_name(image_dir.stem + "_pictures")
+            image_dir = image_dir.with_name(image_dir.stem + "_images")
 
             os.makedirs(image_dir, exist_ok=True)
 
@@ -1920,9 +1921,9 @@ class DoclingDocument(BaseModel):
         if image_mode == ImageRefMode.PLACEHOLDER:
             new_doc = self
         elif image_mode == ImageRefMode.REFERENCED:
-            new_doc = self.save_pictures_to_disk(image_dir=image_dir)
+            new_doc = self._with_pictures_refs(image_dir=image_dir)
         elif image_mode == ImageRefMode.EMBEDDED:
-            new_doc = self.load_pictures_from_disk()
+            new_doc = self._with_embedded_pictures()
         else:
             raise ValueError("Unsupported ImageRefMode")
 
