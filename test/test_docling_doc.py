@@ -687,19 +687,19 @@ def test_save_to_disk():
 
     filename = Path("test/data/doc/constructed_doc.placeholder.md")
     doc.save_as_markdown(
-        filename=filename, image_dir=image_dir, image_mode=ImageRefMode.PLACEHOLDER
+        filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.PLACEHOLDER
     )
     _verify_saved_output(filename=filename, paths=paths)
 
     filename = Path("test/data/doc/constructed_doc.embedded.md")
     doc.save_as_markdown(
-        filename=filename, image_dir=image_dir, image_mode=ImageRefMode.EMBEDDED
+        filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.EMBEDDED
     )
     _verify_saved_output(filename=filename, paths=paths)
 
     filename = Path("test/data/doc/constructed_doc.referenced.md")
     doc.save_as_markdown(
-        filename=filename, image_dir=image_dir, image_mode=ImageRefMode.REFERENCED
+        filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.REFERENCED
     )
     _verify_saved_output(filename=filename, paths=paths)
 
@@ -707,19 +707,19 @@ def test_save_to_disk():
 
     filename = Path("test/data/doc/constructed_doc.placeholder.html")
     doc.save_as_html(
-        filename=filename, image_dir=image_dir, image_mode=ImageRefMode.PLACEHOLDER
+        filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.PLACEHOLDER
     )
     _verify_saved_output(filename=filename, paths=paths)
 
     filename = Path("test/data/doc/constructed_doc.embedded.html")
     doc.save_as_html(
-        filename=filename, image_dir=image_dir, image_mode=ImageRefMode.EMBEDDED
+        filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.EMBEDDED
     )
     _verify_saved_output(filename=filename, paths=paths)
 
     filename = Path("test/data/doc/constructed_doc.referenced.html")
     doc.save_as_html(
-        filename=filename, image_dir=image_dir, image_mode=ImageRefMode.REFERENCED
+        filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.REFERENCED
     )
     _verify_saved_output(filename=filename, paths=paths)
 

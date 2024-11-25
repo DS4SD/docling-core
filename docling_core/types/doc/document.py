@@ -1645,7 +1645,7 @@ class DoclingDocument(BaseModel):
     def save_as_markdown(
         self,
         filename: Path,
-        image_dir: Optional[Path] = None,
+        artifacts_dir: Optional[Path] = None,
         delim: str = "\n",
         from_element: int = 0,
         to_element: int = sys.maxsize,
@@ -1658,18 +1658,18 @@ class DoclingDocument(BaseModel):
         page_no: Optional[int] = None,
     ):
         """Save to markdown."""
-        if image_dir is None:
+        if artifacts_dir is None:
             # Remove the extension and add '_pictures'
-            image_dir = filename.with_suffix("")
-            image_dir = image_dir.with_name(image_dir.stem + "_images")
+            artifacts_dir = filename.with_suffix("")
+            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_images")
 
-            os.makedirs(image_dir, exist_ok=True)
+            os.makedirs(artifacts_dir, exist_ok=True)
 
         new_doc: "DoclingDocument" = DoclingDocument(name=self.name)
         if image_mode == ImageRefMode.PLACEHOLDER:
             new_doc = self
         elif image_mode == ImageRefMode.REFERENCED:
-            new_doc = self._with_pictures_refs(image_dir=image_dir)
+            new_doc = self._with_pictures_refs(image_dir=artifacts_dir)
         elif image_mode == ImageRefMode.EMBEDDED:
             new_doc = self._with_embedded_pictures()
         else:
@@ -1900,7 +1900,7 @@ class DoclingDocument(BaseModel):
     def save_as_html(
         self,
         filename: Path,
-        image_dir: Optional[Path] = None,
+        artifacts_dir: Optional[Path] = None,
         from_element: int = 0,
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
@@ -1910,18 +1910,18 @@ class DoclingDocument(BaseModel):
         html_head: str = HTML_DEFAULT_HEAD,
     ):
         """Save to HTML."""
-        if image_dir is None:
+        if artifacts_dir is None:
             # Remove the extension and add '_pictures'
-            image_dir = filename.with_suffix("")
-            image_dir = image_dir.with_name(image_dir.stem + "_images")
+            artifacts_dir = filename.with_suffix("")
+            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_images")
 
-            os.makedirs(image_dir, exist_ok=True)
+            os.makedirs(artifacts_dir, exist_ok=True)
 
         new_doc = None
         if image_mode == ImageRefMode.PLACEHOLDER:
             new_doc = self
         elif image_mode == ImageRefMode.REFERENCED:
-            new_doc = self._with_pictures_refs(image_dir=image_dir)
+            new_doc = self._with_pictures_refs(image_dir=artifacts_dir)
         elif image_mode == ImageRefMode.EMBEDDED:
             new_doc = self._with_embedded_pictures()
         else:
