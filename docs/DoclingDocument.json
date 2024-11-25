@@ -1342,6 +1342,11 @@
   },
   "description": "DoclingDocument.",
   "properties": {
+    "HTML_DEFAULT_HEAD": {
+      "default": "<head>\n    <meta charset=\"UTF-8\">\n    <style>\n    table {\n    border-collapse: separate;\n    /* Maintain separate borders */\n    border-spacing: 5px; /*\n    Space between cells */\n    width: 50%;\n    }\n    th, td {\n    border: 1px solid black;\n    /* Add lines etween cells */\n    padding: 8px; }\n    </style>\n    </head>",
+      "title": "Html Default Head",
+      "type": "string"
+    },
     "schema_name": {
       "const": "DoclingDocument",
       "default": "DoclingDocument",
