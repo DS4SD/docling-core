@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><br>        <meta charset="UTF-8"><br>        <style><br>        table {<br>        border-collapse: separate;<br>        /* Maintain separate borders */<br>        border-spacing: 5px; /*<br>        Space between cells */<br>        width: 50%;<br>        }<br>        th, td {<br>        border: 1px solid black;<br>        /* Add lines etween cells */<br>        padding: 8px; }<br>        </style><br>        </head>
+<head><br>    <meta charset="UTF-8"><br>    <style><br>    table {<br>    border-collapse: separate;<br>    /* Maintain separate borders */<br>    border-spacing: 5px; /*<br>    Space between cells */<br>    width: 50%;<br>    }<br>    th, td {<br>    border: 1px solid black;<br>    /* Add lines etween cells */<br>    padding: 8px; }<br>    </style><br>    </head>
 <h1>DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis</h1>
 <figure><figcaption>Figure 1: Four examples of complex page layouts across different document categories</figcaption></figure>
 <h2>OPERATION (cont.)</h2>

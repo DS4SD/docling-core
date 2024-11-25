@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><br>        <meta charset="UTF-8"><br>        <style><br>        table {<br>        border-collapse: separate;<br>        /* Maintain separate borders */<br>        border-spacing: 5px; /*<br>        Space between cells */<br>        width: 50%;<br>        }<br>        th, td {<br>        border: 1px solid black;<br>        /* Add lines etween cells */<br>        padding: 8px; }<br>        </style><br>        </head>
+<head><br>    <meta charset="UTF-8"><br>    <style><br>    table {<br>    border-collapse: separate;<br>    /* Maintain separate borders */<br>    border-spacing: 5px; /*<br>    Space between cells */<br>    width: 50%;<br>    }<br>    th, td {<br>    border: 1px solid black;<br>    /* Add lines etween cells */<br>    padding: 8px; }<br>    </style><br>    </head>
 <h1>Title of the Document</h1>
 <p>Author 1<br>Affiliation 1</p>
 <p>Author 2<br>Affiliation 2</p>

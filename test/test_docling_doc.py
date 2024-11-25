@@ -672,7 +672,7 @@ def test_save_to_disk():
     # md_pred = doc.export_to_markdown(image_mode=ImageRefMode.REFERENCED)
     # print("\n -------------REFERENCED----------\n", md_pred)
 
-    new_doc = doc.save_images_to_disk(image_dir=Path("./test/data/constructed_images/"))
+    new_doc = doc.save_picture_to_disk(image_dir=Path("./test/data/constructed_images/"))
 
     img_paths = new_doc.list_images_on_disk()
     assert len(img_paths) == 1, "len(img_paths)!=1"

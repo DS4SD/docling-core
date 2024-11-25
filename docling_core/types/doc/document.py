@@ -4,6 +4,7 @@ import base64
 import copy
 import hashlib
 import mimetypes
+import os
 import re
 import sys
 import textwrap
@@ -1149,6 +1150,23 @@ class PageItem(BaseModel):
 class DoclingDocument(BaseModel):
     """DoclingDocument."""
 
+    HTML_DEFAULT_HEAD: str = r"""<head>
+    <meta charset="UTF-8">
+    <style>
+    table {
+    border-collapse: separate;
+    /* Maintain separate borders */
+    border-spacing: 5px; /*
+    Space between cells */
+    width: 50%;
+    }
+    th, td {
+    border: 1px solid black;
+    /* Add lines etween cells */
+    padding: 8px; }
+    </style>
+    </head>"""
+
     schema_name: typing.Literal["DoclingDocument"] = "DoclingDocument"
     version: Annotated[str, StringConstraints(pattern=VERSION_PATTERN, strict=True)] = (
         CURRENT_VERSION
@@ -1539,8 +1557,26 @@ class DoclingDocument(BaseModel):
 
         return result
 
-    def save_images_to_disk(self, image_dir: Path) -> "DoclingDocument":
-        """Save_images_to_disk."""
+    def load_pictures_from_disk(self) -> "DoclingDocument":
+        """Load images from disk."""
+        result: DoclingDocument = copy.deepcopy(self)
+
+        for ix, (item, level) in enumerate(result.iterate_items(with_groups=True)):
+            if isinstance(item, PictureItem):
+
+                if (
+                    item.image is not None
+                    and isinstance(item.image.uri, AnyUrl)
+                    and str(item.image.uri).startswith("file://")
+                ):
+
+                    tmp_image = PILImage.open(str(item.image.uri))
+                    item.image = ImageRef.from_pil(tmp_image, dpi=item.image.dpi)
+
+        return result
+
+    def save_pictures_to_disk(self, image_dir: Path) -> "DoclingDocument":
+        """Save images to disk."""
         result: DoclingDocument = copy.deepcopy(self)
 
         imgcnt = 0
@@ -1604,6 +1640,55 @@ class DoclingDocument(BaseModel):
         """Export to yaml."""
         return self.model_dump(mode="yaml", by_alias=True, exclude_none=True)
 
+    def save_to_markdown(
+        self,
+        filename: Path,
+        image_dir: Optional[Path] = None,
+        delim: str = "\n",
+        from_element: int = 0,
+        to_element: int = sys.maxsize,
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+        strict_text: bool = False,
+        image_placeholder: str = "<!-- image -->",
+        image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
+        indent: int = 4,
+        text_width: int = -1,
+        page_no: Optional[int] = None,
+    ):
+        """Save to markdown."""
+        if image_dir is None:
+            # Remove the extension and add '_pictures'
+            image_dir = filename.with_suffix("")
+            image_dir = image_dir.with_name(image_dir.stem + "_pictures")
+
+            os.makedirs(image_dir, exist_ok=True)
+
+        new_doc: "DoclingDocument" = DoclingDocument(name=self.name)
+        if image_mode == ImageRefMode.PLACEHOLDER:
+            new_doc = self
+        elif image_mode == ImageRefMode.REFERENCED:
+            new_doc = self.save_pictures_to_disk(image_dir=image_dir)
+        elif image_mode == ImageRefMode.EMBEDDED:
+            self.load_pictures_from_disk()
+        else:
+            raise ValueError("Unsupported ImageRefMode")
+
+        md_out = new_doc.export_to_markdown(
+            delim=delim,
+            from_element=from_element,
+            to_element=to_element,
+            labels=labels,
+            strict_text=strict_text,
+            image_placeholder=image_placeholder,
+            image_mode=image_mode,
+            indent=indent,
+            text_width=text_width,
+            page_no=page_no,
+        )
+
+        with open(filename, "w") as fw:
+            fw.write(md_out)
+
     def export_to_markdown(  # noqa: C901
         self,
         delim: str = "\n",
@@ -1616,7 +1701,6 @@ class DoclingDocument(BaseModel):
         indent: int = 4,
         text_width: int = -1,
         page_no: Optional[int] = None,
-        # image_dir: Optional[Path] = None,
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -1811,6 +1895,49 @@ class DoclingDocument(BaseModel):
             image_placeholder="",
         )
 
+    def save_to_html(
+        self,
+        filename: Path,
+        image_dir: Optional[Path] = None,
+        from_element: int = 0,
+        to_element: int = sys.maxsize,
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+        image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
+        page_no: Optional[int] = None,
+        html_lang: str = "en",
+        html_head: str = HTML_DEFAULT_HEAD,
+    ):
+        """Save to HTML."""
+        if image_dir is None:
+            # Remove the extension and add '_pictures'
+            image_dir = filename.with_suffix("")
+            image_dir = image_dir.with_name(image_dir.stem + "_pictures")
+
+            os.makedirs(image_dir, exist_ok=True)
+
+        new_doc = None
+        if image_mode == ImageRefMode.PLACEHOLDER:
+            new_doc = self
+        elif image_mode == ImageRefMode.REFERENCED:
+            new_doc = self.save_pictures_to_disk(image_dir=image_dir)
+        elif image_mode == ImageRefMode.EMBEDDED:
+            new_doc = self.load_pictures_from_disk()
+        else:
+            raise ValueError("Unsupported ImageRefMode")
+
+        html_out = new_doc.export_to_html(
+            from_element=from_element,
+            to_element=to_element,
+            labels=labels,
+            image_mode=image_mode,
+            page_no=page_no,
+            html_lang=html_lang,
+            html_head=html_head,
+        )
+
+        with open(filename, "w") as fw:
+            fw.write(html_out)
+
     def export_to_html(  # noqa: C901
         self,
         from_element: int = 0,
@@ -1819,22 +1946,7 @@ class DoclingDocument(BaseModel):
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
         page_no: Optional[int] = None,
         html_lang: str = "en",
-        html_head: str = r"""<head>
-        <meta charset="UTF-8">
-        <style>
-        table {
-        border-collapse: separate;
-        /* Maintain separate borders */
-        border-spacing: 5px; /*
-        Space between cells */
-        width: 50%;
-        }
-        th, td {
-        border: 1px solid black;
-        /* Add lines etween cells */
-        padding: 8px; }
-        </style>
-        </head>""",
+        html_head: str = HTML_DEFAULT_HEAD,
     ) -> str:
         r"""Serialize to HTML."""
 
