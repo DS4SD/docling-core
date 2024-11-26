@@ -1601,11 +1601,11 @@ class DoclingDocument(BaseModel):
                         img = item.image.pil_image
 
                         hexhash = item._image_to_hexhash()
-                        
+
                         loc_path = image_dir / f"image_{img_count:06}.png"
                         if hexhash is not None:
                             loc_path = image_dir / f"image_{img_count:06}_{hexhash}.png"
-                        
+
                         abs_path = Path(loc_path).resolve()
 
                         img.save(abs_path)
