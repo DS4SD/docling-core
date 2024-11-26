@@ -32,7 +32,7 @@ from docling_core.types.doc.document import (
 )
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 
-GENERATE = True
+GENERATE = False
 
 
 def test_doc_origin():
@@ -727,9 +727,7 @@ def test_save_to_disk():
     ### Document Tokens
 
     filename = Path("test/data/doc/constructed_doc.dt")
-    doc.save_as_document_tokens(
-        filename=filename
-    )
+    doc.save_as_document_tokens(filename=filename)
     _verify_saved_output(filename=filename, paths=paths)
 
     ### JSON
@@ -745,9 +743,9 @@ def test_save_to_disk():
         filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.REFERENCED
     )
     _verify_saved_output(filename=filename, paths=paths)
-    
+
     ### YAML
-    
+
     filename = Path("test/data/doc/constructed_doc.embedded.yaml")
     doc.save_as_yaml(
         filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.EMBEDDED
@@ -759,5 +757,5 @@ def test_save_to_disk():
         filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.REFERENCED
     )
     _verify_saved_output(filename=filename, paths=paths)
-    
+
     assert True
