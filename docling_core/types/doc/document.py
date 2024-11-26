@@ -1580,7 +1580,7 @@ class DoclingDocument(BaseModel):
                         page_no=page_no,
                     )
 
-    def clear_cache(self):
+    def _clear_picture_pil_cache(self):
         """Clear cache storage of all images."""
         for ix, (item, level) in enumerate(self.iterate_items(with_groups=True)):
             if isinstance(item, PictureItem):
