@@ -674,7 +674,7 @@ def test_save_to_disk():
 
     doc: DoclingDocument = _construct_doc()
 
-    image_dir = Path("./test/data/constructed_images/")
+    image_dir = Path("./test/data/doc/constructed_images/")
 
     doc_with_references = doc._with_pictures_refs(
         image_dir=image_dir  # Path("./test/data/constructed_images/")

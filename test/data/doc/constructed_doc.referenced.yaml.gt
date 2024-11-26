@@ -72,7 +72,7 @@ pictures:
     size:
       height: 64.0
       width: 64.0
-    uri: file://image_000001.png
+    uri: constructed_images/image_000001_ccb4cbe7039fe17892f3d611cfb71eafff1d4d230b19b10779334cc4b63c98bc.png
   label: picture
   parent:
     $ref: '#/body'

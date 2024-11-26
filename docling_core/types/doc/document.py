@@ -37,6 +37,7 @@ from docling_core.types.doc import BoundingBox, Size
 from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 from docling_core.types.legacy_doc.tokens import DocumentToken
+from docling_core.utils.file import relative_path
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
@@ -443,7 +444,7 @@ class ImageRef(BaseModel):
     mimetype: str
     dpi: int
     size: Size
-    uri: AnyUrl
+    uri: Union[AnyUrl, Path]
     _pil: Optional[PILImage.Image] = None
 
     @property
@@ -452,14 +453,17 @@ class ImageRef(BaseModel):
         if self._pil is not None:
             return self._pil
 
-        if str(self.uri).startswith("data:"):
-            encoded_img = str(self.uri).split(",")[1]
-            decoded_img = base64.b64decode(encoded_img)
-            self._pil = PILImage.open(BytesIO(decoded_img))
-        elif str(self.uri).startswith("file:"):
-            parsed_url = urlparse(str(self.uri))
-            self._pil = PILImage.open(unquote(parsed_url.path))
-        # else: Handle http request or other protocols...
+        if isinstance(self.uri, AnyUrl):
+            if self.uri.scheme == "data":
+                encoded_img = str(self.uri).split(",")[1]
+                decoded_img = base64.b64decode(encoded_img)
+                self._pil = PILImage.open(BytesIO(decoded_img))
+            elif self.uri.scheme == "file":
+                parsed_url = urlparse(str(self.uri))
+                self._pil = PILImage.open(unquote(parsed_url.path))
+            # else: Handle http request or other protocols...
+        elif isinstance(self.uri, Path):
+            self._pil = PILImage.open(self.uri)
 
         return self._pil  # type: ignore # mypy can't resolve this.
 
@@ -779,7 +783,11 @@ class PictureItem(FloatingItem):
         elif image_mode == ImageRefMode.EMBEDDED:
 
             # short-cut: we already have the image in base64
-            if isinstance(self.image, ImageRef) and self.image.uri.scheme == "data":
+            if (
+                isinstance(self.image, ImageRef)
+                and isinstance(self.image.uri, AnyUrl)
+                and self.image.uri.scheme == "data"
+            ):
                 text = f"\n![Image]({self.image.uri})\n"
                 return text
 
@@ -795,12 +803,17 @@ class PictureItem(FloatingItem):
                 return error_response
 
         elif image_mode == ImageRefMode.REFERENCED:
-            if not isinstance(self.image, ImageRef) or self.image.uri.scheme == "data":
+            if not isinstance(self.image, ImageRef) or (
+                isinstance(self.image.uri, AnyUrl) and self.image.uri.scheme == "data"
+            ):
                 return default_response
 
-            if self.image.uri.scheme == "file":
-                text = f"\n![Image]({self.image.uri})\n"
+            if (
+                isinstance(self.image.uri, AnyUrl) and self.image.uri.scheme == "file"
+            ) or isinstance(self.image.uri, Path):
+                text = f"\n![Image]({str(self.image.uri)})\n"
                 return text
+
             else:
                 return default_response
 
@@ -829,7 +842,11 @@ class PictureItem(FloatingItem):
 
         elif image_mode == ImageRefMode.EMBEDDED:
             # short-cut: we already have the image in base64
-            if isinstance(self.image, ImageRef) and self.image.uri.scheme == "data":
+            if (
+                isinstance(self.image, ImageRef)
+                and isinstance(self.image.uri, AnyUrl)
+                and self.image.uri.scheme == "data"
+            ):
                 img_text = f'<img src="{self.image.uri}">'
                 return f"<figure>{caption_text}{img_text}</figure>"
 
@@ -846,10 +863,14 @@ class PictureItem(FloatingItem):
 
         elif image_mode == ImageRefMode.REFERENCED:
 
-            if not isinstance(self.image, ImageRef) or self.image.uri.scheme == "data":
+            if not isinstance(self.image, ImageRef) or (
+                isinstance(self.image.uri, AnyUrl) and self.image.uri.scheme == "data"
+            ):
                 return default_response
 
-            if self.image.uri.scheme == "file":
+            if (
+                isinstance(self.image.uri, AnyUrl) and self.image.uri.scheme == "file"
+            ) or isinstance(self.image.uri, Path):
                 img_text = f'<img src="{str(self.image.uri)}">'
                 return f"<figure>{caption_text}{img_text}</figure>"
 
@@ -1572,13 +1593,16 @@ class DoclingDocument(BaseModel):
 
         for ix, (item, level) in enumerate(self.iterate_items(with_groups=True)):
             if isinstance(item, PictureItem):
-                if (
-                    item.image is not None
-                    and item.image.uri.scheme == "file"
-                    and item.image.uri.path is not None
-                ):
-                    local_path = Path(unquote(item.image.uri.path))
-                    result.append(local_path)
+                if item.image is not None:
+                    if (
+                        isinstance(item.image.uri, AnyUrl)
+                        and item.image.uri.scheme == "file"
+                        and item.image.uri.path is not None
+                    ):
+                        local_path = Path(unquote(item.image.uri.path))
+                        result.append(local_path)
+                    elif isinstance(item.image.uri, Path):
+                        result.append(item.image.uri)
 
         return result
 
@@ -1593,13 +1617,21 @@ class DoclingDocument(BaseModel):
         for ix, (item, level) in enumerate(result.iterate_items(with_groups=True)):
             if isinstance(item, PictureItem):
 
-                if item.image is not None and item.image.uri.scheme == "file":
+                if item.image is not None and (
+                    (
+                        isinstance(item.image.uri, AnyUrl)
+                        and item.image.uri.scheme == "file"
+                    )
+                    or isinstance(item.image.uri, Path)
+                ):
                     tmp_image = PILImage.open(str(item.image.uri))
                     item.image = ImageRef.from_pil(tmp_image, dpi=item.image.dpi)
 
         return result
 
-    def _with_pictures_refs(self, image_dir: Path) -> "DoclingDocument":
+    def _with_pictures_refs(
+        self, image_dir: Path, reference_path: Optional[Path] = None
+    ) -> "DoclingDocument":
         """Document with images as refs.
 
         Creates a copy of this document where all picture data is
@@ -1614,22 +1646,28 @@ class DoclingDocument(BaseModel):
             for item, level in result.iterate_items(with_groups=False):
                 if isinstance(item, PictureItem):
 
-                    if item.image is not None:
+                    if (
+                        item.image is not None
+                        and isinstance(item.image.uri, AnyUrl)
+                        and item.image.uri.scheme == "data"
+                    ):
                         img = item.image.pil_image
 
-                        # hexhash = item._image_to_hexhash()
+                        hexhash = item._image_to_hexhash()
 
-                        loc_path = image_dir / f"image_{img_count:06}.png"
-                        # if hexhash is not None:
-                        #    loc_path = image_dir / \
-                        #    f"image_{img_count:06}_{hexhash}.png"
+                        # loc_path = image_dir / f"image_{img_count:06}.png"
+                        if hexhash is not None:
+                            loc_path = image_dir / f"image_{img_count:06}_{hexhash}.png"
 
-                        abs_path = Path(loc_path).resolve()
+                            img.save(loc_path)
+                            if reference_path is not None:
+                                obj_path = relative_path(
+                                    reference_path.resolve(), loc_path.resolve()
+                                )
+                            else:
+                                obj_path = loc_path
 
-                        img.save(abs_path)
-                        uri = f"file://{abs_path}"
-
-                        item.image.uri = AnyUrl(uri)
+                            item.image.uri = Path(obj_path)
 
                         # if item.image._pil is not None:
                         #    item.image._pil.close()
@@ -1667,15 +1705,13 @@ class DoclingDocument(BaseModel):
         indent: int = 2,
     ):
         """Save as json."""
-        if artifacts_dir is None and image_mode == ImageRefMode.REFERENCED:
-            # Remove the extension and add '_pictures'
-            artifacts_dir = filename.with_suffix("")
-            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
+        artifacts_dir, reference_path = self._get_output_paths(filename, artifacts_dir)
 
+        if image_mode == ImageRefMode.REFERENCED:
             os.makedirs(artifacts_dir, exist_ok=True)
 
         new_doc = self._make_copy_with_refmode(
-            artifacts_dir=artifacts_dir, image_mode=image_mode
+            artifacts_dir, image_mode, reference_path=reference_path
         )
 
         out = new_doc.export_to_dict()
@@ -1690,15 +1726,13 @@ class DoclingDocument(BaseModel):
         default_flow_style: bool = False,
     ):
         """Save as yaml."""
-        if artifacts_dir is None and image_mode == ImageRefMode.REFERENCED:
-            # Remove the extension and add '_pictures'
-            artifacts_dir = filename.with_suffix("")
-            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
+        artifacts_dir, reference_path = self._get_output_paths(filename, artifacts_dir)
 
+        if image_mode == ImageRefMode.REFERENCED:
             os.makedirs(artifacts_dir, exist_ok=True)
 
         new_doc = self._make_copy_with_refmode(
-            artifacts_dir=artifacts_dir, image_mode=image_mode
+            artifacts_dir, image_mode, reference_path=reference_path
         )
 
         out = new_doc.export_to_dict()
@@ -1732,15 +1766,13 @@ class DoclingDocument(BaseModel):
         page_no: Optional[int] = None,
     ):
         """Save to markdown."""
-        if artifacts_dir is None:
-            # Remove the extension and add '_pictures'
-            artifacts_dir = filename.with_suffix("")
-            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
+        artifacts_dir, reference_path = self._get_output_paths(filename, artifacts_dir)
 
+        if image_mode == ImageRefMode.REFERENCED:
             os.makedirs(artifacts_dir, exist_ok=True)
 
         new_doc = self._make_copy_with_refmode(
-            artifacts_dir=artifacts_dir, image_mode=image_mode
+            artifacts_dir, image_mode, reference_path=reference_path
         )
 
         md_out = new_doc.export_to_markdown(
@@ -1972,14 +2004,14 @@ class DoclingDocument(BaseModel):
         html_head: str = _HTML_DEFAULT_HEAD,
     ):
         """Save to HTML."""
-        if artifacts_dir is None:
-            # Remove the extension and add '_pictures'
-            artifacts_dir = filename.with_suffix("")
-            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
+        artifacts_dir, reference_path = self._get_output_paths(filename, artifacts_dir)
 
+        if image_mode == ImageRefMode.REFERENCED:
             os.makedirs(artifacts_dir, exist_ok=True)
 
-        new_doc = self._make_copy_with_refmode(artifacts_dir, image_mode)
+        new_doc = self._make_copy_with_refmode(
+            artifacts_dir, image_mode, reference_path=reference_path
+        )
 
         html_out = new_doc.export_to_html(
             from_element=from_element,
@@ -1994,12 +2026,32 @@ class DoclingDocument(BaseModel):
         with open(filename, "w") as fw:
             fw.write(html_out)
 
-    def _make_copy_with_refmode(self, artifacts_dir, image_mode):
+    def _get_output_paths(
+        self, filename: Path, artifacts_dir: Optional[Path] = None
+    ) -> Tuple[Path, Optional[Path]]:
+        if artifacts_dir is None:
+            # Remove the extension and add '_pictures'
+            artifacts_dir = filename.with_suffix("")
+            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
+        if artifacts_dir.is_absolute():
+            reference_path = None
+        else:
+            reference_path = filename.parent
+        return artifacts_dir, reference_path
+
+    def _make_copy_with_refmode(
+        self,
+        artifacts_dir: Path,
+        image_mode: ImageRefMode,
+        reference_path: Optional[Path] = None,
+    ):
         new_doc = None
         if image_mode == ImageRefMode.PLACEHOLDER:
             new_doc = self
         elif image_mode == ImageRefMode.REFERENCED:
-            new_doc = self._with_pictures_refs(image_dir=artifacts_dir)
+            new_doc = self._with_pictures_refs(
+                image_dir=artifacts_dir, reference_path=reference_path
+            )
         elif image_mode == ImageRefMode.EMBEDDED:
             new_doc = self._with_embedded_pictures()
         else:
