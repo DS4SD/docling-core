@@ -2091,11 +2091,8 @@ class DoclingDocument(BaseModel):
 
             return (in_ordered_list, html_texts)
 
-        html_texts: list[str] = [
-            "<!DOCTYPE html>",
-            f'<html lang="{html_lang}">',
-            html_head,
-        ]
+        head_lines = ["<!DOCTYPE html>", f'<html lang="{html_lang}">', html_head]
+        html_texts: list[str] = []
 
         prev_level = 0  # Track the previous item's level
 
@@ -2219,6 +2216,7 @@ class DoclingDocument(BaseModel):
         html_texts.append("</html>")
 
         lines = []
+        lines.extend(head_lines)
         for i, line in enumerate(html_texts):
             lines.append(line.replace("\n", "<br>"))
 
