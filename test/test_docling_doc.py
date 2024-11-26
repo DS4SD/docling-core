@@ -32,7 +32,7 @@ from docling_core.types.doc.document import (
 )
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 
-GENERATE = False
+GENERATE = True
 
 
 def test_doc_origin():
@@ -646,6 +646,7 @@ def _normalise_string_wrt_filepaths(instr: str, paths: List[Path]):
 
     for p in paths:
         instr = instr.replace(str(p), str(p.name))
+        instr = instr.replace(str(p).replace("_", "\\_"), str(p.name))
 
     return instr
 

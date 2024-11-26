@@ -1600,14 +1600,17 @@ class DoclingDocument(BaseModel):
                     if item.image is not None:
                         img = item.image.pil_image
 
+                        hexhash = item._image_to_hexhash()
+                        
                         loc_path = image_dir / f"image_{img_count:06}.png"
+                        if hexhash is not None:
+                            loc_path = image_dir / f"image_{img_count:06}_{hexhash}.png"
+                        
                         abs_path = Path(loc_path).resolve()
 
-                        # print("saving abs-path: ", abs_path)
                         img.save(abs_path)
                         uri = f"file://{abs_path}"
 
-                        # print("uri: ", str(abs_path))
                         item.image.uri = AnyUrl(uri)
 
                         # if item.image._pil is not None:
