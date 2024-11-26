@@ -8,7 +8,7 @@ import pytest
 import yaml
 from PIL import Image as PILImage
 from PIL import ImageDraw
-from pydantic import ValidationError
+from pydantic import AnyUrl, ValidationError
 
 from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.document import (
@@ -470,6 +470,27 @@ def test_pil_image():
     assert reloaded_image.size == fig_image.size
     assert reloaded_image.mode == fig_image.mode
     assert reloaded_image.tobytes() == fig_image.tobytes()
+
+
+def test_image_ref():
+
+    data_uri = {
+        "dpi": 72,
+        "mimetype": "image/png",
+        "size": {"width": 10, "height": 11},
+        "uri": "file:///tests/data/image.png",
+    }
+    image = ImageRef.model_validate(data_uri)
+    assert isinstance(image.uri, AnyUrl)
+
+    data_path = {
+        "dpi": 72,
+        "mimetype": "image/png",
+        "size": {"width": 10, "height": 11},
+        "uri": "./tests/data/image.png",
+    }
+    image = ImageRef.model_validate(data_path)
+    assert isinstance(image.uri, Path)
 
 
 def test_version_doc():
