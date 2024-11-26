@@ -779,12 +779,8 @@ class PictureItem(FloatingItem):
         elif image_mode == ImageRefMode.EMBEDDED:
 
             # short-cut: we already have the image in base64
-            if (
-                isinstance(self.image, ImageRef)
-                and isinstance(self.image.uri, str)
-                and self.image.uri.startswith("data")
-            ):
-                text = f"\n![Local Image]({self.image.uri})\n"
+            if isinstance(self.image, ImageRef) and self.image.uri.scheme == "data":
+                text = f"\n![Image]({self.image.uri})\n"
                 return text
 
             # get the self.image._pil or crop it out of the page-image
@@ -792,27 +788,19 @@ class PictureItem(FloatingItem):
 
             if img is not None:
                 imgb64 = self._image_to_base64(img)
-                text = f"\n![Local Image]({imgb64})\n"
+                text = f"\n![Image]({imgb64})\n"
 
                 return text
             else:
                 return error_response
 
         elif image_mode == ImageRefMode.REFERENCED:
-
-            if (
-                isinstance(self.image, ImageRef)
-                and isinstance(self.image.uri, AnyUrl)
-                and str(self.image.uri).startswith("file:")
-                and True  # self.image.uri.exists()
-            ):
-                text = f"\n![Local Image]({self.image.uri})\n"
-                return text
-
-            elif isinstance(self.image, ImageRef) and self.image.uri is not None:
-                # FIXME: we might need to do something here if we have a web-url
+            if not isinstance(self.image, ImageRef) or self.image.uri.scheme == "data":
                 return default_response
 
+            if self.image.uri.scheme == "file":
+                text = f"\n![Image]({self.image.uri})\n"
+                return text
             else:
                 return default_response
 
@@ -841,11 +829,7 @@ class PictureItem(FloatingItem):
 
         elif image_mode == ImageRefMode.EMBEDDED:
             # short-cut: we already have the image in base64
-            if (
-                isinstance(self.image, ImageRef)
-                and isinstance(self.image.uri, str)
-                and self.image.uri.startswith("data")
-            ):
+            if isinstance(self.image, ImageRef) and self.image.uri.scheme == "data":
                 img_text = f'<img src="{self.image.uri}">'
                 return f"<figure>{caption_text}{img_text}</figure>"
 
@@ -862,18 +846,12 @@ class PictureItem(FloatingItem):
 
         elif image_mode == ImageRefMode.REFERENCED:
 
-            if (
-                isinstance(self.image, ImageRef)
-                and isinstance(self.image.uri, AnyUrl)
-                and str(self.image.uri).startswith("file:")
-                and True  # self.image.uri.exists()
-            ):
+            if not isinstance(self.image, ImageRef) or self.image.uri.scheme == "data":
+                return default_response
+
+            if self.image.uri.scheme == "file":
                 img_text = f'<img src="{str(self.image.uri)}">'
                 return f"<figure>{caption_text}{img_text}</figure>"
-
-            elif isinstance(self.image, ImageRef) and self.image.uri is not None:
-                # FIXME: we might need to do something here if we have a web-url
-                return default_response
 
             else:
                 return default_response
@@ -1200,7 +1178,7 @@ class PageItem(BaseModel):
 class DoclingDocument(BaseModel):
     """DoclingDocument."""
 
-    HTML_DEFAULT_HEAD: str = r"""<head>
+    _HTML_DEFAULT_HEAD: str = r"""<head>
     <meta charset="UTF-8">
     <style>
     table {
@@ -1594,15 +1572,12 @@ class DoclingDocument(BaseModel):
 
         for ix, (item, level) in enumerate(self.iterate_items(with_groups=True)):
             if isinstance(item, PictureItem):
-                if item.image is not None and isinstance(item.image.uri, Path):
-                    result.append(item.image.uri)
-
-                elif (
+                if (
                     item.image is not None
-                    and isinstance(item.image.uri, AnyUrl)
-                    and str(item.image.uri).startswith("file:")
+                    and item.image.uri.scheme == "file"
+                    and item.image.uri.path is not None
                 ):
-                    local_path = Path(str(item.image.uri).replace("file:", ""))
+                    local_path = Path(unquote(item.image.uri.path))
                     result.append(local_path)
 
         return result
@@ -1618,11 +1593,7 @@ class DoclingDocument(BaseModel):
         for ix, (item, level) in enumerate(result.iterate_items(with_groups=True)):
             if isinstance(item, PictureItem):
 
-                if (
-                    item.image is not None
-                    and isinstance(item.image.uri, AnyUrl)
-                    and str(item.image.uri).startswith("file:")
-                ):
+                if item.image is not None and item.image.uri.scheme == "file":
                     tmp_image = PILImage.open(str(item.image.uri))
                     item.image = ImageRef.from_pil(tmp_image, dpi=item.image.dpi)
 
@@ -1640,17 +1611,18 @@ class DoclingDocument(BaseModel):
         image_dir.mkdir(parents=True, exist_ok=True)
 
         if image_dir.is_dir():
-            for ix, (item, level) in enumerate(result.iterate_items(with_groups=True)):
+            for item, level in result.iterate_items(with_groups=False):
                 if isinstance(item, PictureItem):
 
                     if item.image is not None:
                         img = item.image.pil_image
 
-                        hexhash = item._image_to_hexhash()
+                        # hexhash = item._image_to_hexhash()
 
                         loc_path = image_dir / f"image_{img_count:06}.png"
-                        if hexhash is not None:
-                            loc_path = image_dir / f"image_{img_count:06}_{hexhash}.png"
+                        # if hexhash is not None:
+                        #    loc_path = image_dir / \
+                        #    f"image_{img_count:06}_{hexhash}.png"
 
                         abs_path = Path(loc_path).resolve()
 
@@ -1692,31 +1664,21 @@ class DoclingDocument(BaseModel):
         filename: Path,
         artifacts_dir: Optional[Path] = None,
         image_mode: ImageRefMode = ImageRefMode.EMBEDDED,
-        by_alias: bool = True,
-        exclude_none: bool = True,
         indent: int = 2,
     ):
         """Save as json."""
-        if artifacts_dir is None:
+        if artifacts_dir is None and image_mode == ImageRefMode.REFERENCED:
             # Remove the extension and add '_pictures'
             artifacts_dir = filename.with_suffix("")
             artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
 
             os.makedirs(artifacts_dir, exist_ok=True)
 
-        new_doc: "DoclingDocument" = DoclingDocument(name=self.name)
-        if image_mode == ImageRefMode.PLACEHOLDER:
-            new_doc = self
-        elif image_mode == ImageRefMode.REFERENCED:
-            new_doc = self._with_pictures_refs(image_dir=artifacts_dir)
-        elif image_mode == ImageRefMode.EMBEDDED:
-            new_doc = self._with_embedded_pictures()
-        else:
-            raise ValueError("Unsupported ImageRefMode")
-
-        out = new_doc.export_to_dict(
-            mode="json", by_alias=by_alias, exclude_none=exclude_none
+        new_doc = self._make_copy_with_refmode(
+            artifacts_dir=artifacts_dir, image_mode=image_mode
         )
+
+        out = new_doc.export_to_dict()
         with open(filename, "w") as fw:
             json.dump(out, fw, indent=indent)
 
@@ -1725,31 +1687,21 @@ class DoclingDocument(BaseModel):
         filename: Path,
         artifacts_dir: Optional[Path] = None,
         image_mode: ImageRefMode = ImageRefMode.EMBEDDED,
-        by_alias: bool = True,
-        exclude_none: bool = True,
         default_flow_style: bool = False,
     ):
         """Save as yaml."""
-        if artifacts_dir is None:
+        if artifacts_dir is None and image_mode == ImageRefMode.REFERENCED:
             # Remove the extension and add '_pictures'
             artifacts_dir = filename.with_suffix("")
             artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
 
             os.makedirs(artifacts_dir, exist_ok=True)
 
-        new_doc: "DoclingDocument" = DoclingDocument(name=self.name)
-        if image_mode == ImageRefMode.PLACEHOLDER:
-            new_doc = self
-        elif image_mode == ImageRefMode.REFERENCED:
-            new_doc = self._with_pictures_refs(image_dir=artifacts_dir)
-        elif image_mode == ImageRefMode.EMBEDDED:
-            new_doc = self._with_embedded_pictures()
-        else:
-            raise ValueError("Unsupported ImageRefMode")
-
-        out = new_doc.export_to_dict(
-            mode="yaml", by_alias=by_alias, exclude_none=exclude_none
+        new_doc = self._make_copy_with_refmode(
+            artifacts_dir=artifacts_dir, image_mode=image_mode
         )
+
+        out = new_doc.export_to_dict()
         with open(filename, "w") as fw:
             yaml.dump(out, fw, default_flow_style=default_flow_style)
 
@@ -1761,10 +1713,6 @@ class DoclingDocument(BaseModel):
     ) -> Dict:
         """Export to dict."""
         out = self.model_dump(mode=mode, by_alias=by_alias, exclude_none=exclude_none)
-
-        for key in ["HTML_DEFAULT_HEAD"]:
-            if key in out:
-                del out[key]
 
         return out
 
@@ -1791,15 +1739,9 @@ class DoclingDocument(BaseModel):
 
             os.makedirs(artifacts_dir, exist_ok=True)
 
-        new_doc: "DoclingDocument" = DoclingDocument(name=self.name)
-        if image_mode == ImageRefMode.PLACEHOLDER:
-            new_doc = self
-        elif image_mode == ImageRefMode.REFERENCED:
-            new_doc = self._with_pictures_refs(image_dir=artifacts_dir)
-        elif image_mode == ImageRefMode.EMBEDDED:
-            new_doc = self._with_embedded_pictures()
-        else:
-            raise ValueError("Unsupported ImageRefMode")
+        new_doc = self._make_copy_with_refmode(
+            artifacts_dir=artifacts_dir, image_mode=image_mode
+        )
 
         md_out = new_doc.export_to_markdown(
             delim=delim,
@@ -2027,7 +1969,7 @@ class DoclingDocument(BaseModel):
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
         page_no: Optional[int] = None,
         html_lang: str = "en",
-        html_head: str = HTML_DEFAULT_HEAD,
+        html_head: str = _HTML_DEFAULT_HEAD,
     ):
         """Save to HTML."""
         if artifacts_dir is None:
@@ -2037,15 +1979,7 @@ class DoclingDocument(BaseModel):
 
             os.makedirs(artifacts_dir, exist_ok=True)
 
-        new_doc = None
-        if image_mode == ImageRefMode.PLACEHOLDER:
-            new_doc = self
-        elif image_mode == ImageRefMode.REFERENCED:
-            new_doc = self._with_pictures_refs(image_dir=artifacts_dir)
-        elif image_mode == ImageRefMode.EMBEDDED:
-            new_doc = self._with_embedded_pictures()
-        else:
-            raise ValueError("Unsupported ImageRefMode")
+        new_doc = self._make_copy_with_refmode(artifacts_dir, image_mode)
 
         html_out = new_doc.export_to_html(
             from_element=from_element,
@@ -2060,6 +1994,18 @@ class DoclingDocument(BaseModel):
         with open(filename, "w") as fw:
             fw.write(html_out)
 
+    def _make_copy_with_refmode(self, artifacts_dir, image_mode):
+        new_doc = None
+        if image_mode == ImageRefMode.PLACEHOLDER:
+            new_doc = self
+        elif image_mode == ImageRefMode.REFERENCED:
+            new_doc = self._with_pictures_refs(image_dir=artifacts_dir)
+        elif image_mode == ImageRefMode.EMBEDDED:
+            new_doc = self._with_embedded_pictures()
+        else:
+            raise ValueError("Unsupported ImageRefMode")
+        return new_doc
+
     def export_to_html(  # noqa: C901
         self,
         from_element: int = 0,
@@ -2068,7 +2014,7 @@ class DoclingDocument(BaseModel):
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
         page_no: Optional[int] = None,
         html_lang: str = "en",
-        html_head: str = HTML_DEFAULT_HEAD,
+        html_head: str = _HTML_DEFAULT_HEAD,
     ) -> str:
         r"""Serialize to HTML."""
 

@@ -8,14 +8,12 @@ body:
   - $ref: '#/pictures/0'
   - $ref: '#/texts/14'
   - $ref: '#/pictures/1'
-  label: !!python/object/apply:docling_core.types.doc.labels.GroupLabel
-  - unspecified
+  label: unspecified
   name: _root_
   self_ref: '#/body'
 furniture:
   children: []
-  label: !!python/object/apply:docling_core.types.doc.labels.GroupLabel
-  - unspecified
+  label: unspecified
   name: _root_
   self_ref: '#/furniture'
 groups:
@@ -23,8 +21,7 @@ groups:
   - $ref: '#/texts/3'
   - $ref: '#/texts/4'
   - $ref: '#/groups/1'
-  label: !!python/object/apply:docling_core.types.doc.labels.GroupLabel
-  - chapter
+  label: chapter
   name: Introduction
   parent:
     $ref: '#/body'
@@ -35,8 +32,7 @@ groups:
   - $ref: '#/texts/7'
   - $ref: '#/groups/2'
   - $ref: '#/texts/11'
-  label: !!python/object/apply:docling_core.types.doc.labels.GroupLabel
-  - list
+  label: list
   name: group
   parent:
     $ref: '#/groups/0'
@@ -45,8 +41,7 @@ groups:
   - $ref: '#/texts/8'
   - $ref: '#/texts/9'
   - $ref: '#/texts/10'
-  label: !!python/object/apply:docling_core.types.doc.labels.GroupLabel
-  - ordered_list
+  label: ordered_list
   name: group
   parent:
     $ref: '#/groups/1'
@@ -60,8 +55,7 @@ pictures:
   - $ref: '#/texts/13'
   children: []
   footnotes: []
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - picture
+  label: picture
   parent:
     $ref: '#/body'
   prov: []
@@ -78,10 +72,8 @@ pictures:
     size:
       height: 64.0
       width: 64.0
-    uri: !!python/object/new:pydantic_core._pydantic_core.Url
-    - data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAABNElEQVR4nO2ayw7DIAwEIf//z+nBErKAEBMe9rrMmYRZNr60xDCVW7AmTt1xwtsk0uu2H3rDiPosiY/PzlLnfFPpfmqFOqdXqGP9anWOXOsSrttp37WdKMBm+65NX7pSUc9oK7YasGAf3jQeAxixJxoy0iE2Sz2AqeMnnpQqAQzaE1WxPIBZe6LU8zUDxo+fyCQdNQBx/ARX9dIA0PETSdhFA3DHT5C2iwaggQ8QQQcgAd/ACaDNCaDNCaDNCaDNCaDNNfc/w81EDw1oC4ziIgDoGJC2iwYCYAlJ2EsDAaoEruqogQBSQibpq4FgvoRSr9KA2QxVsfonZDDDk5K7GUiYKqEh02rASIa2hkhS6xdsiZxoBlSqEG4qHeLNGeTb/dO1Sw7wxVcO8NVjDvDl75L91+9/ESIkdDQ3IX0AAAAASUVORK5CYII=
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - picture
+    uri: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAABNElEQVR4nO2ayw7DIAwEIf//z+nBErKAEBMe9rrMmYRZNr60xDCVW7AmTt1xwtsk0uu2H3rDiPosiY/PzlLnfFPpfmqFOqdXqGP9anWOXOsSrttp37WdKMBm+65NX7pSUc9oK7YasGAf3jQeAxixJxoy0iE2Sz2AqeMnnpQqAQzaE1WxPIBZe6LU8zUDxo+fyCQdNQBx/ARX9dIA0PETSdhFA3DHT5C2iwaggQ8QQQcgAd/ACaDNCaDNCaDNCaDNCaDNNfc/w81EDw1oC4ziIgDoGJC2iwYCYAlJ2EsDAaoEruqogQBSQibpq4FgvoRSr9KA2QxVsfonZDDDk5K7GUiYKqEh02rASIa2hkhS6xdsiZxoBlSqEG4qHeLNGeTb/dO1Sw7wxVcO8NVjDvDl75L91+9/ESIkdDQ3IX0AAAAASUVORK5CYII=
+  label: picture
   parent:
     $ref: '#/body'
   prov: []
@@ -258,8 +250,7 @@ tables:
       start_row_offset_idx: 2
       text: '695944'
   footnotes: []
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - table
+  label: table
   parent:
     $ref: '#/body'
   prov: []
@@ -269,8 +260,7 @@ texts:
 - children:
   - $ref: '#/texts/1'
   - $ref: '#/texts/2'
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - title
+  label: title
   orig: Title of the Document
   parent:
     $ref: '#/body'
@@ -278,8 +268,7 @@ texts:
   self_ref: '#/texts/0'
   text: Title of the Document
 - children: []
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - text
+  label: text
   orig: 'Author 1
 
     Affiliation 1'
@@ -291,8 +280,7 @@ texts:
 
     Affiliation 1'
 - children: []
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - text
+  label: text
   orig: 'Author 2
 
     Affiliation 2'
@@ -304,8 +292,7 @@ texts:
 
     Affiliation 2'
 - children: []
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - section_header
+  label: section_header
   level: 1
   orig: 1. Introduction
   parent:
@@ -314,8 +301,7 @@ texts:
   self_ref: '#/texts/3'
   text: 1. Introduction
 - children: []
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - text
+  label: text
   orig: This paper introduces the biggest invention ever made. ...
   parent:
     $ref: '#/groups/0'
@@ -324,8 +310,7 @@ texts:
   text: This paper introduces the biggest invention ever made. ...
 - children: []
   enumerated: false
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - list_item
+  label: list_item
   marker: '-'
   orig: list item 1
   parent:
@@ -335,8 +320,7 @@ texts:
   text: list item 1
 - children: []
   enumerated: false
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - list_item
+  label: list_item
   marker: '-'
   orig: list item 2
   parent:
@@ -346,8 +330,7 @@ texts:
   text: list item 2
 - children: []
   enumerated: false
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - list_item
+  label: list_item
   marker: '-'
   orig: list item 3
   parent:
@@ -357,8 +340,7 @@ texts:
   text: list item 3
 - children: []
   enumerated: false
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - list_item
+  label: list_item
   marker: '-'
   orig: list item 3.a
   parent:
@@ -368,8 +350,7 @@ texts:
   text: list item 3.a
 - children: []
   enumerated: false
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - list_item
+  label: list_item
   marker: '-'
   orig: list item 3.b
   parent:
@@ -379,8 +360,7 @@ texts:
   text: list item 3.b
 - children: []
   enumerated: false
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - list_item
+  label: list_item
   marker: '-'
   orig: list item 3.c
   parent:
@@ -390,8 +370,7 @@ texts:
   text: list item 3.c
 - children: []
   enumerated: false
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - list_item
+  label: list_item
   marker: '-'
   orig: list item 4
   parent:
@@ -400,8 +379,7 @@ texts:
   self_ref: '#/texts/11'
   text: list item 4
 - children: []
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - caption
+  label: caption
   orig: This is the caption of table 1.
   parent:
     $ref: '#/body'
@@ -409,8 +387,7 @@ texts:
   self_ref: '#/texts/12'
   text: This is the caption of table 1.
 - children: []
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - caption
+  label: caption
   orig: This is the caption of figure 1.
   parent:
     $ref: '#/body'
@@ -418,8 +395,7 @@ texts:
   self_ref: '#/texts/13'
   text: This is the caption of figure 1.
 - children: []
-  label: !!python/object/apply:docling_core.types.doc.labels.DocItemLabel
-  - caption
+  label: caption
   orig: This is the caption of figure 2.
   parent:
     $ref: '#/body'
