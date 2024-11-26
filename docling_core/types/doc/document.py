@@ -3,14 +3,13 @@
 import base64
 import json
 import mimetypes
-import os
-from pathlib import Path
 import re
 import sys
 import textwrap
 import typing
 import warnings
 from io import BytesIO
+from pathlib import Path
 from pathlib import Path
 from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
 from urllib.parse import unquote
@@ -1741,29 +1740,30 @@ class DoclingDocument(BaseModel):
         """export_to_dict."""
         return self.model_dump(mode="json", by_alias=True, exclude_none=True)
 
-    def save_to_json_file(self, path: Union[str, Path], indent: int=4):
+    def save_to_json_file(self, path: Union[str, Path], indent: int = 4):
         """
         export_to_json.
         :param path: The file path to write this DoclingDocument to as .json.
         :type delim: Union[str, Path]
-        :param indent: The number of spaces to use for indentation in the .json file (Default value = 4).
+        :param indent: The number of spaces to use for indentation in the .json
+            file (Default value = 4).
         :type delim: int
         """
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             json.dump(self.export_to_dict(), f, indent=indent)
-    
+
     @classmethod
     def load_from_json_file(cls, path: Union[str, Path]) -> "DoclingDocument":
         """
         load_from_json.
         :param path: The file path to load a saved DoclingDocument from a .json.
         :type delim: Union[str, Path]
-        
+
         :returns: The loaded DoclingDocument.
         :rtype: DoclingDocument
-        
+
         """
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             return cls.model_validate_json(f.read())
 
     def export_to_markdown(  # noqa: C901
@@ -1785,26 +1785,28 @@ class DoclingDocument(BaseModel):
         from_element and to_element; defaulting to the whole document.
 
         :param delim: Delimiter to use when concatenating the various
-                Markdown parts. Defaults to "\n\n".
-        :type delim: str
+                Markdown parts. (Default value = "\n").
+        :type delim: str = "\n"
         :param from_element: Body slicing start index (inclusive).
-                Defaults to 0.
-        :type from_element: int
+                (Default value = 0).
+        :type from_element: int = 0
         :param to_element: Body slicing stop index
-                (exclusive). Defaults to 0maxint.
-        :type to_element: int
-        :param delim: str:  (Default value = "\n\n")
-        :param labels: set[DocItemLabel]
-        :param "subtitle-level-1":
-        :param "paragraph":
-        :param "caption":
-        :param "table":
-        :param "Text":
-        :param "text":
-        :param strict_text: bool:  (Default value = False)
-        :param image_placeholder str:  (Default value = "<!-- image -->")
-            the placeholder to include to position images in the markdown.
-        :param indent: int (default=4): indent of the nested lists
+                (exclusive). (Default value = maxint).
+        :type to_element: int = sys.maxsize
+        :param labels: The set of document labels to include in the export.
+        :type labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS
+        :param strict_text: bool: Whether to only include the text content
+            of the document. (Default value = False).
+        :type strict_text: bool = False
+        :param image_placeholder: The placeholder to include to position
+            images in the markdown. (Default value = "\<!-- image --\>").
+        :type image_placeholder: str = "<!-- image -->"
+        :param image_mode: The mode to use for including images in the
+            markdown. (Default value = ImageRefMode.PLACEHOLDER).
+        :type image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER
+        :param indent: The indent in spaces of the nested lists.
+            (Default value = 4).
+        :type indent: int = 4
         :returns: The exported Markdown representation.
         :rtype: str
         """
