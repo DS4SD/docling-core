@@ -724,4 +724,40 @@ def test_save_to_disk():
     )
     _verify_saved_output(filename=filename, paths=paths)
 
+    ### Document Tokens
+
+    filename = Path("test/data/doc/constructed_doc.dt")
+    doc.save_as_document_tokens(
+        filename=filename
+    )
+    _verify_saved_output(filename=filename, paths=paths)
+
+    ### JSON
+
+    filename = Path("test/data/doc/constructed_doc.embedded.json")
+    doc.save_as_json(
+        filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.EMBEDDED
+    )
+    _verify_saved_output(filename=filename, paths=paths)
+
+    filename = Path("test/data/doc/constructed_doc.referenced.json")
+    doc.save_as_json(
+        filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.REFERENCED
+    )
+    _verify_saved_output(filename=filename, paths=paths)
+    
+    ### YAML
+    
+    filename = Path("test/data/doc/constructed_doc.embedded.yaml")
+    doc.save_as_yaml(
+        filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.EMBEDDED
+    )
+    _verify_saved_output(filename=filename, paths=paths)
+
+    filename = Path("test/data/doc/constructed_doc.referenced.yaml")
+    doc.save_as_yaml(
+        filename=filename, artifacts_dir=image_dir, image_mode=ImageRefMode.REFERENCED
+    )
+    _verify_saved_output(filename=filename, paths=paths)
+    
     assert True

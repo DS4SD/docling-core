@@ -1,5 +1,7 @@
 """Models for the Docling Document data type."""
 
+import json
+import yaml
 import base64
 import copy
 import hashlib
@@ -638,7 +640,50 @@ class SectionHeaderItem(TextItem):
     label: typing.Literal[DocItemLabel.SECTION_HEADER] = DocItemLabel.SECTION_HEADER
     level: LevelNumber
 
+    def export_to_document_tokens(
+        self,
+        doc: "DoclingDocument",
+        new_line: str = "\n",
+        xsize: int = 100,
+        ysize: int = 100,
+        add_location: bool = True,
+        add_content: bool = True,
+        add_page_index: bool = True,
+    ):
+        r"""Export text element to document tokens format.
 
+        :param doc: "DoclingDocument":
+        :param new_line: str:  (Default value = "\n")
+        :param xsize: int:  (Default value = 100)
+        :param ysize: int:  (Default value = 100)
+        :param add_location: bool:  (Default value = True)
+        :param add_content: bool:  (Default value = True)
+        :param add_page_index: bool:  (Default value = True)
+
+        """
+        body = f"<{self.label.value}_level_{self.level}>"
+
+        # TODO: This must be done through an explicit mapping.
+        # assert DocumentToken.is_known_token(
+        #    body
+        # ), f"failed DocumentToken.is_known_token({body})"
+
+        if add_location:
+            body += self.get_location_tokens(
+                doc=doc,
+                new_line="",
+                xsize=xsize,
+                ysize=ysize,
+                add_page_index=add_page_index,
+            )
+
+        if add_content and self.text is not None:
+            body += self.text.strip()
+
+        body += f"</{self.label.value}_level_{self.level}>{new_line}"
+
+        return body
+    
 class ListItem(TextItem):
     """SectionItem."""
 
@@ -1641,10 +1686,82 @@ class DoclingDocument(BaseModel):
 
         return "\n".join(texts)
 
-    def export_to_dict(self) -> Dict:
-        """Export to dict."""
-        return self.model_dump(mode="json", by_alias=True, exclude_none=True)
+    def save_as_json(
+        self,
+        filename: Path,
+        artifacts_dir: Optional[Path] = None,
+        image_mode: ImageRefMode = ImageRefMode.EMBEDDED,
+        by_alias:bool=True,
+        exclude_none:bool=True,
+        indent:int=2    
+    ) -> Dict:    
+        """Save as json."""
+        if artifacts_dir is None:
+            # Remove the extension and add '_pictures'
+            artifacts_dir = filename.with_suffix("")
+            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
 
+            os.makedirs(artifacts_dir, exist_ok=True)
+
+        new_doc: "DoclingDocument" = DoclingDocument(name=self.name)
+        if image_mode == ImageRefMode.PLACEHOLDER:
+            new_doc = self
+        elif image_mode == ImageRefMode.REFERENCED:
+            new_doc = self._with_pictures_refs(image_dir=artifacts_dir)
+        elif image_mode == ImageRefMode.EMBEDDED:
+            new_doc = self._with_embedded_pictures()
+        else:
+            raise ValueError("Unsupported ImageRefMode")
+        
+        out = new_doc.export_to_dict(mode="json", by_alias=by_alias, exclude_none=exclude_none)
+        with open(filename, "w") as fw:
+            json.dump(out, fw, indent=indent)
+    
+    def save_as_yaml(
+        self,
+        filename: Path,
+        artifacts_dir: Optional[Path] = None,
+        image_mode: ImageRefMode = ImageRefMode.EMBEDDED,
+        by_alias:bool=True,
+        exclude_none:bool=True,
+        default_flow_style:bool=False
+    ) -> Dict:    
+        """Save as yaml."""
+        if artifacts_dir is None:
+            # Remove the extension and add '_pictures'
+            artifacts_dir = filename.with_suffix("")
+            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
+
+            os.makedirs(artifacts_dir, exist_ok=True)
+
+        new_doc: "DoclingDocument" = DoclingDocument(name=self.name)
+        if image_mode == ImageRefMode.PLACEHOLDER:
+            new_doc = self
+        elif image_mode == ImageRefMode.REFERENCED:
+            new_doc = self._with_pictures_refs(image_dir=artifacts_dir)
+        elif image_mode == ImageRefMode.EMBEDDED:
+            new_doc = self._with_embedded_pictures()
+        else:
+            raise ValueError("Unsupported ImageRefMode")
+        
+        out = new_doc.export_to_dict(mode="yaml", by_alias=by_alias, exclude_none=exclude_none)
+        with open(filename, "w") as fw:
+            yaml.dump(out, fw, default_flow_style=default_flow_style)
+        
+    def export_to_dict(
+        self,
+        mode:str="json",
+        by_alias:bool=True,
+        exclude_none:bool=True,
+    ) -> Dict:
+        """Export to dict."""
+        out = self.model_dump(mode=mode, by_alias=by_alias, exclude_none=exclude_none)
+        
+        if "HTML_DEFAULT_HEAD" in out:
+            del out["HTML_DEFAULT_HEAD"]
+        
+        return out
+        
     def save_as_markdown(
         self,
         filename: Path,
@@ -1664,7 +1781,7 @@ class DoclingDocument(BaseModel):
         if artifacts_dir is None:
             # Remove the extension and add '_pictures'
             artifacts_dir = filename.with_suffix("")
-            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_images")
+            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
 
             os.makedirs(artifacts_dir, exist_ok=True)
 
@@ -1740,12 +1857,6 @@ class DoclingDocument(BaseModel):
         list_nesting_level = 0  # Track the current list nesting level
         previous_level = 0  # Track the previous item's level
         in_list = False  # Track if we're currently processing list items
-
-        """
-        figcnt = 0
-        if image_dir is not None:
-            image_dir.mkdir(parents=True, exist_ok=True)
-        """
 
         for ix, (item, level) in enumerate(
             self.iterate_items(self.body, with_groups=True, page_no=page_no)
@@ -1916,7 +2027,7 @@ class DoclingDocument(BaseModel):
         if artifacts_dir is None:
             # Remove the extension and add '_pictures'
             artifacts_dir = filename.with_suffix("")
-            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_images")
+            artifacts_dir = artifacts_dir.with_name(artifacts_dir.stem + "_artifacts")
 
             os.makedirs(artifacts_dir, exist_ok=True)
 
@@ -1954,7 +2065,6 @@ class DoclingDocument(BaseModel):
         html_head: str = HTML_DEFAULT_HEAD,
     ) -> str:
         r"""Serialize to HTML."""
-
         def close_lists(
             curr_level: int,
             prev_level: int,
@@ -2112,11 +2222,12 @@ class DoclingDocument(BaseModel):
 
         return html_text
 
-    def export_to_document_tokens(
+    def save_as_document_tokens(
         self,
+        filename: Path,            
         delim: str = "\n\n",
         from_element: int = 0,
-        to_element: Optional[int] = None,
+        to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         xsize: int = 100,
         ysize: int = 100,
@@ -2127,8 +2238,55 @@ class DoclingDocument(BaseModel):
         add_table_cell_location: bool = False,
         add_table_cell_label: bool = True,
         add_table_cell_text: bool = True,
+        # specifics
+        page_no: Optional[int] = None,
+        with_groups: bool = True,            
     ) -> str:
-        r"""Exports the document content to an DocumentToken format.
+        r"""Save the document content to a DocumentToken format."""
+
+        out = self.export_to_document_tokens(
+            delim=delim,
+            from_element=from_element,
+            to_element=to_element,
+            labels=labels,
+            xsize=xsize,
+            ysize=ysize,
+            add_location=add_location,
+            add_content=add_content,
+            add_page_index=add_page_index,
+            # table specific flags
+            add_table_cell_location=add_table_cell_location,
+            add_table_cell_label=add_table_cell_label,
+            add_table_cell_text=add_table_cell_text,
+            # specifics
+            page_no=page_no,
+            with_groups=with_groups,
+        )
+        
+        with open(filename, "w") as fw:
+            fw.write(out)
+    
+    def export_to_document_tokens(
+        self,
+        delim: str = "\n",
+        from_element: int = 0,
+        to_element: int = sys.maxsize,
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+        xsize: int = 100,
+        ysize: int = 100,
+        add_location: bool = True,
+        add_content: bool = True,
+        add_page_index: bool = True,
+        # table specific flags
+        add_table_cell_location: bool = False,
+        add_table_cell_label: bool = True,
+        add_table_cell_text: bool = True,
+        # specifics
+        page_no: Optional[int] = None,
+        with_groups: bool = True,
+        newline: bool = True,        
+    ) -> str:
+        r"""Exports the document content to a DocumentToken format.
 
         Operates on a slice of the document's body as defined through arguments
         from_element and to_element; defaulting to the whole main_text.
@@ -2148,44 +2306,100 @@ class DoclingDocument(BaseModel):
         :returns: The content of the document formatted as a DocTags string.
         :rtype: str
         """
-        new_line = ""
-        if delim:
-            new_line = "\n"
+        def close_lists(
+            curr_level: int,
+            prev_level: int,
+            in_ordered_list: List[bool],
+            result: str,
+            delim: str 
+        ):
 
-        doctags = f"{DocumentToken.BEG_DOCUMENT.value}{new_line}"
+            if len(in_ordered_list) == 0:
+                return (in_ordered_list, result)
 
-        # pagedims = self.get_map_to_page_dimensions()
+            while curr_level < prev_level and len(in_ordered_list) > 0:
+                if in_ordered_list[-1]:
+                    result += f"</ordered_list>{delim}"
+                else:
+                    result += f"</unordered_list>{delim}"
 
-        skip_count = 0
-        for ix, (item, level) in enumerate(self.iterate_items(self.body)):
-            if skip_count < from_element:
-                skip_count += 1
+                prev_level -= 1
+                in_ordered_list.pop()  # = in_ordered_list[:-1]
+
+            return (in_ordered_list, result)
+
+        if newline:
+            delim = "\n"
+        else:
+            delim = ""
+            
+        prev_level = 0  # Track the previous item's level
+
+        in_ordered_list: List[bool] = []  # False
+            
+        result = f"{DocumentToken.BEG_DOCUMENT.value}{delim}"
+
+        for ix, (item, curr_level) in enumerate(self.iterate_items(self.body, with_groups=True)):
+            
+            # If we've moved to a lower level, we're exiting one or more groups
+            if curr_level < prev_level and len(in_ordered_list) > 0:
+                # Calculate how many levels we've exited
+                # level_difference = previous_level - level
+                # Decrement list_nesting_level for each list group we've exited
+                # list_nesting_level = max(0, list_nesting_level - level_difference)
+
+                in_ordered_list, result = close_lists(
+                    curr_level=curr_level,
+                    prev_level=prev_level,
+                    in_ordered_list=in_ordered_list,
+                    result=result,
+                    delim=delim
+                )
+
+            prev_level = curr_level  # Update previous_level for next iteration
+
+            if ix < from_element or to_element <= ix:
                 continue  # skip as many items as you want
 
-            if to_element and ix >= to_element:
-                break
-
-            if not isinstance(item, DocItem):
+            if (isinstance(item, DocItem)) and (item.label not in labels):
+                continue  # skip any label that is not whitelisted
+            
+            item_type = item.label
+            if isinstance(item, GroupItem) and item.label in [
+                    GroupLabel.ORDERED_LIST,
+            ]:
+                
+                result += f"<ordered_list>{delim}"
+                in_ordered_list.append(True)
+                
+            elif isinstance(item, GroupItem) and item.label in [
+                    GroupLabel.LIST,
+            ]:
+                
+                result += f"<unordered_list>{delim}"
+                in_ordered_list.append(False)
+                
+            elif isinstance(item, TextItem) and item.label in [DocItemLabel.CAPTION]:
+                # captions are printed in picture and table ... skipping for now
                 continue
 
-            prov = item.prov
-
-            page_i = -1
-
-            if add_location and len(self.pages) and len(prov) > 0:
-
-                page_i = prov[0].page_no
-                page_dim = self.pages[page_i].size
-
-                float(page_dim.width)
-                float(page_dim.height)
-
-            item_type = item.label
-            if isinstance(item, TextItem) and (item_type in labels):
-
-                doctags += item.export_to_document_tokens(
+            elif isinstance(item, SectionHeaderItem):
+                
+                result += item.export_to_document_tokens(
                     doc=self,
-                    new_line=new_line,
+                    new_line=delim,
+                    xsize=xsize,
+                    ysize=ysize,
+                    add_location=add_location,
+                    add_content=add_content,
+                    add_page_index=add_page_index,
+                )
+                
+            elif isinstance(item, TextItem) and (item_type in labels):
+
+                result += item.export_to_document_tokens(
+                    doc=self,
+                    new_line=delim,
                     xsize=xsize,
                     ysize=ysize,
                     add_location=add_location,
@@ -2195,9 +2409,9 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, TableItem) and (item_type in labels):
 
-                doctags += item.export_to_document_tokens(
+                result += item.export_to_document_tokens(
                     doc=self,
-                    new_line=new_line,
+                    new_line=delim,
                     xsize=xsize,
                     ysize=ysize,
                     add_caption=True,
@@ -2211,9 +2425,9 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, PictureItem) and (item_type in labels):
 
-                doctags += item.export_to_document_tokens(
+                result += item.export_to_document_tokens(
                     doc=self,
-                    new_line=new_line,
+                    new_line=delim,
                     xsize=xsize,
                     ysize=ysize,
                     add_caption=True,
@@ -2221,10 +2435,10 @@ class DoclingDocument(BaseModel):
                     add_content=add_content,
                     add_page_index=add_page_index,
                 )
-
-        doctags += DocumentToken.END_DOCUMENT.value
-
-        return doctags
+        
+        result += DocumentToken.END_DOCUMENT.value
+        
+        return result
 
     def _export_to_indented_text(
         self, indent="  ", max_text_len: int = -1, explicit_tables: bool = False
