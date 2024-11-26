@@ -1591,7 +1591,7 @@ class DoclingDocument(BaseModel):
         """List all images on disk."""
         result: List[Path] = []
 
-        for ix, (item, level) in enumerate(self.iterate_items(with_groups=True)):
+        for item, level in self.iterate_items(with_groups=False):
             if isinstance(item, PictureItem):
                 if item.image is not None:
                     if (
