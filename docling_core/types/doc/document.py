@@ -1617,15 +1617,18 @@ class DoclingDocument(BaseModel):
         for ix, (item, level) in enumerate(result.iterate_items(with_groups=True)):
             if isinstance(item, PictureItem):
 
-                if item.image is not None and (
-                    (
+                if item.image is not None:
+                    if (
                         isinstance(item.image.uri, AnyUrl)
                         and item.image.uri.scheme == "file"
-                    )
-                    or isinstance(item.image.uri, Path)
-                ):
-                    tmp_image = PILImage.open(str(item.image.uri))
-                    item.image = ImageRef.from_pil(tmp_image, dpi=item.image.dpi)
+                    ):
+                        assert isinstance(item.image.uri.path, str)
+                        tmp_image = PILImage.open(str(unquote(item.image.uri.path)))
+                        item.image = ImageRef.from_pil(tmp_image, dpi=item.image.dpi)
+
+                    elif isinstance(item.image.uri, Path):
+                        tmp_image = PILImage.open(str(item.image.uri))
+                        item.image = ImageRef.from_pil(tmp_image, dpi=item.image.dpi)
 
         return result
 
