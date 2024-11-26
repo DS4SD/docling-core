@@ -467,6 +467,7 @@ def test_pil_image():
     reloaded_fig = doc_reload.pictures[0]
     reloaded_image = reloaded_fig.image.pil_image
 
+    assert isinstance(reloaded_image, PILImage.Image)
     assert reloaded_image.size == fig_image.size
     assert reloaded_image.mode == fig_image.mode
     assert reloaded_image.tobytes() == fig_image.tobytes()

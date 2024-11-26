@@ -448,7 +448,7 @@ class ImageRef(BaseModel):
     _pil: Optional[PILImage.Image] = None
 
     @property
-    def pil_image(self) -> PILImage.Image:
+    def pil_image(self) -> Optional[PILImage.Image]:
         """Return the PIL Image."""
         if self._pil is not None:
             return self._pil
@@ -464,7 +464,7 @@ class ImageRef(BaseModel):
         elif isinstance(self.uri, Path):
             self._pil = PILImage.open(self.uri)
 
-        return self._pil  # type: ignore # mypy can't resolve this.
+        return self._pil
 
     @field_validator("mimetype")
     @classmethod
@@ -578,6 +578,8 @@ class DocItem(
             return None
 
         page_image = page.image.pil_image
+        if not page_image:
+            return None
         crop_bbox = (
             self.prov[0]
             .bbox.to_top_left_origin(page_height=page.size.height)
@@ -1652,6 +1654,7 @@ class DoclingDocument(BaseModel):
                         item.image is not None
                         and isinstance(item.image.uri, AnyUrl)
                         and item.image.uri.scheme == "data"
+                        and item.image.pil_image is not None
                     ):
                         img = item.image.pil_image
 
