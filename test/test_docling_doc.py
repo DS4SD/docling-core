@@ -482,6 +482,8 @@ def test_image_ref():
     }
     image = ImageRef.model_validate(data_uri)
     assert isinstance(image.uri, AnyUrl)
+    assert image.uri.scheme == "file"
+    assert image.uri.path == "/tests/data/image.png"
 
     data_path = {
         "dpi": 72,
@@ -491,6 +493,7 @@ def test_image_ref():
     }
     image = ImageRef.model_validate(data_path)
     assert isinstance(image.uri, Path)
+    assert image.uri.name == "image.png"
 
 
 def test_version_doc():

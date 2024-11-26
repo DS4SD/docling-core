@@ -13,7 +13,7 @@ import typing
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote
 
 import pandas as pd
 import yaml
@@ -459,8 +459,7 @@ class ImageRef(BaseModel):
                 decoded_img = base64.b64decode(encoded_img)
                 self._pil = PILImage.open(BytesIO(decoded_img))
             elif self.uri.scheme == "file":
-                parsed_url = urlparse(str(self.uri))
-                self._pil = PILImage.open(unquote(parsed_url.path))
+                self._pil = PILImage.open(unquote(str(self.uri.path)))
             # else: Handle http request or other protocols...
         elif isinstance(self.uri, Path):
             self._pil = PILImage.open(self.uri)
