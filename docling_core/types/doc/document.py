@@ -1215,7 +1215,7 @@ class DoclingDocument(BaseModel):
     href="https://ds4sd.github.io/docling/assets/logo.png"/>
     <meta charset="UTF-8">
     <title>
-    Powered by Docling 🦆
+    Powered by Docling
     </title>
     <style>
     html {
