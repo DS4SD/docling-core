@@ -10,7 +10,7 @@ from pydantic import Field
 from requests import Response
 
 from docling_core.utils.alias import AliasModel
-from docling_core.utils.file import resolve_file_source
+from docling_core.utils.file import read_file_source, resolve_file_source
 
 
 def test_alias_model():
@@ -69,4 +69,26 @@ def test_resolve_file_source_url_wout_path(monkeypatch):
     path = resolve_file_source("https://pypi.org")
     with open(path) as f:
         text = f.read()
+    assert text == expected_str
+
+
+def test_read_file_source_url_wout_path(monkeypatch):
+    expected_str = "foo"
+    expected_bytes = bytes(expected_str, "utf-8")
+
+    def get_dummy_response(*args, **kwargs):
+        r = Response()
+        r.status_code = 200
+        r._content = expected_bytes
+        return r
+
+    monkeypatch.setattr("requests.get", get_dummy_response)
+    monkeypatch.setattr(
+        "requests.models.Response.iter_content",
+        lambda *args, **kwargs: [expected_bytes],
+    )
+    doc_stream = read_file_source("https://pypi.org")
+    assert doc_stream.name == "file"
+
+    text = doc_stream.stream.read().decode("utf8")
     assert text == expected_str
