@@ -639,7 +639,12 @@ class TextItem(DocItem):
 
         return body
 
+class InvisibleTextItem(DocItem):
+    """InvisibleTextItem."""
 
+    label: typing.Literal[DocItemLabel.INVISIBLE_TEXT] = DocItemLabel.INVISIBLE_TEXT
+    category: InvisibleTextLabel
+    
 class SectionHeaderItem(TextItem):
     """SectionItem."""
 

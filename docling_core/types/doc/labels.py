@@ -28,12 +28,23 @@ class DocItemLabel(str, Enum):
     # Additional labels for markup-based formats (e.g. HTML, Word)
     PARAGRAPH = "paragraph"  # explicitly a paragraph and not arbitrary text
     REFERENCE = "reference"
-
+    INVISIBLE_TEXT = "invisible_text"
+    
     def __str__(self):
         """Get string value."""
         return str(self.value)
 
-
+class InvisibleTextLabel(str, Enum):
+    """InvisibleTextLabel."""
+    
+    UNSPECIFIED = "unspecified"
+    
+    AUTHOR_NOTE = "author_note"
+    AUTHOR_NAME = "author_name"
+    
+    DOCUMENT_DATE = "document_date"
+    DOCUMENT_INFORMATION = "document_information"
+    
 class GroupLabel(str, Enum):
     """GroupLabel."""
 
