@@ -192,7 +192,8 @@
         "form",
         "key_value_region",
         "paragraph",
-        "reference"
+        "reference",
+        "invisible_text"
       ],
       "title": "DocItemLabel",
       "type": "string"
