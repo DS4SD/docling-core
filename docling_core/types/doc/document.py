@@ -1,15 +1,17 @@
 """Models for the Docling Document data type."""
 
 import base64
+import copy
+import hashlib
 import json
 import mimetypes
+import os
 import re
 import sys
 import textwrap
 import typing
 import warnings
 from io import BytesIO
-from pathlib import Path
 from pathlib import Path
 from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
 from urllib.parse import unquote
@@ -1736,35 +1738,125 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, DocItem):
                 print(" " * level, f"{ix}: {item.label.value}")
 
-    def export_to_dict(self) -> Dict:
-        """export_to_dict."""
-        return self.model_dump(mode="json", by_alias=True, exclude_none=True)
+    def export_to_element_tree(self) -> str:
+        """Export_to_element_tree."""
+        texts = []
+        for ix, (item, level) in enumerate(self.iterate_items(with_groups=True)):
+            if isinstance(item, GroupItem):
+                texts.append(
+                    " " * level + f"{ix}: {item.label.value} with name={item.name}"
+                )
+            elif isinstance(item, DocItem):
+                texts.append(" " * level + f"{ix}: {item.label.value}")
 
-    def save_to_json_file(self, path: Union[str, Path], indent: int = 4):
-        """
-        export_to_json.
-        :param path: The file path to write this DoclingDocument to as .json.
-        :type delim: Union[str, Path]
-        :param indent: The number of spaces to use for indentation in the .json
-            file (Default value = 4).
-        :type delim: int
-        """
-        with open(path, "w") as f:
-            json.dump(self.export_to_dict(), f, indent=indent)
+        return "\n".join(texts)
+
+    def save_as_json(
+        self,
+        filename: Path,
+        artifacts_dir: Optional[Path] = None,
+        image_mode: ImageRefMode = ImageRefMode.EMBEDDED,
+        indent: int = 2,
+    ):
+        """Save as json."""
+        artifacts_dir, reference_path = self._get_output_paths(filename, artifacts_dir)
+
+        if image_mode == ImageRefMode.REFERENCED:
+            os.makedirs(artifacts_dir, exist_ok=True)
+
+        new_doc = self._make_copy_with_refmode(
+            artifacts_dir, image_mode, reference_path=reference_path
+        )
+
+        out = new_doc.export_to_dict()
+        with open(filename, "w") as fw:
+            json.dump(out, fw, indent=indent)
 
     @classmethod
-    def load_from_json_file(cls, path: Union[str, Path]) -> "DoclingDocument":
-        """
-        load_from_json.
-        :param path: The file path to load a saved DoclingDocument from a .json.
-        :type delim: Union[str, Path]
+    def load_from_json(cls, filename: Path) -> "DoclingDocument":
+        """load_from_json.
+        :param filename: The filename to load a saved DoclingDocument from a .json.
+        :type filename: Path
 
         :returns: The loaded DoclingDocument.
         :rtype: DoclingDocument
 
         """
-        with open(path, "r") as f:
+        with open(filename, "r") as f:
             return cls.model_validate_json(f.read())
+
+    def save_as_yaml(
+        self,
+        filename: Path,
+        artifacts_dir: Optional[Path] = None,
+        image_mode: ImageRefMode = ImageRefMode.EMBEDDED,
+        default_flow_style: bool = False,
+    ):
+        """Save as yaml."""
+        artifacts_dir, reference_path = self._get_output_paths(filename, artifacts_dir)
+
+        if image_mode == ImageRefMode.REFERENCED:
+            os.makedirs(artifacts_dir, exist_ok=True)
+
+        new_doc = self._make_copy_with_refmode(
+            artifacts_dir, image_mode, reference_path=reference_path
+        )
+
+        out = new_doc.export_to_dict()
+        with open(filename, "w") as fw:
+            yaml.dump(out, fw, default_flow_style=default_flow_style)
+
+    def export_to_dict(
+        self,
+        mode: str = "json",
+        by_alias: bool = True,
+        exclude_none: bool = True,
+    ) -> Dict:
+        """Export to dict."""
+        out = self.model_dump(mode=mode, by_alias=by_alias, exclude_none=exclude_none)
+
+        return out
+
+    def save_as_markdown(
+        self,
+        filename: Path,
+        artifacts_dir: Optional[Path] = None,
+        delim: str = "\n",
+        from_element: int = 0,
+        to_element: int = sys.maxsize,
+        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+        strict_text: bool = False,
+        image_placeholder: str = "<!-- image -->",
+        image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
+        indent: int = 4,
+        text_width: int = -1,
+        page_no: Optional[int] = None,
+    ):
+        """Save to markdown."""
+        artifacts_dir, reference_path = self._get_output_paths(filename, artifacts_dir)
+
+        if image_mode == ImageRefMode.REFERENCED:
+            os.makedirs(artifacts_dir, exist_ok=True)
+
+        new_doc = self._make_copy_with_refmode(
+            artifacts_dir, image_mode, reference_path=reference_path
+        )
+
+        md_out = new_doc.export_to_markdown(
+            delim=delim,
+            from_element=from_element,
+            to_element=to_element,
+            labels=labels,
+            strict_text=strict_text,
+            image_placeholder=image_placeholder,
+            image_mode=image_mode,
+            indent=indent,
+            text_width=text_width,
+            page_no=page_no,
+        )
+
+        with open(filename, "w") as fw:
+            fw.write(md_out)
 
     def export_to_markdown(  # noqa: C901
         self,
