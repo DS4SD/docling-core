@@ -1775,6 +1775,7 @@ class DoclingDocument(BaseModel):
     @classmethod
     def load_from_json(cls, filename: Path) -> "DoclingDocument":
         """load_from_json.
+
         :param filename: The filename to load a saved DoclingDocument from a .json.
         :type filename: Path
 
@@ -1783,7 +1784,7 @@ class DoclingDocument(BaseModel):
 
         """
         with open(filename, "r") as f:
-            return cls.model_validate_json(f.read())
+            return cls.model_validate(json.loads(f.read()))
 
     def save_as_yaml(
         self,
