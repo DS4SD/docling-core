@@ -38,7 +38,8 @@ from docling_core.types.doc import BoundingBox, Size
 from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 from docling_core.types.doc.utils import relative_path
-from docling_core.types.legacy_doc.tokens import DocumentToken
+from docling_core.types.legacy_doc.tokens import DocumentToken, TableToken
+from docling_core.utils.file import relative_path
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
@@ -1102,30 +1103,30 @@ class TableItem(FloatingItem):
                 if rowstart == i and colstart == j:
                     if len(content) > 0:
                         if cell.column_header:
-                            body.append("ched")
+                            body.append(TableToken.OTSL_CHED)
                         elif cell.row_header:
-                            body.append("rhed")
+                            body.append(TableToken.OTSL_RHED)
                         elif cell.row_section:
-                            body.append("srow")
+                            body.append(TableToken.OTSL_SROW)
                         else:
-                            body.append("fcel")
+                            body.append(TableToken.OTSL_FCEL)
                     else:
-                        body.append("ecel")
+                        body.append(TableToken.OTSL_ECEL)
                 else:
                     add_cross_cell = False
                     if rowstart != i:
                         if colspan == 1:
-                            body.append("ucel")
+                            body.append(TableToken.OTSL_UCEL)
                         else:
                             add_cross_cell = True
                     if colstart != j:
                         if rowspan == 1:
-                            body.append("lcel")
+                            body.append(TableToken.OTSL_LCEL)
                         else:
                             add_cross_cell = True
                     if add_cross_cell:
-                        body.append("xcel")
-            body.append("nl")
+                        body.append(TableToken.OTSL_XCEL)
+            body.append(TableToken.OTSL_NL)
         return body
 
     def export_to_document_tokens(
