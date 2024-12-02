@@ -1066,9 +1066,20 @@ class TableItem(FloatingItem):
 
     def export_to_otsl(self) -> list:
         """Export the table as OTSL."""
-        # Possible OTSL tokens:
-        # "ecel", "fcel", "lcel", "ucel", "xcel", "nl",
+        # Possible OTSL tokens...
+        #
+        # Empty and full cells:
+        # "ecel", "fcel"
+        #
+        # Cell spans (horisontal, vertical, 2d):
+        # "lcel", "ucel", "xcel"
+        #
+        # New line:
+        # "nl"
+        #
+        # Headers (column, row, section row):
         # "ched", "rhed", "srow"
+
         body = []
         nrows = self.data.num_rows
         ncols = self.data.num_cols
