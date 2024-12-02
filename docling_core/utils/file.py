@@ -25,6 +25,36 @@ class DocumentStream(BaseModel):
     stream: BytesIO
 
 
+def resolve_remote_filename(
+    http_url: AnyHttpUrl,
+    response_headers: Dict[str, str],
+    fallback_filename="file",
+) -> str:
+    """Resolves the filename from a remote url and its response headers.
+
+    Args:
+        source AnyHttpUrl: The source http url.
+        response_headers Dict: Headers received while fetching the remote file.
+        fallback_filename str: Filename to use in case none can be determined.
+
+    Returns:
+        str: The actual filename of the remote url.
+    """
+    fname = None
+    # try to get filename from response header
+    if cont_disp := response_headers.get("Content-Disposition"):
+        for par in cont_disp.strip().split(";"):
+            # currently only handling directive "filename" (not "*filename")
+            if (split := par.split("=")) and split[0].strip() == "filename":
+                fname = "=".join(split[1:]).strip().strip("'\"") or None
+                break
+    # otherwise, use name from URL:
+    if fname is None:
+        fname = Path(http_url.path or "").name or fallback_filename
+
+    return fname
+
+
 def resolve_source_to_stream(
     source: Union[Path, AnyHttpUrl, str], headers: Optional[Dict[str, str]] = None
 ) -> DocumentStream:
@@ -55,17 +85,7 @@ def resolve_source_to_stream(
         # fetch the page
         res = requests.get(http_url, stream=True, headers=req_headers)
         res.raise_for_status()
-        fname = None
-        # try to get filename from response header
-        if cont_disp := res.headers.get("Content-Disposition"):
-            for par in cont_disp.strip().split(";"):
-                # currently only handling directive "filename" (not "*filename")
-                if (split := par.split("=")) and split[0].strip() == "filename":
-                    fname = "=".join(split[1:]).strip().strip("'\"") or None
-                    break
-        # otherwise, use name from URL:
-        if fname is None:
-            fname = Path(http_url.path or "").name or "file"
+        fname = resolve_remote_filename(http_url=http_url, response_headers=res.headers)
 
         stream = BytesIO(res.content)
         doc_stream = DocumentStream(name=fname, stream=stream)
