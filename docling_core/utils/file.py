@@ -13,6 +13,7 @@ from typing import Dict, Optional, Union
 
 import requests
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, TypeAdapter, ValidationError
+from typing_extensions import deprecated
 
 
 class DocumentStream(BaseModel):
@@ -24,7 +25,7 @@ class DocumentStream(BaseModel):
     stream: BytesIO
 
 
-def read_file_source(
+def resolve_source_to_stream(
     source: Union[Path, AnyHttpUrl, str], headers: Optional[Dict[str, str]] = None
 ) -> DocumentStream:
     """Resolves the source (URL, path) of a file to a binary stream.
@@ -78,29 +79,12 @@ def read_file_source(
     return doc_stream
 
 
-def resolve_file_source(
+def _resolve_source_to_path(
     source: Union[Path, AnyHttpUrl, str],
     headers: Optional[Dict[str, str]] = None,
     workdir: Optional[Path] = None,
 ) -> Path:
-    """Resolves the source (URL, path) of a file to a local file path.
-
-    If a URL is provided, the content is first downloaded to a temporary local file.
-
-    Args:
-        source (Path | AnyHttpUrl | str): The file input source. Can be a path or URL.
-        headers (Dict | None): Optional set of headers to use for fetching
-            the remote URL.
-        workdir (Path | None): If set, the work directory where the file will
-            be downloaded, otherwise a temp dir will be used.
-
-    Raises:
-        ValueError: If source is of unexpected type.
-
-    Returns:
-        Path: The local file path.
-    """
-    doc_stream = read_file_source(source=source, headers=headers)
+    doc_stream = resolve_source_to_stream(source=source, headers=headers)
 
     # use a temporary directory if not specified
     if workdir is None:
@@ -115,6 +99,62 @@ def resolve_file_source(
         f.write(doc_stream.stream.read())
 
     return local_path
+
+
+def resolve_source_to_path(
+    source: Union[Path, AnyHttpUrl, str],
+    headers: Optional[Dict[str, str]] = None,
+    workdir: Optional[Path] = None,
+) -> Path:
+    """Resolves the source (URL, path) of a file to a local file path.
+
+    If a URL is provided, the content is first downloaded to a local file, located in
+      the provided workdir or in a temporary directory if no workdir provided.
+
+    Args:
+        source (Path | AnyHttpUrl | str): The file input source. Can be a path or URL.
+        headers (Dict | None): Optional set of headers to use for fetching
+            the remote URL.
+        workdir (Path | None): If set, the work directory where the file will
+            be downloaded, otherwise a temp dir will be used.
+
+    Raises:
+        ValueError: If source is of unexpected type.
+
+    Returns:
+        Path: The local file path.
+    """
+    return _resolve_source_to_path(
+        source=source,
+        headers=headers,
+        workdir=workdir,
+    )
+
+
+@deprecated("Use `resolve_source_to_path()` or `resolve_source_to_stream()`  instead")
+def resolve_file_source(
+    source: Union[Path, AnyHttpUrl, str],
+    headers: Optional[Dict[str, str]] = None,
+) -> Path:
+    """Resolves the source (URL, path) of a file to a local file path.
+
+    If a URL is provided, the content is first downloaded to a temporary local file.
+
+    Args:
+        source (Path | AnyHttpUrl | str): The file input source. Can be a path or URL.
+        headers (Dict | None): Optional set of headers to use for fetching
+            the remote URL.
+
+    Raises:
+        ValueError: If source is of unexpected type.
+
+    Returns:
+        Path: The local file path.
+    """
+    return _resolve_source_to_path(
+        source=source,
+        headers=headers,
+    )
 
 
 def relative_path(src: Path, target: Path) -> Path:
