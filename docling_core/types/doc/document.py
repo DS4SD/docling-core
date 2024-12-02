@@ -382,7 +382,7 @@ class DocumentOrigin(BaseModel):
         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         "text/asciidoc",
         "text/markdown",
-        "application/vnd.openxmlformats-officedocument.spreadsheet.ml.sheet"
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     ]
 
     @field_validator("binary_hash", mode="before")
