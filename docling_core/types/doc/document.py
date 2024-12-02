@@ -36,7 +36,7 @@ from docling_core.search.package import VERSION_PATTERN
 from docling_core.types.base import _JSON_POINTER_REGEX
 from docling_core.types.doc import BoundingBox, Size
 from docling_core.types.doc.base import ImageRefMode
-from docling_core.types.doc.labels import DocItemLabel, GroupLabel
+from docling_core.types.doc.labels import DocItemLabel, GroupLabel, InvisibleTextLabel
 from docling_core.types.legacy_doc.tokens import DocumentToken
 from docling_core.utils.file import relative_path
 
@@ -638,6 +638,13 @@ class TextItem(DocItem):
         body += f"</{self.label.value}>{new_line}"
 
         return body
+
+
+class InvisibleTextItem(TextItem):
+    """InvisibleTextItem."""
+
+    label: typing.Literal[DocItemLabel.INVISIBLE_TEXT] = DocItemLabel.INVISIBLE_TEXT
+    category: InvisibleTextLabel
 
 
 class SectionHeaderItem(TextItem):

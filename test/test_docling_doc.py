@@ -19,6 +19,7 @@ from docling_core.types.doc.document import (
     DocumentOrigin,
     FloatingItem,
     ImageRef,
+    InvisibleTextItem,
     KeyValueItem,
     ListItem,
     PictureItem,
@@ -30,7 +31,7 @@ from docling_core.types.doc.document import (
     TableItem,
     TextItem,
 )
-from docling_core.types.doc.labels import DocItemLabel, GroupLabel
+from docling_core.types.doc.labels import DocItemLabel, GroupLabel, InvisibleTextLabel
 
 GENERATE = False
 
@@ -138,6 +139,14 @@ def test_docitems():
             )
             verify(dc, obj)
 
+        elif dc is InvisibleTextItem:
+            obj = dc(
+                text="whatever",
+                orig="whatever",
+                self_ref="#",
+                category=InvisibleTextLabel.AUTHOR_NOTE,
+            )
+            verify(dc, obj)
         else:
             # print(f"{dc.__name__} is not known")
             assert False, "new derived class detected {dc.__name__}: {e}"
