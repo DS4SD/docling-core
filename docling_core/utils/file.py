@@ -26,7 +26,9 @@ class DocumentStream(BaseModel):
 
 
 def resolve_remote_filename(
-    http_url: AnyHttpUrl, response_headers: Dict[str, str]
+    http_url: AnyHttpUrl,
+    response_headers: Dict[str, str],
+    fallback_filename="file",
 ) -> str:
     """Resolves the filename from a remote url and its response headers.
 
@@ -47,7 +49,7 @@ def resolve_remote_filename(
                 break
     # otherwise, use name from URL:
     if fname is None:
-        fname = Path(http_url.path or "").name or "file"
+        fname = Path(http_url.path or "").name or fallback_filename
 
     return fname
 
