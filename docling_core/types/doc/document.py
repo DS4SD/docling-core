@@ -1008,7 +1008,6 @@ class TableItem(FloatingItem):
                 DeprecationWarning,
             )
 
-        body = ""
         nrows = self.data.num_rows
         ncols = self.data.num_cols
 
@@ -1063,6 +1062,59 @@ class TableItem(FloatingItem):
         else:
             body = "<table></table>"
 
+        return body
+
+    def export_to_otsl(self) -> list:
+        """Export the table as OTSL."""
+        # Possible OTSL tokens:
+        # "ecel", "fcel", "lcel", "ucel", "xcel", "nl",
+        # "ched", "rhed", "srow"
+        body = []
+        nrows = self.data.num_rows
+        ncols = self.data.num_cols
+        if len(self.data.table_cells) == 0:
+            return []
+
+        for i in range(nrows):
+            for j in range(ncols):
+                cell: TableCell = self.data.grid[i][j]
+                content = cell.text.strip()
+                rowspan, rowstart = (
+                    cell.row_span,
+                    cell.start_row_offset_idx,
+                )
+                colspan, colstart = (
+                    cell.col_span,
+                    cell.start_col_offset_idx,
+                )
+
+                if rowstart == i and colstart == j:
+                    if len(content) > 0:
+                        if cell.column_header:
+                            body.append("ched")
+                        elif cell.row_header:
+                            body.append("rhed")
+                        elif cell.row_section:
+                            body.append("srow")
+                        else:
+                            body.append("fcel")
+                    else:
+                        body.append("ecel")
+                else:
+                    add_cross_cell = False
+                    if rowstart != i:
+                        if colspan == 1:
+                            body.append("ucel")
+                        else:
+                            add_cross_cell = True
+                    if colstart != j:
+                        if rowspan == 1:
+                            body.append("lcel")
+                        else:
+                            add_cross_cell = True
+                    if add_cross_cell:
+                        body.append("xcel")
+            body.append("nl")
         return body
 
     def export_to_document_tokens(
