@@ -12,17 +12,10 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 import requests
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, TypeAdapter, ValidationError
+from pydantic import AnyHttpUrl, TypeAdapter, ValidationError
 from typing_extensions import deprecated
 
-
-class DocumentStream(BaseModel):
-    """Wrapper class for a bytes stream with a filename."""
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    name: str
-    stream: BytesIO
+from docling_core.types.io import DocumentStream
 
 
 def resolve_remote_filename(
