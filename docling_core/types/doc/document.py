@@ -1065,7 +1065,14 @@ class TableItem(FloatingItem):
 
         return body
 
-    def export_to_otsl(self) -> list:
+    def export_to_otsl(
+        self,
+        doc: "DoclingDocument",
+        add_cell_location: bool = True,
+        add_cell_text: bool = True,
+        xsize: int = 100,
+        ysize: int = 100,
+    ) -> str:
         """Export the table as OTSL."""
         # Possible OTSL tokens...
         #
@@ -1085,7 +1092,7 @@ class TableItem(FloatingItem):
         nrows = self.data.num_rows
         ncols = self.data.num_cols
         if len(self.data.table_cells) == 0:
-            return []
+            return ""
 
         for i in range(nrows):
             for j in range(ncols):
@@ -1100,34 +1107,51 @@ class TableItem(FloatingItem):
                     cell.start_col_offset_idx,
                 )
 
+                page_w, page_h = doc.pages[self.prov[0].page_no].size.as_tuple()
+                cell_loc = ""
+                if cell.bbox is not None:
+                    cell_loc = DocumentToken.get_location(
+                        bbox=cell.bbox.to_bottom_left_origin(page_h).as_tuple(),
+                        page_w=page_w,
+                        page_h=page_h,
+                        xsize=xsize,
+                        ysize=ysize,
+                        page_i=self.prov[0].page_no,
+                    )
+
                 if rowstart == i and colstart == j:
                     if len(content) > 0:
                         if cell.column_header:
-                            body.append(TableToken.OTSL_CHED)
+                            body.append(str(TableToken.OTSL_CHED))
                         elif cell.row_header:
-                            body.append(TableToken.OTSL_RHED)
+                            body.append(str(TableToken.OTSL_RHED))
                         elif cell.row_section:
-                            body.append(TableToken.OTSL_SROW)
+                            body.append(str(TableToken.OTSL_SROW))
                         else:
-                            body.append(TableToken.OTSL_FCEL)
+                            body.append(str(TableToken.OTSL_FCEL))
+                        if add_cell_location:
+                            body.append(str(cell_loc))
+                        if add_cell_text:
+                            body.append(str(content))
                     else:
-                        body.append(TableToken.OTSL_ECEL)
+                        body.append(str(TableToken.OTSL_ECEL))
                 else:
                     add_cross_cell = False
                     if rowstart != i:
                         if colspan == 1:
-                            body.append(TableToken.OTSL_UCEL)
+                            body.append(str(TableToken.OTSL_UCEL))
                         else:
                             add_cross_cell = True
                     if colstart != j:
                         if rowspan == 1:
-                            body.append(TableToken.OTSL_LCEL)
+                            body.append(str(TableToken.OTSL_LCEL))
                         else:
                             add_cross_cell = True
                     if add_cross_cell:
-                        body.append(TableToken.OTSL_XCEL)
-            body.append(TableToken.OTSL_NL)
-        return body
+                        body.append(str(TableToken.OTSL_XCEL))
+            body.append(str(TableToken.OTSL_NL))
+            body_str = "".join(body)
+        return body_str
 
     def export_to_document_tokens(
         self,
