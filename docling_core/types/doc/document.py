@@ -1094,6 +1094,10 @@ class TableItem(FloatingItem):
         if len(self.data.table_cells) == 0:
             return ""
 
+        page_no = 0
+        if len(self.prov) > 0:
+            page_no = self.prov[0].page_no
+
         for i in range(nrows):
             for j in range(ncols):
                 cell: TableCell = self.data.grid[i][j]
@@ -1108,7 +1112,7 @@ class TableItem(FloatingItem):
                 )
 
                 if len(doc.pages.keys()):
-                    page_w, page_h = doc.pages[self.prov[0].page_no].size.as_tuple()
+                    page_w, page_h = doc.pages[page_no].size.as_tuple()
                 cell_loc = ""
                 if cell.bbox is not None:
                     cell_loc = DocumentToken.get_location(
@@ -1117,7 +1121,7 @@ class TableItem(FloatingItem):
                         page_h=page_h,
                         xsize=xsize,
                         ysize=ysize,
-                        page_i=self.prov[0].page_no,
+                        page_i=page_no,
                     )
 
                 if rowstart == i and colstart == j:
