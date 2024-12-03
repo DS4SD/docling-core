@@ -57,6 +57,9 @@ class BaseChunker(BaseModel, ABC):
         Args:
             dl_doc (DLDocument): document to chunk
 
+        Raises:
+            NotImplementedError: in this abstract implementation
+
         Yields:
             Iterator[BaseChunk]: iterator over extracted chunks
         """
