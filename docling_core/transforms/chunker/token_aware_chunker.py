@@ -6,11 +6,10 @@
 """Token-aware chunker implementation leveraging the document structure."""
 
 import warnings
-from dataclasses import dataclass
 from typing import Iterable, Iterator, Optional, Union
 
 import semchunk
-from pydantic import PositiveInt, TypeAdapter, model_validator
+from pydantic import BaseModel, ConfigDict, PositiveInt, TypeAdapter, model_validator
 from transformers import PreTrainedTokenizerBase
 from typing_extensions import Self
 
@@ -35,10 +34,7 @@ class TokenAwareChunker(BaseChunker):
         merge_peers: Whether to merge undersized chunks sharing same relevant metadata
     """
 
-    class Config:
-        """Pydantic config class."""
-
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     tokenizer: PreTrainedTokenizerBase
     max_tokens: int = None  # type: ignore[assignment]
@@ -49,7 +45,6 @@ class TokenAwareChunker(BaseChunker):
     @model_validator(mode="after")
     def _patch_max_tokens(self) -> Self:
         if self.max_tokens is None:
-            print(f"{self.tokenizer.model_max_length=}")
             self.max_tokens = TypeAdapter(PositiveInt).validate_python(
                 self.tokenizer.model_max_length
             )
@@ -65,8 +60,7 @@ class TokenAwareChunker(BaseChunker):
             return total
         return len(self.tokenizer.tokenize(text, max_length=None))
 
-    @dataclass
-    class _ChunkLengthInfo:
+    class _ChunkLengthInfo(BaseModel):
         total_len: int
         text_len: int
         other_len: int
@@ -200,6 +194,7 @@ class TokenAwareChunker(BaseChunker):
             chunk = chunks[window_end]
             lengths = self._doc_chunk_length(chunk)
             headings_and_captions = (chunk.meta.headings, chunk.meta.captions)
+            ready_to_append = False
             if window_start == window_end:
                 # starting a new block of chunks to potentially merge
                 current_headings_and_captions = headings_and_captions
@@ -221,6 +216,9 @@ class TokenAwareChunker(BaseChunker):
                 window_items = window_items + chunk.meta.doc_items
                 window_end += 1
             else:
+                ready_to_append = True
+
+            if ready_to_append or window_end == num_chunks:
                 # no more room OR the start of new metadata.  Either way, end the block
                 # and use the current window_end as the start of a new block
                 if window_start + 1 == window_end:
