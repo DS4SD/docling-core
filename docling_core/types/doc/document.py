@@ -1107,7 +1107,8 @@ class TableItem(FloatingItem):
                     cell.start_col_offset_idx,
                 )
 
-                page_w, page_h = doc.pages[self.prov[0].page_no].size.as_tuple()
+                if len(doc.pages.keys()):
+                    page_w, page_h = doc.pages[self.prov[0].page_no].size.as_tuple()
                 cell_loc = ""
                 if cell.bbox is not None:
                     cell_loc = DocumentToken.get_location(
@@ -1122,34 +1123,34 @@ class TableItem(FloatingItem):
                 if rowstart == i and colstart == j:
                     if len(content) > 0:
                         if cell.column_header:
-                            body.append(str(TableToken.OTSL_CHED))
+                            body.append(str(TableToken.OTSL_CHED.value))
                         elif cell.row_header:
-                            body.append(str(TableToken.OTSL_RHED))
+                            body.append(str(TableToken.OTSL_RHED.value))
                         elif cell.row_section:
-                            body.append(str(TableToken.OTSL_SROW))
+                            body.append(str(TableToken.OTSL_SROW.value))
                         else:
-                            body.append(str(TableToken.OTSL_FCEL))
+                            body.append(str(TableToken.OTSL_FCEL.value))
                         if add_cell_location:
                             body.append(str(cell_loc))
                         if add_cell_text:
                             body.append(str(content))
                     else:
-                        body.append(str(TableToken.OTSL_ECEL))
+                        body.append(str(TableToken.OTSL_ECEL.value))
                 else:
                     add_cross_cell = False
                     if rowstart != i:
                         if colspan == 1:
-                            body.append(str(TableToken.OTSL_UCEL))
+                            body.append(str(TableToken.OTSL_UCEL.value))
                         else:
                             add_cross_cell = True
                     if colstart != j:
                         if rowspan == 1:
-                            body.append(str(TableToken.OTSL_LCEL))
+                            body.append(str(TableToken.OTSL_LCEL.value))
                         else:
                             add_cross_cell = True
                     if add_cross_cell:
-                        body.append(str(TableToken.OTSL_XCEL))
-            body.append(str(TableToken.OTSL_NL))
+                        body.append(str(TableToken.OTSL_XCEL.value))
+            body.append(str(TableToken.OTSL_NL.value))
             body_str = "".join(body)
         return body_str
 
