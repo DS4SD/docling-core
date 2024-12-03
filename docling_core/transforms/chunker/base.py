@@ -4,12 +4,15 @@
 #
 
 """Define base classes for chunking."""
+import json
 from abc import ABC, abstractmethod
-from typing import Any, ClassVar, Iterator, Optional
+from typing import Any, ClassVar, Iterator
 
 from pydantic import BaseModel
 
 from docling_core.types.doc import DoclingDocument as DLDocument
+
+DFLT_DELIM = "\n"
 
 
 class BaseMeta(BaseModel):
@@ -33,9 +36,6 @@ class BaseChunk(BaseModel):
     text: str
     meta: BaseMeta
 
-    emb_spec_text: Optional[str] = None  # if not set, `text` is used
-    gen_spec_text: Optional[str] = None  # if not set, get_text_for_embedding() is used
-
     def export_json_dict(self) -> dict[str, Any]:
         """Helper method for exporting non-None keys to JSON mode.
 
@@ -44,25 +44,11 @@ class BaseChunk(BaseModel):
         """
         return self.model_dump(mode="json", by_alias=True, exclude_none=True)
 
-    def get_text_for_embedding(self) -> str:
-        """Get text for embedding. If not explicitly set, uses `text`.
-
-        Returns:
-            str: The text to embed.
-        """
-        return self.emb_spec_text or self.text
-
-    def get_text_for_generation(self) -> str:
-        """Get text for gen. If not explicitly set, uses `get_text_for_embedding()`.
-
-        Returns:
-            str: The text to pass to the generative model.
-        """
-        return self.gen_spec_text or self.get_text_for_embedding()
-
 
 class BaseChunker(BaseModel, ABC):
     """Chunker base class."""
+
+    delim: str = DFLT_DELIM
 
     @abstractmethod
     def chunk(self, dl_doc: DLDocument, **kwargs) -> Iterator[BaseChunk]:
@@ -71,10 +57,36 @@ class BaseChunker(BaseModel, ABC):
         Args:
             dl_doc (DLDocument): document to chunk
 
-        Raises:
-            NotImplementedError: in this abstract implementation
-
         Yields:
             Iterator[BaseChunk]: iterator over extracted chunks
         """
         raise NotImplementedError()
+
+    def serialize(self, chunk: BaseChunk) -> str:
+        """Serialize the given chunk. This base implementation is embedding-targeted.
+
+        Args:
+            chunk: chunk to serialize
+
+        Retrurns:
+            str: the serialized form of the chunk
+        """
+        meta = chunk.meta.export_json_dict()
+
+        items = []
+        for k in meta:
+            if k not in chunk.meta.excluded_embed:
+                if isinstance(meta[k], list):
+                    items.append(
+                        self.delim.join(
+                            [
+                                d if isinstance(d, str) else json.dumps(d)
+                                for d in meta[k]
+                            ]
+                        )
+                    )
+                else:
+                    items.append(json.dumps(meta[k]))
+        items.append(chunk.text)
+
+        return self.delim.join(items)

@@ -108,48 +108,6 @@ class DocChunk(BaseChunk):
 
     meta: DocMeta
 
-    # TODO perhaps move to chunker as helper
-    @classmethod
-    def from_data(
-        cls,
-        text: str,
-        meta: DocMeta,
-        delim: str,
-        emb_spec_text: Optional[str] = None,
-        gen_spec_text: Optional[str] = None,
-    ):
-        """Create a DocChunk, defining fallback values for text fields if none passed.
-
-        Args:
-            text (str): The text value to use.
-            meta (DocMeta): The metadata to use.
-            delim (str): The delimiter to use for defining the fallback text values.
-            text_for_embed (Optional[str], optional): Any specific text value to pass to
-              embedding model. Defaults to None (i.e. use of fallback).
-            text_for_gen (Optional[str], optional): Any specific text value to pass to
-              generation model. Defaults to None (i.e. use of fallback).
-
-        Returns:
-            DocChunk: The created chunk.
-        """
-        chunk = DocChunk(
-            text=text,
-            meta=meta,
-        )
-        text_with_metadata = delim.join(
-            (chunk.meta.headings or []) + (chunk.meta.captions or []) + [chunk.text]
-        )
-
-        # only set `.emb_spec_text` if different to `.text`:
-        if (emb_text := (emb_spec_text or text_with_metadata)) != chunk.text:
-            chunk.emb_spec_text = emb_text
-
-        # only set `.gen_spec_text` if different to `.emb_spec_text`:
-        if (gen_text := (gen_spec_text or text_with_metadata)) != chunk.emb_spec_text:
-            chunk.gen_spec_text = gen_text
-
-        return chunk
-
 
 class HierarchicalChunker(BaseChunker):
     r"""Chunker implementation leveraging the document layout.
@@ -161,7 +119,6 @@ class HierarchicalChunker(BaseChunker):
     """
 
     merge_list_items: bool = True
-    delim: str = "\n"
 
     @classmethod
     def _triplet_serialize(cls, table_df: DataFrame) -> str:
