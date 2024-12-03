@@ -7,246 +7,264 @@ def test_table_export_to_otsl():
     num_cols = 6
     num_rows = 5
     # ======================================
-    icell = TableCell(
-        text="AB",
-        row_span=1,
-        col_span=2,
-        start_row_offset_idx=0,
-        end_row_offset_idx=1,
-        start_col_offset_idx=0,
-        end_col_offset_idx=3,
-        col_header=False,
-        row_header=True,
+    data_table_cells.append(
+        TableCell(
+            text="AB",
+            row_span=1,
+            col_span=2,
+            start_row_offset_idx=0,
+            end_row_offset_idx=1,
+            start_col_offset_idx=0,
+            end_col_offset_idx=3,
+            col_header=False,
+            row_header=True,
+        )
     )
-    data_table_cells.append(icell)
 
-    icell = TableCell(
-        text="C",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=0,
-        end_row_offset_idx=1,
-        start_col_offset_idx=2,
-        end_col_offset_idx=3,
-        col_header=False,
-        row_header=True,
+    data_table_cells.append(
+        TableCell(
+            text="C",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=0,
+            end_row_offset_idx=1,
+            start_col_offset_idx=2,
+            end_col_offset_idx=3,
+            col_header=False,
+            row_header=True,
+        )
     )
-    data_table_cells.append(icell)
-
-    # ======================================
-    icell = TableCell(
-        text="1",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=1,
-        end_row_offset_idx=2,
-        start_col_offset_idx=0,
-        end_col_offset_idx=1,
-        col_header=False,
-        row_header=True,
-    )
-    data_table_cells.append(icell)
-
-    icell = TableCell(
-        text="2",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=1,
-        end_row_offset_idx=2,
-        start_col_offset_idx=1,
-        end_col_offset_idx=2,
-        col_header=False,
-        row_header=False,
-    )
-    data_table_cells.append(icell)
-
-    icell = TableCell(
-        text="3",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=1,
-        end_row_offset_idx=2,
-        start_col_offset_idx=2,
-        end_col_offset_idx=3,
-        col_header=False,
-        row_header=False,
-    )
-    data_table_cells.append(icell)
 
     # ======================================
-    icell = TableCell(
-        text="2D",
-        row_span=2,
-        col_span=3,
-        start_row_offset_idx=0,
-        end_row_offset_idx=2,
-        start_col_offset_idx=3,
-        end_col_offset_idx=6,
-        col_header=True,
-        row_header=False,
+    data_table_cells.append(
+        TableCell(
+            text="1",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=1,
+            end_row_offset_idx=2,
+            start_col_offset_idx=0,
+            end_col_offset_idx=1,
+            col_header=False,
+            row_header=True,
+        )
     )
-    data_table_cells.append(icell)
+
+    data_table_cells.append(
+        TableCell(
+            text="2",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=1,
+            end_row_offset_idx=2,
+            start_col_offset_idx=1,
+            end_col_offset_idx=2,
+            col_header=False,
+            row_header=False,
+        )
+    )
+
+    data_table_cells.append(
+        TableCell(
+            text="3",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=1,
+            end_row_offset_idx=2,
+            start_col_offset_idx=2,
+            end_col_offset_idx=3,
+            col_header=False,
+            row_header=False,
+        )
+    )
 
     # ======================================
-    icell = TableCell(
-        text="4",
-        row_span=2,
-        col_span=1,
-        start_row_offset_idx=2,
-        end_row_offset_idx=4,
-        start_col_offset_idx=0,
-        end_col_offset_idx=1,
-        col_header=False,
-        row_header=True,
+    data_table_cells.append(
+        TableCell(
+            text="2D",
+            row_span=2,
+            col_span=3,
+            start_row_offset_idx=0,
+            end_row_offset_idx=2,
+            start_col_offset_idx=3,
+            end_col_offset_idx=6,
+            col_header=True,
+            row_header=False,
+        )
     )
-    data_table_cells.append(icell)
 
-    icell = TableCell(
-        text="5",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=2,
-        end_row_offset_idx=3,
-        start_col_offset_idx=1,
-        end_col_offset_idx=2,
-        col_header=False,
-        row_header=False,
+    # ======================================
+    data_table_cells.append(
+        TableCell(
+            text="4",
+            row_span=2,
+            col_span=1,
+            start_row_offset_idx=2,
+            end_row_offset_idx=4,
+            start_col_offset_idx=0,
+            end_col_offset_idx=1,
+            col_header=False,
+            row_header=True,
+        )
     )
-    data_table_cells.append(icell)
 
-    icell = TableCell(
-        text="6",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=2,
-        end_row_offset_idx=3,
-        start_col_offset_idx=2,
-        end_col_offset_idx=3,
-        col_header=False,
-        row_header=False,
+    data_table_cells.append(
+        TableCell(
+            text="5",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=2,
+            end_row_offset_idx=3,
+            start_col_offset_idx=1,
+            end_col_offset_idx=2,
+            col_header=False,
+            row_header=False,
+        )
     )
-    data_table_cells.append(icell)
 
-    icell = TableCell(
-        text="next 2 cells empty",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=2,
-        end_row_offset_idx=3,
-        start_col_offset_idx=3,
-        end_col_offset_idx=4,
-        col_header=False,
-        row_header=False,
+    data_table_cells.append(
+        TableCell(
+            text="6",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=2,
+            end_row_offset_idx=3,
+            start_col_offset_idx=2,
+            end_col_offset_idx=3,
+            col_header=False,
+            row_header=False,
+        )
     )
-    data_table_cells.append(icell)
 
-    icell = TableCell(
-        text="",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=2,
-        end_row_offset_idx=3,
-        start_col_offset_idx=4,
-        end_col_offset_idx=5,
-        col_header=False,
-        row_header=False,
+    data_table_cells.append(
+        TableCell(
+            text="next 2 cells empty",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=2,
+            end_row_offset_idx=3,
+            start_col_offset_idx=3,
+            end_col_offset_idx=4,
+            col_header=False,
+            row_header=False,
+        )
     )
-    data_table_cells.append(icell)
 
-    icell = TableCell(
-        text="",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=2,
-        end_row_offset_idx=3,
-        start_col_offset_idx=5,
-        end_col_offset_idx=6,
-        col_header=False,
-        row_header=False,
+    data_table_cells.append(
+        TableCell(
+            text="",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=2,
+            end_row_offset_idx=3,
+            start_col_offset_idx=4,
+            end_col_offset_idx=5,
+            col_header=False,
+            row_header=False,
+        )
     )
-    data_table_cells.append(icell)
+
+    data_table_cells.append(
+        TableCell(
+            text="",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=2,
+            end_row_offset_idx=3,
+            start_col_offset_idx=5,
+            end_col_offset_idx=6,
+            col_header=False,
+            row_header=False,
+        )
+    )
 
     # ======================================
 
-    icell = TableCell(
-        text="Q",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=3,
-        end_row_offset_idx=4,
-        start_col_offset_idx=1,
-        end_col_offset_idx=2,
-        col_header=False,
-        row_header=False,
+    data_table_cells.append(
+        TableCell(
+            text="Q",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=3,
+            end_row_offset_idx=4,
+            start_col_offset_idx=1,
+            end_col_offset_idx=2,
+            col_header=False,
+            row_header=False,
+        )
     )
-    data_table_cells.append(icell)
 
-    icell = TableCell(
-        text="W",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=3,
-        end_row_offset_idx=4,
-        start_col_offset_idx=2,
-        end_col_offset_idx=3,
-        col_header=False,
-        row_header=False,
+    data_table_cells.append(
+        TableCell(
+            text="W",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=3,
+            end_row_offset_idx=4,
+            start_col_offset_idx=2,
+            end_col_offset_idx=3,
+            col_header=False,
+            row_header=False,
+        )
     )
-    data_table_cells.append(icell)
 
-    icell = TableCell(
-        text="E",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=3,
-        end_row_offset_idx=4,
-        start_col_offset_idx=3,
-        end_col_offset_idx=4,
-        col_header=False,
-        row_header=False,
+    data_table_cells.append(
+        TableCell(
+            text="E",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=3,
+            end_row_offset_idx=4,
+            start_col_offset_idx=3,
+            end_col_offset_idx=4,
+            col_header=False,
+            row_header=False,
+        )
     )
-    data_table_cells.append(icell)
 
-    icell = TableCell(
-        text="R",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=3,
-        end_row_offset_idx=4,
-        start_col_offset_idx=4,
-        end_col_offset_idx=5,
-        col_header=False,
-        row_header=False,
+    data_table_cells.append(
+        TableCell(
+            text="R",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=3,
+            end_row_offset_idx=4,
+            start_col_offset_idx=4,
+            end_col_offset_idx=5,
+            col_header=False,
+            row_header=False,
+        )
     )
-    data_table_cells.append(icell)
 
-    icell = TableCell(
-        text="T",
-        row_span=1,
-        col_span=1,
-        start_row_offset_idx=3,
-        end_row_offset_idx=4,
-        start_col_offset_idx=5,
-        end_col_offset_idx=6,
-        col_header=False,
-        row_header=False,
+    data_table_cells.append(
+        TableCell(
+            text="T",
+            row_span=1,
+            col_span=1,
+            start_row_offset_idx=3,
+            end_row_offset_idx=4,
+            start_col_offset_idx=5,
+            end_col_offset_idx=6,
+            col_header=False,
+            row_header=False,
+        )
     )
-    data_table_cells.append(icell)
 
     # ======================================
-    icell = TableCell(
-        text="Section header",
-        row_span=1,
-        col_span=6,
-        start_row_offset_idx=4,
-        end_row_offset_idx=5,
-        start_col_offset_idx=0,
-        end_col_offset_idx=6,
-        col_header=False,
-        row_header=False,
-        row_section=True,
+    data_table_cells.append(
+        TableCell(
+            text="Section header",
+            row_span=1,
+            col_span=6,
+            start_row_offset_idx=4,
+            end_row_offset_idx=5,
+            start_col_offset_idx=0,
+            end_col_offset_idx=6,
+            col_header=False,
+            row_header=False,
+            row_section=True,
+        )
     )
-    data_table_cells.append(icell)
 
     # ======================================
     doc = DoclingDocument(name="test_otsl")
