@@ -413,7 +413,7 @@ test-randomorder = ["pytest-randomly"]
 name = "dill"
 version = "0.3.9"
 description = "serialize all of Python"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "dill-0.3.9-py3-none-any.whl", hash = "sha256:468dff3b89520b474c0397703366b7b95eebe6303f108adf9b19da1f702be87a"},
@@ -522,7 +522,7 @@ pydocstyle = ">=2.1"
 name = "fsspec"
 version = "2024.10.0"
 description = "File-system specification"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "fsspec-2024.10.0-py3-none-any.whl", hash = "sha256:03b9a6785766a4de40368b88906366755e2819e758b83705c88cd7cb5fe81871"},
@@ -593,7 +593,7 @@ test = ["coverage[toml]", "ddt (>=1.1.1,!=1.4.3)", "mock", "mypy", "pre-commit",
 name = "huggingface-hub"
 version = "0.26.3"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
-optional = false
+optional = true
 python-versions = ">=3.8.0"
 files = [
     {file = "huggingface_hub-0.26.3-py3-none-any.whl", hash = "sha256:e66aa99e569c2d5419240a9e553ad07245a5b1300350bfbc5a4945cf7432991b"},
@@ -901,7 +901,7 @@ files = [
 name = "mpire"
 version = "2.10.2"
 description = "A Python package for easy multiprocessing, but faster than multiprocessing"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "mpire-2.10.2-py3-none-any.whl", hash = "sha256:d627707f7a8d02aa4c7f7d59de399dec5290945ddf7fbd36cbb1d6ebb37a51fb"},
@@ -927,7 +927,7 @@ testing = ["ipywidgets", "multiprocess", "multiprocess (>=0.70.15)", "numpy", "p
 name = "multiprocess"
 version = "0.70.17"
 description = "better multiprocessing and multithreading in Python"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "multiprocess-0.70.17-pp310-pypy310_pp73-macosx_10_15_x86_64.whl", hash = "sha256:7ddb24e5bcdb64e90ec5543a1f05a39463068b6d3b804aa3f2a4e16ec28562d6"},
@@ -1707,7 +1707,7 @@ files = [
 name = "pywin32"
 version = "308"
 description = "Python for Window Extensions"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "pywin32-308-cp310-cp310-win32.whl", hash = "sha256:796ff4426437896550d2981b9c2ac0ffd75238ad9ea2d3bfa67a1abd546d262e"},
@@ -1841,7 +1841,7 @@ rpds-py = ">=0.7.0"
 name = "regex"
 version = "2024.11.6"
 description = "Alternative regular expression module, to replace re."
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "regex-2024.11.6-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:ff590880083d60acc0433f9c3f713c51f7ac6ebb9adf889c79a261ecf541aa91"},
@@ -2105,7 +2105,7 @@ files = [
 name = "safetensors"
 version = "0.4.5"
 description = ""
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "safetensors-0.4.5-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:a63eaccd22243c67e4f2b1c3e258b257effc4acd78f3b9d397edc8cf8f1298a7"},
@@ -2252,7 +2252,7 @@ jeepney = ">=0.6"
 name = "semchunk"
 version = "2.2.0"
 description = "A fast and lightweight Python library for splitting text into semantically meaningful chunks."
-optional = false
+optional = true
 python-versions = ">=3.9"
 files = [
     {file = "semchunk-2.2.0-py3-none-any.whl", hash = "sha256:7db19ca90ddb48f99265e789e07a7bb111ae25185f9cc3d44b94e1e61b9067fc"},
@@ -2325,7 +2325,7 @@ widechars = ["wcwidth"]
 name = "tokenizers"
 version = "0.20.3"
 description = ""
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "tokenizers-0.20.3-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:31ccab28dbb1a9fe539787210b0026e22debeab1662970f61c2d921f7557f7e4"},
@@ -2527,7 +2527,7 @@ telegram = ["requests"]
 name = "transformers"
 version = "4.46.3"
 description = "State-of-the-art Machine Learning for JAX, PyTorch and TensorFlow"
-optional = false
+optional = true
 python-versions = ">=3.8.0"
 files = [
     {file = "transformers-4.46.3-py3-none-any.whl", hash = "sha256:a12ef6f52841fd190a3e5602145b542d03507222f2c64ebb7ee92e8788093aef"},
@@ -2729,7 +2729,10 @@ enabler = ["pytest-enabler (>=2.2)"]
 test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-itertools", "pytest (>=6,!=8.1.*)", "pytest-ignore-flaky"]
 type = ["pytest-mypy"]
 
+[extras]
+chunking = ["semchunk", "transformers"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "9675e567fd5eac7d719a383352d4d86126a5ded2ecba152dffb76e2755cd88cf"
+content-hash = "3ad1b44297536c5d79b97cd663335f32f69b94013e0ce45dc0698b37f4e90ce0"
