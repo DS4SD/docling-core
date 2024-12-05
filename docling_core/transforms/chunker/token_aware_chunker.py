@@ -13,7 +13,7 @@ from typing_extensions import Self
 
 try:
     import semchunk
-    from transformers import PreTrainedTokenizerBase
+    from transformers import AutoTokenizer, PreTrainedTokenizerBase
 except ImportError:
     raise RuntimeError(
         "Module requires 'chunking' extra; to install, run: "
@@ -35,7 +35,8 @@ class TokenAwareChunker(BaseChunker):
     r"""Token-aware chunker implementation leveraging the document layout.
 
     Args:
-        tokenizer: The tokenerizer to use.
+        tokenizer: The tokenizer to use; either instantiated object or name or path of
+            respective pretrained model
         max_tokens: The maximum number of tokens per chunk. If not set, limit is
             resolved from the tokenizer
         merge_peers: Whether to merge undersized chunks sharing same relevant metadata
@@ -43,17 +44,22 @@ class TokenAwareChunker(BaseChunker):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    tokenizer: PreTrainedTokenizerBase
+    tokenizer: Union[PreTrainedTokenizerBase, str]
     max_tokens: int = None  # type: ignore[assignment]
     merge_peers: bool = True
 
     _inner_chunker: HierarchicalChunker = HierarchicalChunker()
 
     @model_validator(mode="after")
-    def _patch_max_tokens(self) -> Self:
+    def _patch_tokenizer_and_max_tokens(self) -> Self:
+        self._tokenizer = (
+            self.tokenizer
+            if isinstance(self.tokenizer, PreTrainedTokenizerBase)
+            else AutoTokenizer.from_pretrained(self.tokenizer)
+        )
         if self.max_tokens is None:
             self.max_tokens = TypeAdapter(PositiveInt).validate_python(
-                self.tokenizer.model_max_length
+                self._tokenizer.model_max_length
             )
         return self
 
@@ -65,7 +71,7 @@ class TokenAwareChunker(BaseChunker):
             for t in text:
                 total += self._count_tokens(t)
             return total
-        return len(self.tokenizer.tokenize(text, max_length=None))
+        return len(self._tokenizer.tokenize(text, max_length=None))
 
     class _ChunkLengthInfo(BaseModel):
         total_len: int
@@ -180,7 +186,7 @@ class TokenAwareChunker(BaseChunker):
             # captions:
             available_length = self.max_tokens - lengths.other_len
             sem_chunker = semchunk.chunkerify(
-                self.tokenizer, chunk_size=available_length
+                self._tokenizer, chunk_size=available_length
             )
             if available_length <= 0:
                 warnings.warn(
