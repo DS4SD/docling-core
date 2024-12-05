@@ -8,10 +8,17 @@
 import warnings
 from typing import Iterable, Iterator, Optional, Union
 
-import semchunk
 from pydantic import BaseModel, ConfigDict, PositiveInt, TypeAdapter, model_validator
-from transformers import PreTrainedTokenizerBase
 from typing_extensions import Self
+
+try:
+    import semchunk
+    from transformers import PreTrainedTokenizerBase
+except ImportError:
+    raise RuntimeError(
+        "Module requires 'chunking' extra; to install, run: "
+        "`pip install 'docling-core[chunking]'`"
+    )
 
 from docling_core.transforms.chunker import (
     BaseChunk,
