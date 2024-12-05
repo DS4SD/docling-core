@@ -234,8 +234,8 @@ class TokenAwareChunker(BaseChunker):
                 else:
                     new_meta = DocMeta(
                         doc_items=window_items,
-                        headings=headings_and_captions[0],
-                        captions=headings_and_captions[1],
+                        headings=current_headings_and_captions[0],
+                        captions=current_headings_and_captions[1],
                     )
                     new_chunk = DocChunk(
                         text=window_text,
