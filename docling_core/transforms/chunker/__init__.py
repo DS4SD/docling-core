@@ -11,4 +11,3 @@ from docling_core.transforms.chunker.hierarchical_chunker import (
     DocMeta,
     HierarchicalChunker,
 )
-from docling_core.transforms.chunker.token_aware_chunker import TokenAwareChunker
