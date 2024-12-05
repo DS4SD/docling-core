@@ -32,7 +32,7 @@ from docling_core.types.doc.document import TextItem
 
 
 class TokenAwareChunker(BaseChunker):
-    r"""Token-aware chunker implementation leveraging the document layout.
+    r"""Chunker doing tokenization-aware refinements on top of document layout chunking.
 
     Args:
         tokenizer: The tokenizer to use; either instantiated object or name or path of

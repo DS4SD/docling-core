@@ -71,7 +71,7 @@ class BaseChunker(BaseModel, ABC):
         Args:
             chunk: chunk to serialize
 
-        Retrurns:
+        Returns:
             str: the serialized form of the chunk
         """
         meta = chunk.meta.export_json_dict()
