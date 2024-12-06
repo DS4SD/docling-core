@@ -790,7 +790,7 @@ class PictureItem(FloatingItem):
                 and isinstance(self.image.uri, AnyUrl)
                 and self.image.uri.scheme == "data"
             ):
-                text = f"\n![Image]({self.image.uri})\n"
+                text = f"\n![Image](data:image/png;base64,{self.image.uri})\n"
                 return text
 
             # get the self.image._pil or crop it out of the page-image
@@ -798,7 +798,7 @@ class PictureItem(FloatingItem):
 
             if img is not None:
                 imgb64 = self._image_to_base64(img)
-                text = f"\n![Image]({imgb64})\n"
+                text = f"\n![Image](data:image/png;base64,{imgb64})\n"
 
                 return text
             else:
