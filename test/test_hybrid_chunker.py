@@ -8,7 +8,7 @@ import json
 from transformers import AutoTokenizer
 
 from docling_core.transforms.chunker.hierarchical_chunker import DocChunk
-from docling_core.transforms.chunker.token_aware_chunker import TokenAwareChunker
+from docling_core.transforms.chunker.hybrid_chunker import HybridChunker
 from docling_core.types.doc import DoclingDocument as DLDocument
 
 EMBED_MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
@@ -25,7 +25,7 @@ def test_chunk_merge_peers():
         data_json = f.read()
     dl_doc = DLDocument.model_validate_json(data_json)
 
-    chunker = TokenAwareChunker(
+    chunker = HybridChunker(
         tokenizer=TOKENIZER,
         max_tokens=MAX_TOKENS,
         merge_peers=True,
@@ -48,7 +48,7 @@ def test_chunk_no_merge_peers():
         data_json = f.read()
     dl_doc = DLDocument.model_validate_json(data_json)
 
-    chunker = TokenAwareChunker(
+    chunker = HybridChunker(
         tokenizer=TOKENIZER,
         max_tokens=MAX_TOKENS,
         merge_peers=False,
@@ -70,7 +70,7 @@ def test_serialize():
         data_json = f.read()
     dl_doc = DLDocument.model_validate_json(data_json)
 
-    chunker = TokenAwareChunker(
+    chunker = HybridChunker(
         tokenizer=TOKENIZER,
         max_tokens=MAX_TOKENS,
         merge_peers=True,
@@ -100,7 +100,7 @@ def test_chunk_with_model_name():
         data_json = f.read()
     dl_doc = DLDocument.model_validate_json(data_json)
 
-    chunker = TokenAwareChunker(
+    chunker = HybridChunker(
         tokenizer=EMBED_MODEL_ID,
         max_tokens=MAX_TOKENS,
         merge_peers=True,

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-"""Token-aware chunker implementation leveraging the document structure."""
+"""Hybrid chunker implementation leveraging both doc structure & token awareness."""
 
 import warnings
 from typing import Iterable, Iterator, Optional, Union
@@ -31,7 +31,7 @@ from docling_core.types import DoclingDocument
 from docling_core.types.doc.document import TextItem
 
 
-class TokenAwareChunker(BaseChunker):
+class HybridChunker(BaseChunker):
     r"""Chunker doing tokenization-aware refinements on top of document layout chunking.
 
     Args:
