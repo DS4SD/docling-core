@@ -790,7 +790,7 @@ class PictureItem(FloatingItem):
                 and isinstance(self.image.uri, AnyUrl)
                 and self.image.uri.scheme == "data"
             ):
-                text = f"\n![Image](data:image/png;base64,{self.image.uri})\n"
+                text = f"\n![Image]({self.image.uri})\n"
                 return text
 
             # get the self.image._pil or crop it out of the page-image
