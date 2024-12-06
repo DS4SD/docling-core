@@ -2735,4 +2735,4 @@ chunking = ["semchunk", "transformers"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "3ad1b44297536c5d79b97cd663335f32f69b94013e0ce45dc0698b37f4e90ce0"
+content-hash = "0873679568016698071f6ff4940c449ceed65797769180a87ce73e9fafdf6881"
