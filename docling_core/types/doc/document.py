@@ -380,9 +380,9 @@ class DocumentOrigin(BaseModel):
         "application/vnd.openxmlformats-officedocument.presentationml.template",
         "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "text/asciidoc",
         "text/markdown",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     ]
 
     @field_validator("binary_hash", mode="before")
