@@ -923,7 +923,9 @@ class TableItem(FloatingItem):
     """TableItem."""
 
     data: TableData
-    label: typing.Literal[DocItemLabel.TABLE] = DocItemLabel.TABLE
+    label: typing.Literal[DocItemLabel.TABLE, DocItemLabel.DOCUMENT_INDEX] = (
+        DocItemLabel.TABLE
+    )
 
     def export_to_dataframe(self) -> pd.DataFrame:
         """Export the table as a Pandas DataFrame."""
@@ -1505,6 +1507,7 @@ class DoclingDocument(BaseModel):
         caption: Optional[Union[TextItem, RefItem]] = None,  # This is not cool yet.
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
+        label: DocItemLabel = DocItemLabel.TABLE,
     ):
         """add_table.
 
@@ -1522,7 +1525,7 @@ class DoclingDocument(BaseModel):
         cref = f"#/tables/{table_index}"
 
         tbl_item = TableItem(
-            label=DocItemLabel.TABLE, data=data, self_ref=cref, parent=parent.get_ref()
+            label=label, data=data, self_ref=cref, parent=parent.get_ref()
         )
         if prov:
             tbl_item.prov.append(prov)

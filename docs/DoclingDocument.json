@@ -1192,8 +1192,11 @@
           "type": "array"
         },
         "label": {
-          "const": "table",
           "default": "table",
+          "enum": [
+            "table",
+            "document_index"
+          ],
           "title": "Label",
           "type": "string"
         },
