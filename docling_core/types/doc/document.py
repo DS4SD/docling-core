@@ -1376,13 +1376,13 @@ class DoclingDocument(BaseModel):
         self,
         label: Optional[GroupLabel] = None,
         name: Optional[str] = None,
-        parent: Optional[GroupItem] = None,
+        parent: Optional[NodeItem] = None,
     ) -> GroupItem:
         """add_group.
 
         :param label: Optional[GroupLabel]:  (Default value = None)
         :param name: Optional[str]:  (Default value = None)
-        :param parent: Optional[GroupItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
 
         """
         if not parent:
@@ -1409,7 +1409,7 @@ class DoclingDocument(BaseModel):
         marker: Optional[str] = None,
         orig: Optional[str] = None,
         prov: Optional[ProvenanceItem] = None,
-        parent: Optional[GroupItem] = None,
+        parent: Optional[NodeItem] = None,
     ):
         """add_list_item.
 
@@ -1417,7 +1417,7 @@ class DoclingDocument(BaseModel):
         :param text: str:
         :param orig: Optional[str]:  (Default value = None)
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
-        :param parent: Optional[GroupItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
 
         """
         if not parent:
@@ -1452,7 +1452,7 @@ class DoclingDocument(BaseModel):
         text: str,
         orig: Optional[str] = None,
         prov: Optional[ProvenanceItem] = None,
-        parent: Optional[GroupItem] = None,
+        parent: Optional[NodeItem] = None,
     ):
         """add_text.
 
@@ -1460,7 +1460,7 @@ class DoclingDocument(BaseModel):
         :param text: str:
         :param orig: Optional[str]:  (Default value = None)
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
-        :param parent: Optional[GroupItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
 
         """
         # Catch a few cases that are in principle allowed
@@ -1504,7 +1504,7 @@ class DoclingDocument(BaseModel):
         data: TableData,
         caption: Optional[Union[TextItem, RefItem]] = None,  # This is not cool yet.
         prov: Optional[ProvenanceItem] = None,
-        parent: Optional[GroupItem] = None,
+        parent: Optional[NodeItem] = None,
     ):
         """add_table.
 
@@ -1512,7 +1512,7 @@ class DoclingDocument(BaseModel):
         :param caption: Optional[Union[TextItem:
         :param RefItem]]:  (Default value = None)
         :param # This is not cool yet.prov: Optional[ProvenanceItem]
-        :param parent: Optional[GroupItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
 
         """
         if not parent:
@@ -1540,7 +1540,7 @@ class DoclingDocument(BaseModel):
         image: Optional[ImageRef] = None,
         caption: Optional[Union[TextItem, RefItem]] = None,
         prov: Optional[ProvenanceItem] = None,
-        parent: Optional[GroupItem] = None,
+        parent: Optional[NodeItem] = None,
     ):
         """add_picture.
 
@@ -1548,7 +1548,7 @@ class DoclingDocument(BaseModel):
         :param caption: Optional[Union[TextItem:
         :param RefItem]]:  (Default value = None)
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
-        :param parent: Optional[GroupItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
         """
         if not parent:
             parent = self.body
@@ -1578,14 +1578,14 @@ class DoclingDocument(BaseModel):
         text: str,
         orig: Optional[str] = None,
         prov: Optional[ProvenanceItem] = None,
-        parent: Optional[GroupItem] = None,
+        parent: Optional[NodeItem] = None,
     ):
         """add_title.
 
         :param text: str:
         :param orig: Optional[str]:  (Default value = None)
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
-        :param parent: Optional[GroupItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
         """
         if not parent:
             parent = self.body
@@ -1616,7 +1616,7 @@ class DoclingDocument(BaseModel):
         orig: Optional[str] = None,
         level: LevelNumber = 1,
         prov: Optional[ProvenanceItem] = None,
-        parent: Optional[GroupItem] = None,
+        parent: Optional[NodeItem] = None,
     ):
         """add_heading.
 
@@ -1625,7 +1625,7 @@ class DoclingDocument(BaseModel):
         :param orig: Optional[str]:  (Default value = None)
         :param level: LevelNumber:  (Default value = 1)
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
-        :param parent: Optional[GroupItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
         """
         if not parent:
             parent = self.body
