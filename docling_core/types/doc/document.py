@@ -1311,6 +1311,7 @@ ContentItem = Annotated[
         PictureItem,
         TableItem,
         KeyValueItem,
+        FormItem,
     ],
     Field(discriminator="label"),
 ]
@@ -1547,11 +1548,11 @@ class DoclingDocument(BaseModel):
     ):
         """add_table.
 
-        :param data: BaseTableData:
-        :param caption: Optional[Union[TextItem:
-        :param RefItem]]:  (Default value = None)
-        :param # This is not cool yet.prov: Optional[ProvenanceItem]
+        :param data: TableData:
+        :param caption: Optional[Union[TextItem, RefItem]]:  (Default value = None)
+        :param prov: Optional[ProvenanceItem]:  (Default value = None)
         :param parent: Optional[GroupItem]:  (Default value = None)
+        :param label: DocItemLabel:  (Default value = DocItemLabel.TABLE)
 
         """
         if not parent:
