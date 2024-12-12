@@ -1543,6 +1543,7 @@ class DoclingDocument(BaseModel):
         caption: Optional[Union[TextItem, RefItem]] = None,  # This is not cool yet.
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[GroupItem] = None,
+        label: DocItemLabel = DocItemLabel.TABLE,
     ):
         """add_table.
 
@@ -1560,7 +1561,7 @@ class DoclingDocument(BaseModel):
         cref = f"#/tables/{table_index}"
 
         tbl_item = TableItem(
-            label=DocItemLabel.TABLE, data=data, self_ref=cref, parent=parent.get_ref()
+            label=label, data=data, self_ref=cref, parent=parent.get_ref()
         )
         if prov:
             tbl_item.prov.append(prov)
