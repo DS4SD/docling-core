@@ -519,11 +519,11 @@ def legacy_to_docling_document(legacy_doc: DsDocument) -> DoclingDocument:  # no
                 else:
                     label = DocItemLabel.TEXT
                     normalized_label_name = label_name.replace("-", "_")
-                    if (
-                        normalized_label_name is not None
-                        and normalized_label_name in DocItemLabel
-                    ):
-                        label = DocItemLabel(normalized_label_name)
+                    if normalized_label_name is not None:
+                        try:
+                            label = DocItemLabel(normalized_label_name)
+                        except ValueError:
+                            pass
                     doc.add_text(label=label, text=text, prov=prov)
 
             elif isinstance(item, DsSchemaTable):
