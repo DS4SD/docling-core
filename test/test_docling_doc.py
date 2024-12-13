@@ -18,7 +18,6 @@ from docling_core.types.doc.document import (
     DoclingDocument,
     DocumentOrigin,
     FloatingItem,
-    FormItem,
     ImageRef,
     KeyValueItem,
     ListItem,
@@ -135,13 +134,6 @@ def test_docitems():
             obj = dc(
                 self_ref="#",
                 data=TableData(num_rows=3, num_cols=5, table_cells=[]),
-            )
-            verify(dc, obj)
-
-        elif dc is FormItem:
-            obj = dc(
-                label=DocItemLabel.FORM,
-                self_ref="#",
             )
             verify(dc, obj)
 

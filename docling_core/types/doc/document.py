@@ -1297,12 +1297,6 @@ class KeyValueItem(DocItem):
     label: typing.Literal[DocItemLabel.KEY_VALUE_REGION] = DocItemLabel.KEY_VALUE_REGION
 
 
-class FormItem(DocItem):
-    """FormItem."""
-
-    label: typing.Literal[DocItemLabel.FORM] = DocItemLabel.FORM
-
-
 ContentItem = Annotated[
     Union[
         TextItem,
@@ -1311,7 +1305,6 @@ ContentItem = Annotated[
         PictureItem,
         TableItem,
         KeyValueItem,
-        FormItem,
     ],
     Field(discriminator="label"),
 ]
