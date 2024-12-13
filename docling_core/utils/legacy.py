@@ -350,7 +350,16 @@ def docling_document_to_legacy(doc: DoclingDocument, fallback_filaname: str = "f
 
 
 def legacy_to_docling_document(legacy_doc: DsDocument) -> DoclingDocument:  # noqa: C901
-    """Convert a legacy document to DoclingDocument."""
+    """Convert a legacy document to DoclingDocument.
+
+    It is known that the following content will not be preserved in the transformation:
+    - name of labels (upper vs lower case)
+    - caption of figures are not in main-text anymore
+    - s3_data removed
+    - model metadata removed
+    - logs removed
+    - document hash cannot be preserved
+    """
 
     def _transform_prov(item: BaseCell) -> Optional[ProvenanceItem]:
         """Create a new provenance from a legacy item."""
