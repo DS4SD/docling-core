@@ -1947,6 +1947,7 @@ class DoclingDocument(BaseModel):
         indent: int = 4,
         text_width: int = -1,
         page_no: Optional[int] = None,
+        include_picture_contents: bool = False,
     ):
         """Save to markdown."""
         artifacts_dir, reference_path = self._get_output_paths(filename, artifacts_dir)
@@ -1969,6 +1970,7 @@ class DoclingDocument(BaseModel):
             indent=indent,
             text_width=text_width,
             page_no=page_no,
+            include_picture_contents=include_picture_contents,
         )
 
         with open(filename, "w", encoding="utf-8") as fw:
@@ -1986,6 +1988,7 @@ class DoclingDocument(BaseModel):
         indent: int = 4,
         text_width: int = -1,
         page_no: Optional[int] = None,
+        include_picture_contents: bool = False,
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -2024,7 +2027,12 @@ class DoclingDocument(BaseModel):
         in_list = False  # Track if we're currently processing list items
 
         for ix, (item, level) in enumerate(
-            self.iterate_items(self.body, with_groups=True, page_no=page_no)
+            self.iterate_items(
+                self.body,
+                with_groups=True,
+                page_no=page_no,
+                traverse_pictures=include_picture_contents,
+            )
         ):
             # If we've moved to a lower level, we're exiting one or more groups
             if level < previous_level:
@@ -2206,6 +2214,7 @@ class DoclingDocument(BaseModel):
         page_no: Optional[int] = None,
         html_lang: str = "en",
         html_head: str = _HTML_DEFAULT_HEAD,
+        include_picture_contents: bool = False,
     ):
         """Save to HTML."""
         artifacts_dir, reference_path = self._get_output_paths(filename, artifacts_dir)
@@ -2225,6 +2234,7 @@ class DoclingDocument(BaseModel):
             page_no=page_no,
             html_lang=html_lang,
             html_head=html_head,
+            include_picture_contents=include_picture_contents,
         )
 
         with open(filename, "w", encoding="utf-8") as fw:
@@ -2271,6 +2281,7 @@ class DoclingDocument(BaseModel):
         page_no: Optional[int] = None,
         html_lang: str = "en",
         html_head: str = _HTML_DEFAULT_HEAD,
+        include_picture_contents: bool = False,
     ) -> str:
         r"""Serialize to HTML."""
 
@@ -2303,7 +2314,12 @@ class DoclingDocument(BaseModel):
         in_ordered_list: List[bool] = []  # False
 
         for ix, (item, curr_level) in enumerate(
-            self.iterate_items(self.body, with_groups=True, page_no=page_no)
+            self.iterate_items(
+                self.body,
+                with_groups=True,
+                page_no=page_no,
+                traverse_pictures=include_picture_contents,
+            )
         ):
             # If we've moved to a lower level, we're exiting one or more groups
             if curr_level < prev_level and len(in_ordered_list) > 0:
@@ -2444,6 +2460,7 @@ class DoclingDocument(BaseModel):
         # specifics
         page_no: Optional[int] = None,
         with_groups: bool = True,
+        include_picture_contents: bool = False,
     ):
         r"""Save the document content to a DocumentToken format."""
         out = self.export_to_document_tokens(
@@ -2463,6 +2480,7 @@ class DoclingDocument(BaseModel):
             # specifics
             page_no=page_no,
             with_groups=with_groups,
+            include_picture_contents=include_picture_contents,
         )
 
         with open(filename, "w", encoding="utf-8") as fw:
@@ -2487,6 +2505,7 @@ class DoclingDocument(BaseModel):
         page_no: Optional[int] = None,
         with_groups: bool = True,
         newline: bool = True,
+        include_picture_contents: bool = False,
     ) -> str:
         r"""Exports the document content to a DocumentToken format.
 
@@ -2543,7 +2562,9 @@ class DoclingDocument(BaseModel):
         result = f"{DocumentToken.BEG_DOCUMENT.value}{delim}"
 
         for ix, (item, curr_level) in enumerate(
-            self.iterate_items(self.body, with_groups=True)
+            self.iterate_items(
+                self.body, with_groups=True, traverse_pictures=include_picture_contents
+            )
         ):
 
             # If we've moved to a lower level, we're exiting one or more groups
