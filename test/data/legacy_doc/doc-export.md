@@ -17,7 +17,7 @@ In modern document understanding systems [1,15], table extraction is typically a
 Fig. 1. Comparison between HTML and OTSL table structure representation: (A) table-example with complex row and column headers, including a 2D empty span, (B) minimal graphical representation of table structure using rectangular layout, (C) HTML representation, (D) OTSL representation. This example demonstrates many of the key-features of OTSL, namely its reduced vocabulary size (12 versus 5 in this case), its reduced sequence length (55 versus 30) and a enhanced internal structure (variable token sequence length per row in HTML versus a fixed length of rows in OTSL).
 
 Fig. 1. Comparison between HTML and OTSL table structure representation: (A) table-example with complex row and column headers, including a 2D empty span, (B) minimal graphical representation of table structure using rectangular layout, (C) HTML representation, (D) OTSL representation. This example demonstrates many of the key-features of OTSL, namely its reduced vocabulary size (12 versus 5 in this case), its reduced sequence length (55 versus 30) and a enhanced internal structure (variable token sequence length per row in HTML versus a fixed length of rows in OTSL).
-<!-- image -->
+
 
 today, table detection in documents is a well understood problem, and the latest state-of-the-art (SOTA) object detection methods provide an accuracy comparable to human observers [7,8,10,14,23]. On the other hand, the problem of table structure recognition (TSR) is a lot more challenging and remains a very active area of research, in which many novel machine learning algorithms are being explored [3,4,5,9,11,12,13,14,17,18,21,22].
 
@@ -46,7 +46,7 @@ All known Im2Seq based models for TSR fundamentally work in similar ways. Given 
 ulary and can be interpreted as a table structure. For example, with the HTML tokens <table>, </table>, <tr>, </tr>, <td> and </td>, one can construct simple table structures without any spanning cells. In reality though, one needs at least 28 HTML tokens to describe the most common complex tables observed in real-world documents [21,22], due to a variety of spanning cells definitions in the HTML token vocabulary.
 
 Fig. 2. Frequency of tokens in HTML and OTSL as they appear in PubTabNet.
-<!-- image -->
+
 
 Obviously, HTML and other general-purpose markup languages were not designed for Im2Seq models. As such, they have some serious drawbacks. First, the token vocabulary needs to be artificially large in order to describe all plausible tabular structures. Since most Im2Seq models use an autoregressive approach, they generate the sequence token by token. Therefore, to reduce inference time, a shorter sequence length is critical. Every table-cell is represented by at least two tokens (<td> and </td>). Furthermore, when tokenizing the HTML structure, one needs to explicitly enumerate possible column-spans and row-spans as words. In practice, this ends up requiring 28 different HTML tokens (when including column-and row-spans up to 10 cells) just to describe every table in the PubTabNet dataset. Clearly, not every token is equally represented, as is depicted in Figure 2. This skewed distribution of tokens in combination with variable token row-length makes it challenging for models to learn the HTML structure.
 
@@ -81,7 +81,7 @@ The OTSL vocabulary is comprised of the following tokens:
 A notable attribute of OTSL is that it has the capability of achieving lossless conversion to HTML.
 
 Fig. 3. OTSL description of table structure: A-table example; B-graphical representation of table structure; C-mapping structure on a grid; D-OTSL structure encoding; E-explanation on cell encoding
-<!-- image -->
+
 
 ## 4.2 Language Syntax
 
@@ -114,7 +114,7 @@ The design of OTSL allows to validate a table structure easily on an unfinished 
 To evaluate the impact of OTSL on prediction accuracy and inference times, we conducted a series of experiments based on the TableFormer model (Figure 4) with two objectives: Firstly we evaluate the prediction quality and performance of OTSL vs. HTML after performing Hyper Parameter Optimization (HPO) on the canonical PubTabNet data set. Secondly we pick the best hyper-parameters found in the first step and evaluate how OTSL impacts the performance of TableFormer after training on other publicly available data sets (FinTabNet, PubTables-1M [14]). The ground truth (GT) from all data sets has been converted into OTSL format for this purpose, and will be made publicly available.
 
 Fig. 4. Architecture sketch of the TableFormer model, which is a representative for the Im2Seq approach.
-<!-- image -->
+
 
 We rely on standard metrics such as Tree Edit Distance score (TEDs) for table structure prediction, and Mean Average Precision (mAP) with 0.75 Intersection Over Union (IOU) threshold for the bounding-box predictions of table cells. The predicted OTSL structures were converted back to HTML format in
 
@@ -157,14 +157,14 @@ Table 2. TSR and cell detection results compared between OTSL and HTML on the Pu
 To illustrate the qualitative differences between OTSL and HTML, Figure 5 demonstrates less overlap and more accurate bounding boxes with OTSL. In Figure 6, OTSL proves to be more effective in handling tables with longer token sequences, resulting in even more precise structure prediction and bounding boxes.
 
 Fig. 5. The OTSL model produces more accurate bounding boxes with less overlap (E) than the HTML model (D), when predicting the structure of a sparse table (A), at twice the inference speed because of shorter sequence length (B),(C). 'PMC2807444_006_00.png ' PubTabNet. μ
-<!-- image -->
+
 
 μ
 
 ≥
 
 Fig. 6. Visualization of predicted structure and detected bounding boxes on a complex table with many rows. The OTSL model (B) captured repeating pattern of horizontally merged cells from the GT (A), unlike the HTML model (C). The HTML model also didn't complete the HTML sequence correctly and displayed a lot more of drift and overlap of bounding boxes. 'PMC5406406_003_01.png ' PubTabNet.
-<!-- image -->
+
 
 ## 6 Conclusion
 
