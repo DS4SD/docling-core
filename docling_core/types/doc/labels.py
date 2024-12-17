@@ -49,7 +49,7 @@ class GroupLabel(str, Enum):
     FORM_AREA = "form_area"
     KEY_VALUE_AREA = "key_value_area"
     COMMENT_SECTION = "comment_section"
-    
+
     def __str__(self):
         """Get string value."""
         return str(self.value)
