@@ -591,8 +591,8 @@ class ExportedCCSDocument(
                         markdown_text = item.text
                     if not strict_text:
                         markdown_text += (
-                            "\n" if len(markdown_text) > 0 else "" + image_placeholder
-                        )
+                            "\n" if len(markdown_text) > 0 else ""
+                        ) + image_placeholder
 
                 if markdown_text:
                     md_texts.append(markdown_text)
