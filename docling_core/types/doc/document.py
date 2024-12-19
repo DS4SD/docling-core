@@ -1844,7 +1844,7 @@ class DoclingDocument(BaseModel):
             page_no=page_no,
         )
 
-        with open(filename, "w") as fw:
+        with open(filename, "w", encoding="utf-8") as fw:
             fw.write(md_out)
 
     def export_to_markdown(  # noqa: C901
@@ -2081,7 +2081,7 @@ class DoclingDocument(BaseModel):
             html_head=html_head,
         )
 
-        with open(filename, "w") as fw:
+        with open(filename, "w", encoding="utf-8") as fw:
             fw.write(html_out)
 
     def _get_output_paths(
