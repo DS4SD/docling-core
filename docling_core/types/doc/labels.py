@@ -80,6 +80,7 @@ class GroupLabel(str, Enum):
         """Get string value."""
         return str(self.value)
 
+
 class PictureClassificationLabel(str, Enum):
     """PictureClassificationLabel."""
 
@@ -97,7 +98,7 @@ class PictureClassificationLabel(str, Enum):
     SCATTER_CHART = "scatter_chart"
     HEATMAP = "heatmap"
     REMOTE_SENSING = "remote_sensing"
-    
+
     NATURAL_IMAGE = "natural_image"
 
     # Chemistry
@@ -112,7 +113,7 @@ class PictureClassificationLabel(str, Enum):
     QR_CODE = "qr_code"
     BAR_CODE = "bat_code"
     SCREENSHOT = "screenshot"
-    
+
     # Geology/Geography
     GEOGRAPHIC_MAP = "map"
     STRATIGRAPHIC_CHART = "stratigraphic_chart"
@@ -124,6 +125,7 @@ class PictureClassificationLabel(str, Enum):
     def __str__(self):
         """Get string value."""
         return str(self.value)
+
 
 class TableCellLabel(str, Enum):
     """TableCellLabel."""
