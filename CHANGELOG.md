@@ -1,3 +1,36 @@
+## [v2.13.1](https://github.com/DS4SD/docling-core/releases/tag/v2.13.1) - 2025-01-08
+
+### Fix
+
+* Restore proper string serialization of DocItemLabel ([#124](https://github.com/DS4SD/docling-core/issues/124)) ([`a52bb88`](https://github.com/DS4SD/docling-core/commit/a52bb88f78146a5777246d3fc04b04d0db1c1631))
+
+## [v2.13.0](https://github.com/DS4SD/docling-core/releases/tag/v2.13.0) - 2025-01-08
+
+### Feature
+
+* Add mapping to colors into DocItemLabel ([#123](https://github.com/DS4SD/docling-core/issues/123)) ([`639f122`](https://github.com/DS4SD/docling-core/commit/639f12226d4d413c5f95dc4989391a209cca1ae6))
+
+### Fix
+
+* Quote referenced URIs in markdown and html ([#122](https://github.com/DS4SD/docling-core/issues/122)) ([`127dd2f`](https://github.com/DS4SD/docling-core/commit/127dd2f6f8862e2c74f821cdb3a1995ee0a243cc))
+
+## [v2.12.1](https://github.com/DS4SD/docling-core/releases/tag/v2.12.1) - 2024-12-17
+
+### Fix
+
+* Fixes for legacy-doc handling ([#115](https://github.com/DS4SD/docling-core/issues/115)) ([`b116c46`](https://github.com/DS4SD/docling-core/commit/b116c465a2af6327cffa95de0745506404cb39f9))
+
+## [v2.12.0](https://github.com/DS4SD/docling-core/releases/tag/v2.12.0) - 2024-12-17
+
+### Feature
+
+* Added the new label comment_section in the groups ([#114](https://github.com/DS4SD/docling-core/issues/114)) ([`5101dd8`](https://github.com/DS4SD/docling-core/commit/5101dd8845dcfc098c7009556e7468478393ea5e))
+
+### Fix
+
+* Skip labels not included in the allow-list ([#113](https://github.com/DS4SD/docling-core/issues/113)) ([`d147c25`](https://github.com/DS4SD/docling-core/commit/d147c2565f635e851b73cd6b97cc78617372b57f))
+* Always write with utf8 encoding ([#111](https://github.com/DS4SD/docling-core/issues/111)) ([`268c294`](https://github.com/DS4SD/docling-core/commit/268c294cc95abb36fc491521e39c7bf6e6a45abc))
+
 ## [v2.11.0](https://github.com/DS4SD/docling-core/releases/tag/v2.11.0) - 2024-12-16
 
 ### Feature
