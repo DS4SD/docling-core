@@ -80,28 +80,10 @@ class GroupLabel(str, Enum):
         """Get string value."""
         return str(self.value)
 
-
-class DocLinkLabel(str, Enum):
-    """DocLinkLabel."""
-
-    READING_ORDER = "reading_order"
-
-    TO_CAPTION = "to_caption"
-    TO_FOOTNOTE = "to_footnote"
-    TO_VALUE = "to_value"
-    TO_CHILD = "to_child"
-
-    CONTINUED = "continued"
-
-    def __str__(self):
-        """Get string value."""
-        return str(self.value)
-
-
 class PictureClassificationLabel(str, Enum):
     """PictureClassificationLabel."""
 
-    UNCLASSIFIED = "unclassified"
+    OTHER = "other"
 
     # If more than one picture is grouped together, it
     # is generally not possible to assign a label
@@ -114,19 +96,25 @@ class PictureClassificationLabel(str, Enum):
     FLOW_CHART = "flow_chart"
     SCATTER_CHART = "scatter_chart"
     HEATMAP = "heatmap"
-
+    REMOTE_SENSING = "remote_sensing"
+    
     NATURAL_IMAGE = "natural_image"
 
     # Chemistry
-    MOLECULAR_STRUCTURE = "molecular_structure"
-    MARKUSH_STRUCTURE = "markush_structure"
+    MOLECULAR_STRUCTURE = "chemistry_molecular_structure"
+    MARKUSH_STRUCTURE = "chemistry_markush_structure"
 
     # Company
+    ICON = "icon"
     LOGO = "logo"
     SIGNATURE = "signature"
-
+    STAMP = "stamp"
+    QR_CODE = "qr_code"
+    BAR_CODE = "bat_code"
+    SCREENSHOT = "screenshot"
+    
     # Geology/Geography
-    GEOGRAPHIC_MAP = "geographic_map"
+    GEOGRAPHIC_MAP = "map"
     STRATIGRAPHIC_CHART = "stratigraphic_chart"
 
     # Engineering
@@ -136,21 +124,6 @@ class PictureClassificationLabel(str, Enum):
     def __str__(self):
         """Get string value."""
         return str(self.value)
-
-
-class TableComponentLabel(str, Enum):
-    """TableComponentLabel."""
-
-    TABLE_ROW = "table_row"  # the most atomic row
-    TABLE_COL = "table_column"  # the most atomic col
-    TABLE_GROUP = (
-        "table_group"  # table-cell group with at least 1 row- or col-span above 1
-    )
-
-    def __str__(self):
-        """Get string value."""
-        return str(self.value)
-
 
 class TableCellLabel(str, Enum):
     """TableCellLabel."""
