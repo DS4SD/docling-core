@@ -56,9 +56,10 @@ class GroupLabel(str, Enum):
 
 
 class DocLinkLabel(str, Enum):
+    """DocLinkLabel."""
 
     READING_ORDER = "reading_order"
-    
+
     TO_CAPTION = "to_caption"
     TO_FOOTNOTE = "to_footnote"
     TO_VALUE = "to_value"
@@ -69,15 +70,17 @@ class DocLinkLabel(str, Enum):
     def __str__(self):
         """Get string value."""
         return str(self.value)
-    
+
+
 class PictureClassificationLabel(str, Enum):
+    """PictureClassificationLabel."""
 
     UNCLASSIFIED = "unclassified"
 
     # If more than one picture is grouped together, it
     # is generally not possible to assign a label
-    PICTURE_GROUP = "picture_group" 
-    
+    PICTURE_GROUP = "picture_group"
+
     # General
     PIE_CHART = "pie_chart"
     BAR_CHART = "bar_chart"
@@ -87,7 +90,7 @@ class PictureClassificationLabel(str, Enum):
     HEATMAP = "heatmap"
 
     NATURAL_IMAGE = "natural_image"
-    
+
     # Chemistry
     MOLECULAR_STRUCTURE = "molecular_structure"
     MARKUSH_STRUCTURE = "markush_structure"
@@ -95,7 +98,7 @@ class PictureClassificationLabel(str, Enum):
     # Company
     LOGO = "logo"
     SIGNATURE = "signature"
-    
+
     # Geology/Geography
     GEOGRAPHIC_MAP = "geographic_map"
     STRATIGRAPHIC_CHART = "stratigraphic_chart"
@@ -103,17 +106,26 @@ class PictureClassificationLabel(str, Enum):
     # Engineering
     CAD_DRAWING = "cad_drawing"
     ELECTRICAL_DIAGRAM = "electrical_diagram"
-    
-class TableComponentLabel(str, Enum):
-
-    TABLE_ROW = "table_row" # the most atomic row
-    TABLE_COL = "table_column" # the most atomic col
-    TABLE_GROUP = "table_group" # table-cell group with at least 1 row- or col-span above 1
 
     def __str__(self):
         """Get string value."""
         return str(self.value)
-    
+
+
+class TableComponentLabel(str, Enum):
+    """TableComponentLabel."""
+
+    TABLE_ROW = "table_row"  # the most atomic row
+    TABLE_COL = "table_column"  # the most atomic col
+    TABLE_GROUP = (
+        "table_group"  # table-cell group with at least 1 row- or col-span above 1
+    )
+
+    def __str__(self):
+        """Get string value."""
+        return str(self.value)
+
+
 class TableCellLabel(str, Enum):
     """TableCellLabel."""
 
