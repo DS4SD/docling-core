@@ -55,6 +55,65 @@ class GroupLabel(str, Enum):
         return str(self.value)
 
 
+class DocLinkLabel(str, Enum):
+
+    READING_ORDER = "reading_order"
+    
+    TO_CAPTION = "to_caption"
+    TO_FOOTNOTE = "to_footnote"
+    TO_VALUE = "to_value"
+    TO_CHILD = "to_child"
+
+    CONTINUED = "continued"
+
+    def __str__(self):
+        """Get string value."""
+        return str(self.value)
+    
+class PictureClassificationLabel(str, Enum):
+
+    UNCLASSIFIED = "unclassified"
+
+    # If more than one picture is grouped together, it
+    # is generally not possible to assign a label
+    PICTURE_GROUP = "picture_group" 
+    
+    # General
+    PIE_CHART = "pie_chart"
+    BAR_CHART = "bar_chart"
+    LINE_CHART = "line_chart"
+    FLOW_CHART = "flow_chart"
+    SCATTER_CHART = "scatter_chart"
+    HEATMAP = "heatmap"
+
+    NATURAL_IMAGE = "natural_image"
+    
+    # Chemistry
+    MOLECULAR_STRUCTURE = "molecular_structure"
+    MARKUSH_STRUCTURE = "markush_structure"
+
+    # Company
+    LOGO = "logo"
+    SIGNATURE = "signature"
+    
+    # Geology/Geography
+    GEOGRAPHIC_MAP = "geographic_map"
+    STRATIGRAPHIC_CHART = "stratigraphic_chart"
+
+    # Engineering
+    CAD_DRAWING = "cad_drawing"
+    ELECTRICAL_DIAGRAM = "electrical_diagram"
+    
+class TableComponentLabel(str, Enum):
+
+    TABLE_ROW = "table_row" # the most atomic row
+    TABLE_COL = "table_column" # the most atomic col
+    TABLE_GROUP = "table_group" # table-cell group with at least 1 row- or col-span above 1
+
+    def __str__(self):
+        """Get string value."""
+        return str(self.value)
+    
 class TableCellLabel(str, Enum):
     """TableCellLabel."""
 
