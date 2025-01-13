@@ -655,7 +655,11 @@ class TextItem(DocItem):
 
         return body
 
-
+class CodeItem(TextItem):
+    """CodeItem"""
+    
+    programming_language: str = "unknown"
+    
 class SectionHeaderItem(TextItem):
     """SectionItem."""
 
