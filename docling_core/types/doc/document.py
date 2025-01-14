@@ -597,7 +597,6 @@ class TextItem(DocItem):
         DocItemLabel.CAPTION,
         DocItemLabel.CHECKBOX_SELECTED,
         DocItemLabel.CHECKBOX_UNSELECTED,
-        DocItemLabel.CODE,
         DocItemLabel.FOOTNOTE,
         DocItemLabel.FORMULA,
         DocItemLabel.PAGE_FOOTER,
@@ -655,11 +654,16 @@ class TextItem(DocItem):
 
         return body
 
+
 class CodeItem(TextItem):
-    """CodeItem"""
-    
-    programming_language: str = "unknown"
-    
+    """CodeItem."""
+
+    label: typing.Literal[DocItemLabel.CODE] = (
+        DocItemLabel.CODE  # type: ignore[assignment]
+    )
+    code_language: str = "unknown"
+
+
 class SectionHeaderItem(TextItem):
     """SectionItem."""
 
@@ -1646,6 +1650,46 @@ class DoclingDocument(BaseModel):
         parent.children.append(RefItem(cref=cref))
 
         return text_item
+
+    def add_code(
+        self,
+        text: str,
+        code_language: Optional[str] = None,
+        orig: Optional[str] = None,
+        prov: Optional[ProvenanceItem] = None,
+        parent: Optional[NodeItem] = None,
+    ):
+        """add_code.
+
+        :param text: str:
+        :param code_language: Optional[str]: (Default value = None)
+        :param orig: Optional[str]:  (Default value = None)
+        :param prov: Optional[ProvenanceItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
+        """
+        if not parent:
+            parent = self.body
+
+        if not orig:
+            orig = text
+
+        text_index = len(self.texts)
+        cref = f"#/texts/{text_index}"
+        code_item = CodeItem(
+            text=text,
+            orig=orig,
+            self_ref=cref,
+            parent=parent.get_ref(),
+        )
+        if code_language:
+            code_item.code_language = code_language
+        if prov:
+            code_item.prov.append(prov)
+
+        self.texts.append(code_item)
+        parent.children.append(RefItem(cref=cref))
+
+        return code_item
 
     def add_heading(
         self,
