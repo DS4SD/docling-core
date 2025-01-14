@@ -162,6 +162,70 @@
       "title": "ChartStackedBar",
       "type": "object"
     },
+    "CodeItem": {
+      "additionalProperties": false,
+      "description": "CodeItem.",
+      "properties": {
+        "self_ref": {
+          "pattern": "^#(?:/([\\w-]+)(?:/(\\d+))?)?$",
+          "title": "Self Ref",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefItem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "children": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RefItem"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "label": {
+          "const": "code",
+          "default": "code",
+          "title": "Label",
+          "type": "string"
+        },
+        "prov": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProvenanceItem"
+          },
+          "title": "Prov",
+          "type": "array"
+        },
+        "orig": {
+          "title": "Orig",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "code_language": {
+          "default": "unknown",
+          "title": "Code Language",
+          "type": "string"
+        }
+      },
+      "required": [
+        "self_ref",
+        "orig",
+        "text"
+      ],
+      "title": "CodeItem",
+      "type": "object"
+    },
     "CoordOrigin": {
       "description": "CoordOrigin.",
       "enum": [
@@ -1266,7 +1330,6 @@
             "caption",
             "checkbox_selected",
             "checkbox_unselected",
-            "code",
             "footnote",
             "formula",
             "page_footer",
@@ -1375,6 +1438,9 @@
           },
           {
             "$ref": "#/$defs/TextItem"
+          },
+          {
+            "$ref": "#/$defs/CodeItem"
           }
         ]
       },

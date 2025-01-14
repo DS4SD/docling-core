@@ -1405,7 +1405,7 @@ class DoclingDocument(BaseModel):
     body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
 
     groups: List[GroupItem] = []
-    texts: List[Union[SectionHeaderItem, ListItem, TextItem]] = []
+    texts: List[Union[SectionHeaderItem, ListItem, TextItem, CodeItem]] = []
     pictures: List[PictureItem] = []
     tables: List[TableItem] = []
     key_value_items: List[KeyValueItem] = []
