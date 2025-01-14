@@ -2134,7 +2134,7 @@ class DoclingDocument(BaseModel):
                 text = f"{marker} {item.text}\n"
                 mdtexts.append(text.strip() + "\n")
 
-            elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
+            elif isinstance(item, CodeItem) and item.label in labels:
                 in_list = False
                 text = f"```\n{item.text}\n```\n"
                 mdtexts.append(text)
@@ -2440,11 +2440,14 @@ class DoclingDocument(BaseModel):
                 text = f"<li>{item.text}</li>"
                 html_texts.append(text)
 
+            elif isinstance(item, CodeItem) and item.label in labels:
+                text = f"<pre><code>{item.text}</code></pre>"
+                html_texts.append(text.strip())
+
             elif isinstance(item, TextItem) and item.label in labels:
 
                 text = f"<p>{item.text}</p>"
                 html_texts.append(text.strip())
-
             elif isinstance(item, TableItem):
 
                 text = item.export_to_html(doc=self, add_caption=True)
@@ -2632,6 +2635,17 @@ class DoclingDocument(BaseModel):
                 in_ordered_list.append(False)
 
             elif isinstance(item, SectionHeaderItem):
+
+                result += item.export_to_document_tokens(
+                    doc=self,
+                    new_line=delim,
+                    xsize=xsize,
+                    ysize=ysize,
+                    add_location=add_location,
+                    add_content=add_content,
+                    add_page_index=add_page_index,
+                )
+            elif isinstance(item, CodeItem) and (item.label in labels):
 
                 result += item.export_to_document_tokens(
                     doc=self,
