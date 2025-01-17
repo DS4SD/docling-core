@@ -1368,6 +1368,7 @@ ContentItem = Annotated[
         TextItem,
         SectionHeaderItem,
         ListItem,
+        CodeItem,
         PictureItem,
         TableItem,
         KeyValueItem,
