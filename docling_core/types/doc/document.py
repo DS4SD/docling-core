@@ -1313,6 +1313,7 @@ ContentItem = Annotated[
         PictureItem,
         TableItem,
         KeyValueItem,
+        CodeItem,
     ],
     Field(discriminator="label"),
 ]
