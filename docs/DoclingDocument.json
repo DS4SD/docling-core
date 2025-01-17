@@ -231,6 +231,7 @@
         "Ada",
         "Awk",
         "Bash",
+        "bc",
         "C",
         "C#",
         "C++",
@@ -244,6 +245,7 @@
         "Cython",
         "D",
         "Dart",
+        "dc",
         "Dockerfile",
         "Elixir",
         "Erlang",
@@ -279,12 +281,10 @@
         "Scheme",
         "Swift",
         "TypeScript",
+        "unknown",
         "VisualBasic",
         "XML",
-        "YAML",
-        "bc",
-        "dc",
-        "unknown"
+        "YAML"
       ],
       "title": "CodeLanguageLabel",
       "type": "string"
