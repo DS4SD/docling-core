@@ -36,7 +36,7 @@ from docling_core.search.package import VERSION_PATTERN
 from docling_core.types.base import _JSON_POINTER_REGEX
 from docling_core.types.doc import BoundingBox, Size
 from docling_core.types.doc.base import ImageRefMode
-from docling_core.types.doc.labels import DocItemLabel, GroupLabel
+from docling_core.types.doc.labels import CodeLanguageLabel, DocItemLabel, GroupLabel
 from docling_core.types.doc.tokens import DocumentToken, TableToken
 from docling_core.types.doc.utils import relative_path
 
@@ -661,7 +661,65 @@ class CodeItem(TextItem):
     label: typing.Literal[DocItemLabel.CODE] = (
         DocItemLabel.CODE  # type: ignore[assignment]
     )
-    code_language: str = "unknown"
+    code_language: typing.Literal[
+        CodeLanguageLabel.ADA,
+        CodeLanguageLabel.AWK,
+        CodeLanguageLabel.BASH,
+        CodeLanguageLabel.C,
+        CodeLanguageLabel.C_SHARP,
+        CodeLanguageLabel.C_PLUS_PLUS,
+        CodeLanguageLabel.CMAKE,
+        CodeLanguageLabel.COBOL,
+        CodeLanguageLabel.CSS,
+        CodeLanguageLabel.CEYLON,
+        CodeLanguageLabel.CLOJURE,
+        CodeLanguageLabel.CRYSTAL,
+        CodeLanguageLabel.CUDA,
+        CodeLanguageLabel.CYTHON,
+        CodeLanguageLabel.D,
+        CodeLanguageLabel.DART,
+        CodeLanguageLabel.DOCKERFILE,
+        CodeLanguageLabel.ELIXIR,
+        CodeLanguageLabel.ERLANG,
+        CodeLanguageLabel.FORTRAN,
+        CodeLanguageLabel.FORTH,
+        CodeLanguageLabel.GO,
+        CodeLanguageLabel.HTML,
+        CodeLanguageLabel.HASKELL,
+        CodeLanguageLabel.HAXE,
+        CodeLanguageLabel.JAVA,
+        CodeLanguageLabel.JAVASCRIPT,
+        CodeLanguageLabel.JULIA,
+        CodeLanguageLabel.KOTLIN,
+        CodeLanguageLabel.LISP,
+        CodeLanguageLabel.LUA,
+        CodeLanguageLabel.MATLAB,
+        CodeLanguageLabel.MOONSCRIPT,
+        CodeLanguageLabel.NIM,
+        CodeLanguageLabel.OCAML,
+        CodeLanguageLabel.OBJECTIVEC,
+        CodeLanguageLabel.OCTAVE,
+        CodeLanguageLabel.PHP,
+        CodeLanguageLabel.PASCAL,
+        CodeLanguageLabel.PERL,
+        CodeLanguageLabel.PROLOG,
+        CodeLanguageLabel.PYTHON,
+        CodeLanguageLabel.RACKET,
+        CodeLanguageLabel.RUBY,
+        CodeLanguageLabel.RUST,
+        CodeLanguageLabel.SML,
+        CodeLanguageLabel.SQL,
+        CodeLanguageLabel.SCALA,
+        CodeLanguageLabel.SCHEME,
+        CodeLanguageLabel.SWIFT,
+        CodeLanguageLabel.TYPESCRIPT,
+        CodeLanguageLabel.VISUALBASIC,
+        CodeLanguageLabel.XML,
+        CodeLanguageLabel.YAML,
+        CodeLanguageLabel.BC,
+        CodeLanguageLabel.DC,
+        CodeLanguageLabel.UNKNOWN,
+    ] = CodeLanguageLabel.UNKNOWN
 
 
 class SectionHeaderItem(TextItem):
@@ -1655,7 +1713,7 @@ class DoclingDocument(BaseModel):
     def add_code(
         self,
         text: str,
-        code_language: Optional[str] = None,
+        code_language: Optional[CodeLanguageLabel] = None,
         orig: Optional[str] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
