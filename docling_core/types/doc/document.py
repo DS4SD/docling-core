@@ -1572,7 +1572,8 @@ class DoclingDocument(BaseModel):
         if prov:
             tbl_item.prov.append(prov)
         if caption:
-            tbl_item.captions.append(caption.get_ref())
+            if hasattr(caption, "get_ref"):
+                tbl_item.captions.append(caption.get_ref())
 
         self.tables.append(tbl_item)
         parent.children.append(RefItem(cref=cref))
@@ -1611,9 +1612,7 @@ class DoclingDocument(BaseModel):
         if prov:
             fig_item.prov.append(prov)
         if caption:
-            if isinstance(caption, str):
-                fig_item.captions.append(RefItem(cref=caption))
-            elif hasattr(caption, "get_ref"):
+            if hasattr(caption, "get_ref"):
                 fig_item.captions.append(caption.get_ref())
 
         self.pictures.append(fig_item)
