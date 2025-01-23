@@ -1611,7 +1611,10 @@ class DoclingDocument(BaseModel):
         if prov:
             fig_item.prov.append(prov)
         if caption:
-            fig_item.captions.append(caption.get_ref())
+            if isinstance(caption, str):
+                fig_item.captions.append(RefItem(cref=caption))
+            elif hasattr(caption, "get_ref"):
+                fig_item.captions.append(caption.get_ref())
 
         self.pictures.append(fig_item)
         parent.children.append(RefItem(cref=cref))
