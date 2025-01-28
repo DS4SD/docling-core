@@ -45,43 +45,29 @@ def test_doc_origin():
 
 def test_boundingbox():
 
-    page_height = 300.0
-
     bbox_i_bl = BoundingBox(l=10, r=30, b=20, t=40, coord_origin=CoordOrigin.BOTTOMLEFT)
-
     bbox_j_bl = BoundingBox(l=20, r=40, b=30, t=50, coord_origin=CoordOrigin.BOTTOMLEFT)
-
     bbox_k_bl = BoundingBox(l=40, r=70, b=50, t=70, coord_origin=CoordOrigin.BOTTOMLEFT)
-
     bbox_p_bl = BoundingBox(l=50, r=70, b=20, t=40, coord_origin=CoordOrigin.BOTTOMLEFT)
-
     bbox_q_bl = BoundingBox(l=20, r=60, b=50, t=70, coord_origin=CoordOrigin.BOTTOMLEFT)
-
     bbox_r_bl = BoundingBox(l=20, r=60, b=40, t=70, coord_origin=CoordOrigin.BOTTOMLEFT)
 
-    bbox_i_tl = bbox_i_bl.to_top_left_origin(page_height=page_height)
-    bbox_j_tl = bbox_j_bl.to_top_left_origin(page_height=page_height)
-    bbox_k_tl = bbox_k_bl.to_top_left_origin(page_height=page_height)
+    i_area_bl = bbox_i_bl.intersection_area_with(bbox_j_bl)
 
-    i_area_bl = bbox_i_bl.intersection_area_with(bbox_j_bl, page_height=page_height)
-    i_area_tl = bbox_i_tl.intersection_area_with(bbox_j_tl, page_height=page_height)
+    assert abs(10.0 * 10.0 - i_area_bl) < 1.0e-6
 
-    assert abs(i_area_tl - i_area_bl) < 1.0e-6, "abs(i_area_tl-i_area_bl)<1.0e-6"
+    bbox_i_tl = bbox_i_bl.to_top_left_origin(page_height=300.0)
+    bbox_j_tl = bbox_j_bl.to_top_left_origin(page_height=300.0)
 
-    assert bbox_k_bl.is_strictly_above_of(bbox_i_bl, page_height=page_height)
-    assert bbox_k_tl.is_strictly_above_of(bbox_i_bl, page_height=page_height)
-    assert bbox_k_tl.is_strictly_above_of(bbox_i_tl, page_height=page_height)
+    i_area_tl = bbox_i_tl.intersection_area_with(bbox_j_tl)
+
+    assert abs(10.0 * 10.0 - i_area_tl) < 1.0e-6
+
+    assert bbox_k_bl.is_strictly_above_of(bbox_i_bl)
 
     assert bbox_i_bl.is_strictly_left_of(bbox_k_bl)
-    assert bbox_i_tl.is_strictly_left_of(bbox_k_bl)
-    assert bbox_i_tl.is_strictly_left_of(bbox_k_tl)
 
-    assert bbox_q_bl.is_horizontally_connected(
-        bbox_i_bl, bbox_p_bl, page_height=page_height
-    )
-    assert bbox_q_bl.is_horizontally_connected(
-        bbox_p_bl, bbox_i_bl, page_height=page_height
-    )
+    assert bbox_q_bl.is_horizontally_connected(bbox_i_bl, bbox_p_bl)
 
 
 def test_docitems():
