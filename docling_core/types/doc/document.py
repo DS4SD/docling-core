@@ -576,17 +576,12 @@ class DocItem(
         for prov in self.prov:
             page_w, page_h = doc.pages[prov.page_no].size.as_tuple()
 
-            page_i = -1
-            if add_page_index:
-                page_i = prov.page_no
-
             loc_str = DocumentToken.get_location(
                 bbox=prov.bbox.to_bottom_left_origin(page_h).as_tuple(),
                 page_w=page_w,
                 page_h=page_h,
                 xsize=xsize,
                 ysize=ysize,
-                page_i=page_i,
             )
             location += f"{loc_str}{new_line}"
 
@@ -951,7 +946,7 @@ class PictureItem(FloatingItem):
         :param # not used at the momentadd_page_index: bool:  (Default value = True)
 
         """
-        body = f"{DocumentToken.BEG_FIGURE.value}{new_line}"
+        body = f"{DocumentToken.BEG_PICTURE.value}{new_line}"
 
         if add_location:
             body += self.get_location_tokens(
@@ -971,7 +966,7 @@ class PictureItem(FloatingItem):
                 body += f"{DocumentToken.END_CAPTION.value}"
                 body += f"{new_line}"
 
-        body += f"{DocumentToken.END_FIGURE.value}{new_line}"
+        body += f"{DocumentToken.END_PICTURE.value}{new_line}"
 
         return body
 
@@ -1194,7 +1189,6 @@ class TableItem(FloatingItem):
                         page_h=page_h,
                         xsize=xsize,
                         ysize=ysize,
-                        page_i=page_no,
                     )
 
                 if rowstart == i and colstart == j:
@@ -1268,7 +1262,6 @@ class TableItem(FloatingItem):
                 new_line=new_line,
                 xsize=xsize,
                 ysize=ysize,
-                add_page_index=add_page_index,
             )
 
         if add_caption and len(self.captions):
@@ -1303,7 +1296,6 @@ class TableItem(FloatingItem):
                             page_h=page_h,
                             xsize=xsize,
                             ysize=ysize,
-                            page_i=self.prov[0].page_no,
                         )
                     elif (
                         col.bbox is not None
@@ -1319,7 +1311,6 @@ class TableItem(FloatingItem):
                             page_h=page_h,
                             xsize=xsize,
                             ysize=ysize,
-                            page_i=-1,
                         )
 
                     cell_label = ""
