@@ -1,6 +1,5 @@
 """Models for the base data types."""
 
-import warnings
 from enum import Enum
 from typing import Tuple
 
@@ -53,76 +52,51 @@ class BoundingBox(BaseModel):
         """height."""
         return abs(self.t - self.b)
 
-    def scaled(self, scale: float) -> "BoundingBox":
-        """scaled.
-
-        :param scale: float:
-
-        """
-        warnings.warn(
-            "scaled is deprecated: use `scale_to_size` instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.scale_to_size(size=Size(width=scale, height=scale))
-
-    def normalized(self, page_size: Size) -> "BoundingBox":
-        """normalized.
-
-        :param page_size: Size:
-
-        """
-        warnings.warn(
-            "normalized is deprecated: use `normalize_to_size` instead",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.normalize_to_size(size=page_size)
-
-    def normalize_to_size(self, size: Size) -> "BoundingBox":
-        """normalize_to_size.
-
-        :param page_size: Size:
-
-        """
+    def resize_by_scale(self, x_scale: float, y_scale: float):
+        """resize_by_scale."""
         return BoundingBox(
-            l=self.l / size.width,
-            r=self.r / size.width,
-            t=self.t / size.height,
-            b=self.b / size.height,
+            l=self.l * x_scale,
+            r=self.r * x_scale,
+            t=self.t * y_scale,
+            b=self.b * y_scale,
             coord_origin=self.coord_origin,
         )
 
-    def scale_to_size(self, size: Size) -> "BoundingBox":
-        """scale_to_size.
-
-        :param page_size: Size:
-
-        """
-        return BoundingBox(
-            l=self.l * size.width,
-            r=self.r * size.width,
-            t=self.t * size.height,
-            b=self.b * size.height,
-            coord_origin=self.coord_origin,
+    def scale_to_size(self, old_size: Size, new_size: Size):
+        """scale_to_size."""
+        return self.resize_by_scale(
+            x_scale=new_size.width / old_size.width,
+            y_scale=new_size.height / old_size.height,
         )
 
-    def expand_to_size(self, size: Size) -> "BoundingBox":
+    # same as before, but using the implementation above
+    def scaled(self, scale: float):
+        """scaled."""
+        return self.resize_by_scale(x_scale=scale, y_scale=scale)
+
+    # same as before, but using the implementation above
+    def normalized(self, page_size: Size):
+        """normalized."""
+        return self.scale_to_size(
+            old_size=page_size, new_size=Size(height=1.0, width=1.0)
+        )
+
+    def expand_by_scale(self, x_scale: float, y_scale: float) -> "BoundingBox":
         """expand_to_size."""
         if self.coord_origin == CoordOrigin.TOPLEFT:
             return BoundingBox(
-                l=self.l - self.width * size.width,
-                r=self.r + self.width * size.width,
-                t=self.t - self.height * size.height,
-                b=self.b + self.height * size.height,
+                l=self.l - self.width * x_scale,
+                r=self.r + self.width * x_scale,
+                t=self.t - self.height * y_scale,
+                b=self.b + self.height * y_scale,
                 coord_origin=self.coord_origin,
             )
         elif self.coord_origin == CoordOrigin.BOTTOMLEFT:
             return BoundingBox(
-                l=self.l - self.width * size.width,
-                r=self.r + self.width * size.width,
-                t=self.t + self.height * size.height,
-                b=self.b - self.height * size.height,
+                l=self.l - self.width * x_scale,
+                r=self.r + self.width * x_scale,
+                t=self.t + self.height * y_scale,
+                b=self.b - self.height * y_scale,
                 coord_origin=self.coord_origin,
             )
 
@@ -164,57 +138,30 @@ class BoundingBox(BaseModel):
         return abs(self.r - self.l) * abs(self.b - self.t)
 
     def intersection_area_with(self, other: "BoundingBox") -> float:
-        """intersection_area_with.
+        """Calculate the intersection area with another bounding box."""
+        if self.coord_origin != other.coord_origin:
+            raise ValueError("BoundingBoxes have different CoordOrigin")
 
-        :param other: "BoundingBox":
+        # Calculate intersection coordinates
+        left = max(self.l, other.l)
+        right = min(self.r, other.r)
 
-        """
-        if (
-            self.coord_origin == CoordOrigin.BOTTOMLEFT
-            and other.coord_origin == CoordOrigin.BOTTOMLEFT
-        ):
-
-            # Calculate intersection coordinates
-            left = max(self.l, other.l)
-            right = min(self.r, other.r)
-
-            bottom = max(self.b, other.b)
+        if self.coord_origin == CoordOrigin.TOPLEFT:
+            bottom = max(self.t, other.t)
+            top = min(self.b, other.b)
+        elif self.coord_origin == CoordOrigin.BOTTOMLEFT:
             top = min(self.t, other.t)
+            bottom = max(self.b, other.b)
 
-            # Calculate intersection dimensions
-            width = right - left
-            height = top - bottom
+        # Calculate intersection dimensions
+        width = right - left
+        height = top - bottom
 
-            # If the bounding boxes do not overlap, width or height will be negative
-            if width <= 0 or height <= 0:
-                return 0.0
+        # If the bounding boxes do not overlap, width or height will be negative
+        if width <= 0 or height <= 0:
+            return 0.0
 
-            return width * height
-        elif (
-            self.coord_origin == CoordOrigin.TOPLEFT
-            and other.coord_origin == CoordOrigin.TOPLEFT
-        ):
-
-            # Calculate intersection coordinates
-            left = max(self.l, other.l)
-            right = min(self.r, other.r)
-
-            bottom = min(self.b, other.b)
-            top = max(self.t, other.t)
-
-            # Calculate intersection dimensions
-            width = right - left
-            height = bottom - top
-
-            # If the bounding boxes do not overlap, width or height will be negative
-            if width <= 0 or height <= 0:
-                return 0.0
-
-            return width * height
-        else:
-            raise ValueError("BoundingBox is not BOTTOMLEFT")
-
-        return False
+        return width * height
 
     def intersection_over_union(
         self, other: "BoundingBox", eps: float = 1.0e-6
@@ -271,30 +218,19 @@ class BoundingBox(BaseModel):
         )
 
     def overlaps_horizontally(self, other: "BoundingBox") -> bool:
-        """overlaps_x."""
-        return (
-            (self.l <= other.l and other.l < self.r)
-            or (self.l <= other.r and other.r < self.r)
-            or (other.l <= self.l and self.l < other.r)
-            or (other.l <= self.r and self.r < other.r)
-        )
+        """Check if two bounding boxes overlap horizontally."""
+        return not (self.r <= other.l or other.r <= self.l)
 
     def overlaps_vertically(self, other: "BoundingBox") -> bool:
-        """overlaps_y."""
-        if (
-            self.coord_origin == CoordOrigin.BOTTOMLEFT
-            and other.coord_origin == CoordOrigin.BOTTOMLEFT
-        ):
-            return (
-                (self.b <= other.b and other.b < self.t)
-                or (self.b <= other.t and other.t < self.t)
-                or (other.b <= self.b and self.b < other.t)
-                or (other.b <= self.t and self.t < other.t)
-            )
-        else:
-            raise ValueError("BoundingBox is not BOTTOMLEFT")
+        """Check if two bounding boxes overlap vertically."""
+        if self.coord_origin != other.coord_origin:
+            raise ValueError("BoundingBoxes have different CoordOrigin")
 
-        return False
+        # Normalize coordinates if needed
+        if self.coord_origin == CoordOrigin.BOTTOMLEFT:
+            return not (self.t <= other.b or other.t <= self.b)
+        elif self.coord_origin == CoordOrigin.TOPLEFT:
+            return not (self.b <= other.t or other.b <= self.t)
 
     def overlaps_vertically_with_iou(self, other: "BoundingBox", iou: float) -> bool:
         """overlaps_y_with_iou."""
@@ -315,40 +251,70 @@ class BoundingBox(BaseModel):
                 return (iou_) > iou
 
             return False
+
+        elif (
+            self.coord_origin == CoordOrigin.TOPLEFT
+            and other.coord_origin == CoordOrigin.TOPLEFT
+        ):
+            if self.overlaps_vertically(other=other):
+                u0 = min(self.t, other.t)
+                u1 = max(self.b, other.b)
+
+                i0 = max(self.t, other.t)
+                i1 = min(self.b, other.b)
+
+                iou_ = float(i1 - i0) / float(u1 - u0)
+                return (iou_) > iou
+
+            return False
         else:
-            raise ValueError("BoundingBox is not BOTTOMLEFT")
+            raise ValueError("BoundingBoxes have different CoordOrigin")
 
         return False
 
     def is_left_of(self, other: "BoundingBox") -> bool:
         """is_left_of."""
-        return self.r < other.r
+        return self.l < other.l
 
     def is_strictly_left_of(self, other: "BoundingBox", eps: float = 0.001) -> bool:
         """is_strictly_left_of."""
         return (self.r + eps) < other.l
 
-    def is_above_of(self, other: "BoundingBox") -> bool:
+    def is_above(self, other: "BoundingBox") -> bool:
         """is_above."""
         if (
             self.coord_origin == CoordOrigin.BOTTOMLEFT
             and other.coord_origin == CoordOrigin.BOTTOMLEFT
         ):
             return self.t > other.t
+
+        elif (
+            self.coord_origin == CoordOrigin.TOPLEFT
+            and other.coord_origin == CoordOrigin.TOPLEFT
+        ):
+            return self.t < other.t
+
         else:
-            raise ValueError("BoundingBox is not BOTTOMLEFT")
+            raise ValueError("BoundingBoxes have different CoordOrigin")
 
         return False
 
-    def is_strictly_above_of(self, other: "BoundingBox", eps: float = 0.001) -> bool:
+    def is_strictly_above(self, other: "BoundingBox", eps: float = 1.0e-3) -> bool:
         """is_strictly_above."""
         if (
             self.coord_origin == CoordOrigin.BOTTOMLEFT
             and other.coord_origin == CoordOrigin.BOTTOMLEFT
         ):
             return (self.b + eps) > other.t
+
+        elif (
+            self.coord_origin == CoordOrigin.TOPLEFT
+            and other.coord_origin == CoordOrigin.TOPLEFT
+        ):
+            return (self.b + eps) < other.t
+
         else:
-            raise ValueError("BoundingBox is not BOTTOMLEFT")
+            raise ValueError("BoundingBoxes have different CoordOrigin")
 
         return False
 
@@ -361,9 +327,8 @@ class BoundingBox(BaseModel):
             and elem_i.coord_origin == CoordOrigin.BOTTOMLEFT
             and elem_j.coord_origin == CoordOrigin.BOTTOMLEFT
         ):
-
-            min_ij: float = min(elem_i.b, elem_j.b)
-            max_ij: float = max(elem_i.t, elem_j.t)
+            min_ij = min(elem_i.b, elem_j.b)
+            max_ij = max(elem_i.t, elem_j.t)
 
             if self.b < max_ij and min_ij < self.t:  # overlap_y
                 return False
@@ -372,7 +337,24 @@ class BoundingBox(BaseModel):
                 return True
 
             return False
+
+        elif (
+            self.coord_origin == CoordOrigin.TOPLEFT
+            and elem_i.coord_origin == CoordOrigin.TOPLEFT
+            and elem_j.coord_origin == CoordOrigin.TOPLEFT
+        ):
+            min_ij = min(elem_i.t, elem_j.t)
+            max_ij = max(elem_i.b, elem_j.b)
+
+            if self.t < max_ij and min_ij < self.b:  # overlap_y
+                return False
+
+            if self.l < elem_i.r and elem_j.l < self.r:
+                return True
+
+            return False
+
         else:
-            raise ValueError("BoundingBox is not BOTTOMLEFT")
+            raise ValueError("BoundingBoxes have different CoordOrigin")
 
         return False

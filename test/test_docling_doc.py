@@ -43,31 +43,125 @@ def test_doc_origin():
     )
 
 
-def test_boundingbox():
+def test_overlaps_horizontally():
+    # Overlapping horizontally
+    bbox1 = BoundingBox(l=0, t=0, r=10, b=10, coord_origin=CoordOrigin.TOPLEFT)
+    bbox2 = BoundingBox(l=5, t=5, r=15, b=15, coord_origin=CoordOrigin.TOPLEFT)
+    assert bbox1.overlaps_horizontally(bbox2) is True
 
-    bbox_i_bl = BoundingBox(l=10, r=30, b=20, t=40, coord_origin=CoordOrigin.BOTTOMLEFT)
-    bbox_j_bl = BoundingBox(l=20, r=40, b=30, t=50, coord_origin=CoordOrigin.BOTTOMLEFT)
-    bbox_k_bl = BoundingBox(l=40, r=70, b=50, t=70, coord_origin=CoordOrigin.BOTTOMLEFT)
-    bbox_p_bl = BoundingBox(l=50, r=70, b=20, t=40, coord_origin=CoordOrigin.BOTTOMLEFT)
-    bbox_q_bl = BoundingBox(l=20, r=60, b=50, t=70, coord_origin=CoordOrigin.BOTTOMLEFT)
-    bbox_r_bl = BoundingBox(l=20, r=60, b=40, t=70, coord_origin=CoordOrigin.BOTTOMLEFT)
+    # No overlap horizontally (disjoint on the right)
+    bbox3 = BoundingBox(l=11, t=0, r=20, b=10, coord_origin=CoordOrigin.TOPLEFT)
+    assert bbox1.overlaps_horizontally(bbox3) is False
 
-    i_area_bl = bbox_i_bl.intersection_area_with(bbox_j_bl)
+    # No overlap horizontally (disjoint on the left)
+    bbox4 = BoundingBox(l=-10, t=0, r=-1, b=10, coord_origin=CoordOrigin.TOPLEFT)
+    assert bbox1.overlaps_horizontally(bbox4) is False
 
-    assert abs(10.0 * 10.0 - i_area_bl) < 1.0e-6
+    # Full containment
+    bbox5 = BoundingBox(l=2, t=2, r=8, b=8, coord_origin=CoordOrigin.TOPLEFT)
+    assert bbox1.overlaps_horizontally(bbox5) is True
 
-    bbox_i_tl = bbox_i_bl.to_top_left_origin(page_height=300.0)
-    bbox_j_tl = bbox_j_bl.to_top_left_origin(page_height=300.0)
+    # Edge touching (no overlap)
+    bbox6 = BoundingBox(l=10, t=0, r=20, b=10, coord_origin=CoordOrigin.TOPLEFT)
+    assert bbox1.overlaps_horizontally(bbox6) is False
 
-    i_area_tl = bbox_i_tl.intersection_area_with(bbox_j_tl)
 
-    assert abs(10.0 * 10.0 - i_area_tl) < 1.0e-6
+def test_overlaps_vertically():
 
-    assert bbox_k_bl.is_strictly_above_of(bbox_i_bl)
+    page_height = 300
 
-    assert bbox_i_bl.is_strictly_left_of(bbox_k_bl)
+    # Same CoordOrigin (TOPLEFT)
+    bbox1 = BoundingBox(l=0, t=0, r=10, b=10, coord_origin=CoordOrigin.TOPLEFT)
+    bbox2 = BoundingBox(l=5, t=5, r=15, b=15, coord_origin=CoordOrigin.TOPLEFT)
+    assert bbox1.overlaps_vertically(bbox2) is True
 
-    assert bbox_q_bl.is_horizontally_connected(bbox_i_bl, bbox_p_bl)
+    bbox1_ = bbox1.to_bottom_left_origin(page_height=page_height)
+    bbox2_ = bbox2.to_bottom_left_origin(page_height=page_height)
+    assert bbox1_.overlaps_vertically(bbox2_) is True
+
+    bbox3 = BoundingBox(l=0, t=11, r=10, b=20, coord_origin=CoordOrigin.TOPLEFT)
+    assert bbox1.overlaps_vertically(bbox3) is False
+
+    bbox3_ = bbox3.to_bottom_left_origin(page_height=page_height)
+    assert bbox1_.overlaps_vertically(bbox3_) is False
+
+    # Same CoordOrigin (BOTTOMLEFT)
+    bbox4 = BoundingBox(l=0, b=20, r=10, t=30, coord_origin=CoordOrigin.BOTTOMLEFT)
+    bbox5 = BoundingBox(l=5, b=15, r=15, t=25, coord_origin=CoordOrigin.BOTTOMLEFT)
+    assert bbox4.overlaps_vertically(bbox5) is True
+
+    bbox4_ = bbox4.to_top_left_origin(page_height=page_height)
+    bbox5_ = bbox5.to_top_left_origin(page_height=page_height)
+    assert bbox4_.overlaps_vertically(bbox5_) is True
+
+    bbox6 = BoundingBox(l=0, b=31, r=10, t=40, coord_origin=CoordOrigin.BOTTOMLEFT)
+    assert bbox4.overlaps_vertically(bbox6) is False
+
+    bbox6_ = bbox6.to_top_left_origin(page_height=page_height)
+    assert bbox4_.overlaps_vertically(bbox6_) is False
+
+    # Different CoordOrigin
+    with pytest.raises(ValueError):
+        bbox1.overlaps_vertically(bbox4)
+
+
+def test_intersection_area_with():
+    page_height = 300
+
+    # Overlapping bounding boxes (TOPLEFT)
+    bbox1 = BoundingBox(l=0, t=0, r=10, b=10, coord_origin=CoordOrigin.TOPLEFT)
+    bbox2 = BoundingBox(l=5, t=5, r=15, b=15, coord_origin=CoordOrigin.TOPLEFT)
+    assert abs(bbox1.intersection_area_with(bbox2) - 25.0) < 1.0e-3
+
+    bbox1_ = bbox1.to_bottom_left_origin(page_height=page_height)
+    bbox2_ = bbox2.to_bottom_left_origin(page_height=page_height)
+    assert abs(bbox1_.intersection_area_with(bbox2_) - 25.0) < 1.0e-3
+
+    # Non-overlapping bounding boxes (TOPLEFT)
+    bbox3 = BoundingBox(l=11, t=0, r=20, b=10, coord_origin=CoordOrigin.TOPLEFT)
+    assert abs(bbox1.intersection_area_with(bbox3) - 0.0) < 1.0e-3
+
+    # Touching edges (no intersection, TOPLEFT)
+    bbox4 = BoundingBox(l=10, t=0, r=20, b=10, coord_origin=CoordOrigin.TOPLEFT)
+    assert abs(bbox1.intersection_area_with(bbox4) - 0.0) < 1.0e-3
+
+    # Fully contained (TOPLEFT)
+    bbox5 = BoundingBox(l=2, t=2, r=8, b=8, coord_origin=CoordOrigin.TOPLEFT)
+    assert abs(bbox1.intersection_area_with(bbox5) - 36.0) < 1.0e-3
+
+    # Overlapping bounding boxes (BOTTOMLEFT)
+    bbox6 = BoundingBox(l=0, t=10, r=10, b=0, coord_origin=CoordOrigin.BOTTOMLEFT)
+    bbox7 = BoundingBox(l=5, t=15, r=15, b=5, coord_origin=CoordOrigin.BOTTOMLEFT)
+    assert abs(bbox6.intersection_area_with(bbox7) - 25.0) < 1.0e-3
+
+    # Different CoordOrigins (raises ValueError)
+    with pytest.raises(ValueError):
+        bbox1.intersection_area_with(bbox6)
+
+
+def test_orientation():
+
+    page_height = 300
+
+    # Same CoordOrigin (TOPLEFT)
+    bbox1 = BoundingBox(l=0, t=0, r=10, b=10, coord_origin=CoordOrigin.TOPLEFT)
+    bbox2 = BoundingBox(l=5, t=5, r=15, b=15, coord_origin=CoordOrigin.TOPLEFT)
+    bbox3 = BoundingBox(l=11, t=5, r=15, b=15, coord_origin=CoordOrigin.TOPLEFT)
+    bbox4 = BoundingBox(l=0, t=11, r=10, b=15, coord_origin=CoordOrigin.TOPLEFT)
+
+    assert bbox1.is_left_of(bbox2) is True
+    assert bbox1.is_strictly_left_of(bbox2) is False
+    assert bbox1.is_strictly_left_of(bbox3) is True
+
+    bbox1_ = bbox1.to_bottom_left_origin(page_height=page_height)
+    bbox2_ = bbox2.to_bottom_left_origin(page_height=page_height)
+    bbox3_ = bbox3.to_bottom_left_origin(page_height=page_height)
+    bbox4_ = bbox4.to_bottom_left_origin(page_height=page_height)
+
+    assert bbox1.is_above(bbox2) is True
+    assert bbox1_.is_above(bbox2_) is True
+    assert bbox1.is_strictly_above(bbox4) is True
+    assert bbox1_.is_strictly_above(bbox4_) is True
 
 
 def test_docitems():
