@@ -585,7 +585,8 @@ class DocItem(
         crop_bbox = (
             self.prov[0]
             .bbox.to_top_left_origin(page_height=page.size.height)
-            .scaled(scale=page_image.height / page.size.height)
+            .scale_to_size(old_size=page.size, new_size=page.image.size)
+            # .scaled(scale=page_image.height / page.size.height)
         )
         return page_image.crop(crop_bbox.as_tuple())
 
@@ -1994,6 +1995,7 @@ class DoclingDocument(BaseModel):
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         strict_text: bool = False,
+        escaping_underscores: bool = True,
         image_placeholder: str = "<!-- image -->",
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
         indent: int = 4,
@@ -2016,6 +2018,7 @@ class DoclingDocument(BaseModel):
             to_element=to_element,
             labels=labels,
             strict_text=strict_text,
+            escaping_underscores=escaping_underscores,
             image_placeholder=image_placeholder,
             image_mode=image_mode,
             indent=indent,
@@ -2033,6 +2036,7 @@ class DoclingDocument(BaseModel):
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         strict_text: bool = False,
+        escaping_underscores: bool = True,
         image_placeholder: str = "<!-- image -->",
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
         indent: int = 4,
@@ -2058,6 +2062,9 @@ class DoclingDocument(BaseModel):
         :param strict_text: bool: Whether to only include the text content
             of the document. (Default value = False).
         :type strict_text: bool = False
+        :param escaping_underscores: bool: Whether to escape underscores in the
+            text content of the document. (Default value = True).
+        :type escaping_underscores: bool = True
         :param image_placeholder: The placeholder to include to position
             images in the markdown. (Default value = "\<!-- image --\>").
         :type image_placeholder: str = "<!-- image -->"
@@ -2234,7 +2241,8 @@ class DoclingDocument(BaseModel):
 
             return "".join(parts)
 
-        mdtext = escape_underscores(mdtext)
+        if escaping_underscores:
+            mdtext = escape_underscores(mdtext)
 
         return mdtext
 
@@ -2252,6 +2260,7 @@ class DoclingDocument(BaseModel):
             to_element,
             labels,
             strict_text=True,
+            escaping_underscores=False,
             image_placeholder="",
         )
 
