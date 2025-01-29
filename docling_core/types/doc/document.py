@@ -2160,6 +2160,10 @@ class DoclingDocument(BaseModel):
                 text = f"{list_indent}{marker} {item.text}"
                 mdtexts.append(text)
 
+            elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
+                in_list = False
+                mdtexts.append(f"$${item.text}$$")
+
             elif isinstance(item, TextItem) and item.label in labels:
                 in_list = False
                 if len(item.text) and text_width > 0:
