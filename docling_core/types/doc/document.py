@@ -2802,6 +2802,16 @@ class DoclingDocument(BaseModel):
 
             return (in_ordered_list, result)
 
+        def add_page_no(result, item, previous_page_no, delim):
+            prov_list = item.prov
+            if len(prov_list) == 0:
+                return result, previous_page_no
+            current_page_no = prov_list[0].page_no
+            if previous_page_no is None or current_page_no != previous_page_no:
+                result += f"<page_{current_page_no}>{delim}"
+
+            return result, current_page_no
+
         if newline:
             delim = "\n"
         else:
@@ -2812,11 +2822,10 @@ class DoclingDocument(BaseModel):
         in_ordered_list: List[bool] = []  # False
 
         result = f"{DocumentToken.BEG_DOCUMENT.value}{delim}"
-
+        previous_page_no = None
         for ix, (item, curr_level) in enumerate(
             self.iterate_items(self.body, with_groups=True)
         ):
-
             # If we've moved to a lower level, we're exiting one or more groups
             if curr_level < prev_level and len(in_ordered_list) > 0:
                 # Calculate how many levels we've exited
@@ -2855,6 +2864,9 @@ class DoclingDocument(BaseModel):
                 in_ordered_list.append(False)
 
             elif isinstance(item, SectionHeaderItem):
+                result, previous_page_no = add_page_no(
+                    result, item, previous_page_no, delim
+                )
 
                 result += item.export_to_document_tokens(
                     doc=self,
@@ -2878,6 +2890,9 @@ class DoclingDocument(BaseModel):
                 )
 
             elif isinstance(item, TextItem) and (item.label in labels):
+                result, previous_page_no = add_page_no(
+                    result, item, previous_page_no, delim
+                )
 
                 result += item.export_to_document_tokens(
                     doc=self,
@@ -2890,6 +2905,9 @@ class DoclingDocument(BaseModel):
                 )
 
             elif isinstance(item, TableItem) and (item.label in labels):
+                result, previous_page_no = add_page_no(
+                    result, item, previous_page_no, delim
+                )
 
                 result += item.export_to_document_tokens(
                     doc=self,
@@ -2906,6 +2924,9 @@ class DoclingDocument(BaseModel):
                 )
 
             elif isinstance(item, PictureItem) and (item.label in labels):
+                result, previous_page_no = add_page_no(
+                    result, item, previous_page_no, delim
+                )
 
                 result += item.export_to_document_tokens(
                     doc=self,
