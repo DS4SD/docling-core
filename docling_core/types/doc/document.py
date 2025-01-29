@@ -2208,10 +2208,13 @@ class DoclingDocument(BaseModel):
             """Escape underscores but leave them intact in the URL.."""
             # Firstly, identify all the URL patterns.
             url_pattern = r"!\[.*?\]\((.*?)\)"
+            latex_pattern = r"\$(?:\\.|[^$\\])*\$"
+            combined_pattern = f"({url_pattern})|({latex_pattern})"
+
             parts = []
             last_end = 0
 
-            for match in re.finditer(url_pattern, text):
+            for match in re.finditer(combined_pattern, text):
                 # Text to add before the URL (needs to be escaped)
                 before_url = text[last_end : match.start()]
                 parts.append(re.sub(r"(?<!\\)_", r"\_", before_url))
@@ -2226,7 +2229,9 @@ class DoclingDocument(BaseModel):
 
             return "".join(parts)
 
+        print("BEFORE:", mdtext)
         mdtext = escape_underscores(mdtext)
+        print("AFTER:", mdtext)
 
         return mdtext
 
