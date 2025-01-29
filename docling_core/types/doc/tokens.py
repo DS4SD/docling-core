@@ -90,6 +90,8 @@ class DocumentToken(Enum):
     BEG_GROUP = "<group>"
     END_GROUP = "</group>"
 
+    PAGE_BREAK = "<page_break>"
+
     @classmethod
     def get_special_tokens(
         cls,
@@ -115,8 +117,8 @@ class DocumentToken(Enum):
             ]
 
         # Adding dynamically generated page-tokens
-        for i in range(0, max_pages + 1):
-            special_tokens.append(f"<page_{i}>")
+        # for i in range(0, max_pages + 1):
+        #     special_tokens.append(f"<page_{i}>")
 
         # Adding dynamically generated location-tokens
         for i in range(0, max(page_dimension[0] + 1, page_dimension[1] + 1)):
@@ -145,10 +147,10 @@ class DocumentToken(Enum):
         else:
             return f"</col_{col}>"
 
-    @staticmethod
-    def get_page_token(page: int):
-        """Function to get page tokens."""
-        return f"<page_{page}>"
+    # @staticmethod
+    # def get_page_token(page: int):
+    #     """Function to get page tokens."""
+    #     return f"<page_{page}>"
 
     @staticmethod
     def get_location_token(val: float, rnorm: int = 100):

@@ -2771,8 +2771,6 @@ class DoclingDocument(BaseModel):
             add_table_cell_label=add_table_cell_label,
             add_table_cell_text=add_table_cell_text,
             # specifics
-            page_no=page_no,
-            with_groups=with_groups,
         )
 
         with open(filename, "w", encoding="utf-8") as fw:
@@ -2794,8 +2792,6 @@ class DoclingDocument(BaseModel):
         add_table_cell_label: bool = True,
         add_table_cell_text: bool = True,
         # specifics
-        page_no: Optional[int] = None,
-        with_groups: bool = True,
         newline: bool = True,
     ) -> str:
         r"""Exports the document content to a DocumentToken format.
@@ -2841,13 +2837,17 @@ class DoclingDocument(BaseModel):
 
             return (in_ordered_list, result)
 
-        def add_page_no(result, item, previous_page_no, delim):
+        def add_page_break(result, item, previous_page_no, delim):
             prov_list = item.prov
             if len(prov_list) == 0:
                 return result, previous_page_no
             current_page_no = prov_list[0].page_no
-            if previous_page_no is None or current_page_no != previous_page_no:
-                result += f"<page_{current_page_no}>{delim}"
+
+            if previous_page_no is None:
+                return result, current_page_no
+
+            if current_page_no != previous_page_no:
+                result += f"{DocumentToken.PAGE_BREAK.value}{delim}"
 
             return result, current_page_no
 
@@ -2903,7 +2903,7 @@ class DoclingDocument(BaseModel):
                 in_ordered_list.append(False)
 
             elif isinstance(item, SectionHeaderItem):
-                result, previous_page_no = add_page_no(
+                result, previous_page_no = add_page_break(
                     result, item, previous_page_no, delim
                 )
 
@@ -2917,7 +2917,7 @@ class DoclingDocument(BaseModel):
                     add_page_index=add_page_index,
                 )
             elif isinstance(item, CodeItem) and (item.label in labels):
-                result, previous_page_no = add_page_no(
+                result, previous_page_no = add_page_break(
                     result, item, previous_page_no, delim
                 )
 
@@ -2932,7 +2932,7 @@ class DoclingDocument(BaseModel):
                 )
 
             elif isinstance(item, TextItem) and (item.label in labels):
-                result, previous_page_no = add_page_no(
+                result, previous_page_no = add_page_break(
                     result, item, previous_page_no, delim
                 )
 
@@ -2947,7 +2947,7 @@ class DoclingDocument(BaseModel):
                 )
 
             elif isinstance(item, TableItem) and (item.label in labels):
-                result, previous_page_no = add_page_no(
+                result, previous_page_no = add_page_break(
                     result, item, previous_page_no, delim
                 )
 
@@ -2966,7 +2966,7 @@ class DoclingDocument(BaseModel):
                 )
 
             elif isinstance(item, PictureItem) and (item.label in labels):
-                result, previous_page_no = add_page_no(
+                result, previous_page_no = add_page_break(
                     result, item, previous_page_no, delim
                 )
 
