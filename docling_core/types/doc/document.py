@@ -719,10 +719,7 @@ class CodeItem(TextItem):
             )
 
         if add_content and self.text is not None:
-            body += (
-                f"<code_language>{self.code_language.value}</code_language>"
-                f"{self.text.strip()}"
-            )
+            body += f"<_{self.code_language.value}_>{self.text}"
 
         body += f"</{self.label.value}>{new_line}"
 
