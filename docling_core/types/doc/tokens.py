@@ -8,6 +8,8 @@
 from enum import Enum
 from typing import Tuple
 
+from docling_core.types.doc.labels import PictureClassificationLabel
+
 
 class TableToken(Enum):
     """Class to represent an LLM friendly representation of a Table."""
@@ -120,6 +122,10 @@ class DocumentToken(Enum):
         # for i in range(0, max_pages + 1):
         #     special_tokens.append(f"<page_{i}>")
 
+        # Add dynamically picture classification tokens
+        for _, member in PictureClassificationLabel.__members__.items():
+            special_tokens.append(f"<{member}>")
+
         # Adding dynamically generated location-tokens
         for i in range(0, max(page_dimension[0] + 1, page_dimension[1] + 1)):
             special_tokens.append(f"<loc_{i}>")
@@ -146,6 +152,11 @@ class DocumentToken(Enum):
             return f"<col_{col}>"
         else:
             return f"</col_{col}>"
+
+    @staticmethod
+    def get_picture_classification_token(classification: str) -> str:
+        """Function to get picture classification tokens."""
+        return f"<{classification}>"
 
     # @staticmethod
     # def get_page_token(page: int):

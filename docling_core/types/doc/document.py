@@ -996,6 +996,17 @@ class PictureItem(FloatingItem):
                 add_page_index=add_page_index,
             )
 
+        classifications = [
+            ann
+            for ann in self.annotations
+            if isinstance(ann, PictureClassificationData)
+        ]
+        if len(classifications) > 0:
+            # ! TODO: currently this code assumes class_name is of type 'str'
+            # ! TODO: when it will change to an ENUM --> adapt code
+            predicted_class = classifications[0].predicted_classes[0].class_name
+            body += DocumentToken.get_picture_classification_token(predicted_class)
+
         if add_caption and len(self.captions):
             text = self.caption_text(doc)
 
