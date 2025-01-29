@@ -2208,7 +2208,8 @@ class DoclingDocument(BaseModel):
             """Escape underscores but leave them intact in the URL.."""
             # Firstly, identify all the URL patterns.
             url_pattern = r"!\[.*?\]\((.*?)\)"
-            latex_pattern = r"\$(?:\\.|[^$\\])*\$"
+            # Matches both inline ($...$) and block ($$...$$) LaTeX equations:
+            latex_pattern = r"\$\$?(?:\\.|[^$\\])*\$\$?"
             combined_pattern = f"({url_pattern})|({latex_pattern})"
 
             parts = []
