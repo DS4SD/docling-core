@@ -686,6 +686,48 @@ class CodeItem(TextItem):
     )
     code_language: CodeLanguageLabel = CodeLanguageLabel.UNKNOWN
 
+    def export_to_document_tokens(
+        self,
+        doc: "DoclingDocument",
+        new_line: str = "\n",
+        xsize: int = 100,
+        ysize: int = 100,
+        add_location: bool = True,
+        add_content: bool = True,
+        add_page_index: bool = True,
+    ):
+        r"""Export text element to document tokens format.
+
+        :param doc: "DoclingDocument":
+        :param new_line: str:  (Default value = "\n")
+        :param xsize: int:  (Default value = 100)
+        :param ysize: int:  (Default value = 100)
+        :param add_location: bool:  (Default value = True)
+        :param add_content: bool:  (Default value = True)
+        :param add_page_index: bool:  (Default value = True)
+
+        """
+        body = f"<{self.label.value}>"
+
+        if add_location:
+            body += self.get_location_tokens(
+                doc=doc,
+                new_line="",
+                xsize=xsize,
+                ysize=ysize,
+                add_page_index=add_page_index,
+            )
+
+        if add_content and self.text is not None:
+            body += (
+                f"<code_language>{self.code_language.value}</code_language>"
+                f"{self.text.strip()}"
+            )
+
+        body += f"</{self.label.value}>{new_line}"
+
+        return body
+
 
 class SectionHeaderItem(TextItem):
     """SectionItem."""
@@ -2878,6 +2920,9 @@ class DoclingDocument(BaseModel):
                     add_page_index=add_page_index,
                 )
             elif isinstance(item, CodeItem) and (item.label in labels):
+                result, previous_page_no = add_page_no(
+                    result, item, previous_page_no, delim
+                )
 
                 result += item.export_to_document_tokens(
                     doc=self,
