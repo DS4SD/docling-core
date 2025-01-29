@@ -1,10 +1,11 @@
-<document>
-<title><location><page_1><loc_8><loc_91><loc_81><loc_95></location>DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis</title>
-<figure>
-<location><page_1><loc_59><loc_0><loc_91><loc_75></location>
+<doctag>
+<page_1>
+<title><loc_8><loc_91><loc_81><loc_95>DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis</title>
+<picture>
+<loc_59><loc_0><loc_91><loc_75>
 <caption>Figure 1: Four examples of complex page layouts across different document categories</caption>
-</figure>
+</picture>
 <table>
-<location><page_1><loc_42><loc_57><loc_49><loc_61></location>
+<loc_42><loc_57><loc_49><loc_61>
 </table>
-</document>
+</doctag>
