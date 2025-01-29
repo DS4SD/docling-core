@@ -167,7 +167,7 @@ class BoundingBox(BaseModel):
         self, other: "BoundingBox", eps: float = 1.0e-6
     ) -> float:
         """intersection_over_union."""
-        intersection_area = self.intersection_area_with(other)
+        intersection_area = self.intersection_area_with(other=other)
 
         union_area = (
             abs(self.l - self.r) * abs(self.t - self.b)
@@ -176,6 +176,13 @@ class BoundingBox(BaseModel):
         )
 
         return intersection_area / (union_area + eps)
+
+    def intersection_over_self(
+        self, other: "BoundingBox", eps: float = 1.0e-6
+    ) -> float:
+        """intersection_over_self."""
+        intersection_area = self.intersection_area_with(other=other)
+        return intersection_area / self.area()
 
     def to_bottom_left_origin(self, page_height: float) -> "BoundingBox":
         """to_bottom_left_origin.
