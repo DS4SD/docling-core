@@ -2229,9 +2229,7 @@ class DoclingDocument(BaseModel):
 
             return "".join(parts)
 
-        print("BEFORE:", mdtext)
         mdtext = escape_underscores(mdtext)
-        print("AFTER:", mdtext)
 
         return mdtext
 
