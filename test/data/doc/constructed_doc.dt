@@ -1,4 +1,4 @@
-<document>
+<doctag>
 <title>Title of the Document</title>
 <text>Author 1
 Affiliation 1</text>
@@ -23,10 +23,10 @@ Affiliation 2</text>
 <row_1><col_0><body>Product</col_0><col_1><body>2016</col_1><col_2><body>2017</col_2></row_1>
 <row_2><col_0><body>Apple</col_0><col_1><body>49823</col_1><col_2><body>695944</col_2></row_2>
 </table>
-<figure>
+<picture>
 <caption>This is the caption of figure 1.</caption>
-</figure>
-<figure>
+</picture>
+<picture>
 <caption>This is the caption of figure 2.</caption>
-</figure>
-</document>
+</picture>
+</doctag>

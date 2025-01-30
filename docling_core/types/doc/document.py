@@ -549,17 +549,12 @@ class DocItem(
         for prov in self.prov:
             page_w, page_h = doc.pages[prov.page_no].size.as_tuple()
 
-            page_i = -1
-            if add_page_index:
-                page_i = prov.page_no
-
             loc_str = DocumentToken.get_location(
                 bbox=prov.bbox.to_bottom_left_origin(page_h).as_tuple(),
                 page_w=page_w,
                 page_h=page_h,
                 xsize=xsize,
                 ysize=ysize,
-                page_i=page_i,
             )
             location += f"{loc_str}{new_line}"
 
@@ -663,6 +658,45 @@ class CodeItem(TextItem):
         DocItemLabel.CODE  # type: ignore[assignment]
     )
     code_language: CodeLanguageLabel = CodeLanguageLabel.UNKNOWN
+
+    def export_to_document_tokens(
+        self,
+        doc: "DoclingDocument",
+        new_line: str = "\n",
+        xsize: int = 100,
+        ysize: int = 100,
+        add_location: bool = True,
+        add_content: bool = True,
+        add_page_index: bool = True,
+    ):
+        r"""Export text element to document tokens format.
+
+        :param doc: "DoclingDocument":
+        :param new_line: str:  (Default value = "\n")
+        :param xsize: int:  (Default value = 100)
+        :param ysize: int:  (Default value = 100)
+        :param add_location: bool:  (Default value = True)
+        :param add_content: bool:  (Default value = True)
+        :param add_page_index: bool:  (Default value = True)
+
+        """
+        body = f"<{self.label.value}>"
+
+        if add_location:
+            body += self.get_location_tokens(
+                doc=doc,
+                new_line="",
+                xsize=xsize,
+                ysize=ysize,
+                add_page_index=add_page_index,
+            )
+
+        if add_content and self.text is not None:
+            body += f"<_{self.code_language.value}_>{self.text}"
+
+        body += f"</{self.label.value}>{new_line}"
+
+        return body
 
 
 class SectionHeaderItem(TextItem):
@@ -922,7 +956,7 @@ class PictureItem(FloatingItem):
         :param # not used at the momentadd_page_index: bool:  (Default value = True)
 
         """
-        body = f"{DocumentToken.BEG_FIGURE.value}{new_line}"
+        body = f"{DocumentToken.BEG_PICTURE.value}{new_line}"
 
         if add_location:
             body += self.get_location_tokens(
@@ -933,6 +967,17 @@ class PictureItem(FloatingItem):
                 add_page_index=add_page_index,
             )
 
+        classifications = [
+            ann
+            for ann in self.annotations
+            if isinstance(ann, PictureClassificationData)
+        ]
+        if len(classifications) > 0:
+            # ! TODO: currently this code assumes class_name is of type 'str'
+            # ! TODO: when it will change to an ENUM --> adapt code
+            predicted_class = classifications[0].predicted_classes[0].class_name
+            body += DocumentToken.get_picture_classification_token(predicted_class)
+
         if add_caption and len(self.captions):
             text = self.caption_text(doc)
 
@@ -942,7 +987,7 @@ class PictureItem(FloatingItem):
                 body += f"{DocumentToken.END_CAPTION.value}"
                 body += f"{new_line}"
 
-        body += f"{DocumentToken.END_FIGURE.value}{new_line}"
+        body += f"{DocumentToken.END_PICTURE.value}{new_line}"
 
         return body
 
@@ -1152,7 +1197,6 @@ class TableItem(FloatingItem):
                         page_h=page_h,
                         xsize=xsize,
                         ysize=ysize,
-                        page_i=page_no,
                     )
 
                 if rowstart == i and colstart == j:
@@ -1226,7 +1270,6 @@ class TableItem(FloatingItem):
                 new_line=new_line,
                 xsize=xsize,
                 ysize=ysize,
-                add_page_index=add_page_index,
             )
 
         if add_caption and len(self.captions):
@@ -1261,7 +1304,6 @@ class TableItem(FloatingItem):
                             page_h=page_h,
                             xsize=xsize,
                             ysize=ysize,
-                            page_i=self.prov[0].page_no,
                         )
                     elif (
                         col.bbox is not None
@@ -1277,7 +1319,6 @@ class TableItem(FloatingItem):
                             page_h=page_h,
                             xsize=xsize,
                             ysize=ysize,
-                            page_i=-1,
                         )
 
                     cell_label = ""
@@ -2533,8 +2574,6 @@ class DoclingDocument(BaseModel):
             add_table_cell_label=add_table_cell_label,
             add_table_cell_text=add_table_cell_text,
             # specifics
-            page_no=page_no,
-            with_groups=with_groups,
         )
 
         with open(filename, "w", encoding="utf-8") as fw:
@@ -2556,8 +2595,6 @@ class DoclingDocument(BaseModel):
         add_table_cell_label: bool = True,
         add_table_cell_text: bool = True,
         # specifics
-        page_no: Optional[int] = None,
-        with_groups: bool = True,
         newline: bool = True,
     ) -> str:
         r"""Exports the document content to a DocumentToken format.
@@ -2603,6 +2640,20 @@ class DoclingDocument(BaseModel):
 
             return (in_ordered_list, result)
 
+        def add_page_break(result, item, previous_page_no, delim):
+            prov_list = item.prov
+            if len(prov_list) == 0:
+                return result, previous_page_no
+            current_page_no = prov_list[0].page_no
+
+            if previous_page_no is None:
+                return result, current_page_no
+
+            if current_page_no != previous_page_no:
+                result += f"{DocumentToken.PAGE_BREAK.value}{delim}"
+
+            return result, current_page_no
+
         if newline:
             delim = "\n"
         else:
@@ -2613,11 +2664,10 @@ class DoclingDocument(BaseModel):
         in_ordered_list: List[bool] = []  # False
 
         result = f"{DocumentToken.BEG_DOCUMENT.value}{delim}"
-
+        previous_page_no = None
         for ix, (item, curr_level) in enumerate(
             self.iterate_items(self.body, with_groups=True)
         ):
-
             # If we've moved to a lower level, we're exiting one or more groups
             if curr_level < prev_level and len(in_ordered_list) > 0:
                 # Calculate how many levels we've exited
@@ -2656,6 +2706,9 @@ class DoclingDocument(BaseModel):
                 in_ordered_list.append(False)
 
             elif isinstance(item, SectionHeaderItem):
+                result, previous_page_no = add_page_break(
+                    result, item, previous_page_no, delim
+                )
 
                 result += item.export_to_document_tokens(
                     doc=self,
@@ -2667,6 +2720,9 @@ class DoclingDocument(BaseModel):
                     add_page_index=add_page_index,
                 )
             elif isinstance(item, CodeItem) and (item.label in labels):
+                result, previous_page_no = add_page_break(
+                    result, item, previous_page_no, delim
+                )
 
                 result += item.export_to_document_tokens(
                     doc=self,
@@ -2679,6 +2735,9 @@ class DoclingDocument(BaseModel):
                 )
 
             elif isinstance(item, TextItem) and (item.label in labels):
+                result, previous_page_no = add_page_break(
+                    result, item, previous_page_no, delim
+                )
 
                 result += item.export_to_document_tokens(
                     doc=self,
@@ -2691,6 +2750,9 @@ class DoclingDocument(BaseModel):
                 )
 
             elif isinstance(item, TableItem) and (item.label in labels):
+                result, previous_page_no = add_page_break(
+                    result, item, previous_page_no, delim
+                )
 
                 result += item.export_to_document_tokens(
                     doc=self,
@@ -2707,6 +2769,9 @@ class DoclingDocument(BaseModel):
                 )
 
             elif isinstance(item, PictureItem) and (item.label in labels):
+                result, previous_page_no = add_page_break(
+                    result, item, previous_page_no, delim
+                )
 
                 result += item.export_to_document_tokens(
                     doc=self,
