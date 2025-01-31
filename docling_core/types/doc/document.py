@@ -2480,12 +2480,7 @@ class DoclingDocument(BaseModel):
                     mathml = unescape(tostring(mathml_element, encoding="unicode"))
                     text = f"<div>{mathml}</div>"
 
-                elif (
-                    item.text == ""
-                    and item.orig != ""
-                    and image_mode == ImageRefMode.EMBEDDED
-                ):
-
+                else:
                     text = f"<pre>{math_formula}</pre>"
                 html_texts.append(text)
 
