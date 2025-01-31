@@ -2288,7 +2288,7 @@ class DoclingDocument(BaseModel):
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
-        formula_to_mathml: bool = False,
+        formula_to_mathml: bool = True,
         page_no: Optional[int] = None,
         html_lang: str = "en",
         html_head: str = _HTML_DEFAULT_HEAD,
@@ -2355,7 +2355,7 @@ class DoclingDocument(BaseModel):
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
-        formula_to_mathml: bool = False,
+        formula_to_mathml: bool = True,
         page_no: Optional[int] = None,
         html_lang: str = "en",
         html_head: str = _HTML_DEFAULT_HEAD,
@@ -2479,7 +2479,13 @@ class DoclingDocument(BaseModel):
                     annotation.text = math_formula
                     mathml = unescape(tostring(mathml_element, encoding="unicode"))
                     text = f"<div>{mathml}</div>"
-                else:
+
+                elif (
+                    item.text == ""
+                    and item.orig != ""
+                    and image_mode == ImageRefMode.EMBEDDED
+                ):
+
                     text = f"<pre>{math_formula}</pre>"
                 html_texts.append(text)
 
