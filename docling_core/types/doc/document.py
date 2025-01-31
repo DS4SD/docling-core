@@ -2227,11 +2227,18 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
                 in_list = False
-                _append_text(
-                    f"$${item.text}$$\n",
-                    do_escape_underscores=False,
-                    do_escape_html=False,
-                )
+                if item.text != "":
+                    _append_text(
+                        f"$${item.text}$$\n",
+                        do_escape_underscores=False,
+                        do_escape_html=False,
+                    )
+                elif item.orig != "":
+                    _append_text(
+                        "<!-- formula-not-decoded -->\n",
+                        do_escape_underscores=False,
+                        do_escape_html=False,
+                    )
 
             elif isinstance(item, TextItem) and item.label in labels:
                 in_list = False
