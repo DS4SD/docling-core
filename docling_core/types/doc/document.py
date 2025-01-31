@@ -2508,15 +2508,10 @@ class DoclingDocument(BaseModel):
                 html_texts.append(text)
 
             elif isinstance(item, CodeItem):
-                text = (
-                    "<pre><code>"
-                    f"{_prepare_text(
-                        item.text,
-                        do_escape_html=False,
-                        do_replace_newline=False
-                    )}"
-                    "</code></pre>"
+                code_text = _prepare_text(
+                    item.text, do_escape_html=False, do_replace_newline=False
                 )
+                text = f"<pre><code>{code_text}</code></pre>"
                 html_texts.append(text.strip())
 
             elif isinstance(item, TextItem):
