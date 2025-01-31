@@ -16,7 +16,10 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
 from urllib.parse import quote, unquote
+from xml.etree.cElementTree import SubElement, tostring
+from xml.sax.saxutils import unescape
 
+import latex2mathml.converter
 import pandas as pd
 import yaml
 from PIL import Image as PILImage
@@ -2347,6 +2350,7 @@ class DoclingDocument(BaseModel):
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
+        formula_to_mathml: bool = False,
         page_no: Optional[int] = None,
         html_lang: str = "en",
         html_head: str = _HTML_DEFAULT_HEAD,
@@ -2465,6 +2469,27 @@ class DoclingDocument(BaseModel):
                     f"<h{section_level}>{_sanitize_text(item.text)}</h{section_level}>"
                 )
                 html_texts.append(text.strip())
+
+            elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
+
+                if formula_to_mathml:
+                    # Building a math equation in MathML format
+                    # ref https://www.w3.org/TR/wai-aria-1.1/#math
+                    math_formula = _sanitize_text(item.text, do_escape_html=False)
+                    mathml_element = latex2mathml.converter.convert_to_element(
+                        math_formula, display="block"
+                    )
+                    annotation = SubElement(
+                        mathml_element, "annotation", dict(encoding="TeX")
+                    )
+                    annotation.text = math_formula
+                    mathml = unescape(tostring(mathml_element, encoding="unicode"))
+                    text = f"<div>{mathml}</div>"
+                else:
+                    text = (
+                        f"<pre>{_sanitize_text(item.text, do_escape_html=False)}</pre>"
+                    )
+                html_texts.append(text)
 
             elif isinstance(item, ListItem):
 
