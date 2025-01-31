@@ -1046,7 +1046,7 @@ class TableItem(FloatingItem):
 
         text = ""
         if doc is not None and add_caption and len(self.captions):
-            text = self.caption_text(doc)
+            text = html.escape(self.caption_text(doc))
 
         if len(self.data.table_cells) == 0:
             return ""
@@ -1072,7 +1072,7 @@ class TableItem(FloatingItem):
                 if colstart != j:
                     continue
 
-                content = cell.text.strip()
+                content = html.escape(cell.text.strip())
                 celltag = "td"
                 if cell.column_header:
                     celltag = "th"
@@ -2381,6 +2381,11 @@ class DoclingDocument(BaseModel):
 
         in_ordered_list: List[bool] = []  # False
 
+        def _sanitize_text(text: str, do_escape_html=True) -> str:
+            if do_escape_html:
+                text = html.escape(text, quote=False)
+            return text
+
         for ix, (item, curr_level) in enumerate(
             self.iterate_items(self.body, with_groups=True, page_no=page_no)
         ):
@@ -2431,14 +2436,17 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
 
-                text = f"<h1>{item.text}</h1>"
+                text = f"<h1>{_sanitize_text(item.text)}</h1>"
                 html_texts.append(text.strip())
 
             elif isinstance(item, SectionHeaderItem):
 
                 section_level: int = item.level + 1
 
-                text = f"<h{(section_level)}>{item.text}</h{(section_level)}>"
+                text = (
+                    f"<h{(section_level)}>"
+                    f"{_sanitize_text(item.text)}</h{(section_level)}>"
+                )
                 html_texts.append(text.strip())
 
             elif isinstance(item, TextItem) and item.label in [
@@ -2453,31 +2461,37 @@ class DoclingDocument(BaseModel):
                 if section_level >= 6:
                     section_level = 6
 
-                text = f"<h{section_level}>{item.text}</h{section_level}>"
+                text = (
+                    f"<h{section_level}>{_sanitize_text(item.text)}</h{section_level}>"
+                )
                 html_texts.append(text.strip())
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
 
-                text = f"<pre>{item.text}</pre>"
+                text = f"<pre>{_sanitize_text(item.text, do_escape_html=False)}</pre>"
                 html_texts.append(text)
 
             elif isinstance(item, ListItem):
 
-                text = f"<li>{item.text}</li>"
+                text = f"<li>{_sanitize_text(item.text)}</li>"
                 html_texts.append(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.LIST_ITEM]:
 
-                text = f"<li>{item.text}</li>"
+                text = f"<li>{_sanitize_text(item.text)}</li>"
                 html_texts.append(text)
 
             elif isinstance(item, CodeItem) and item.label in labels:
-                text = f"<pre><code>{item.text}</code></pre>"
+                text = (
+                    "<pre><code>"
+                    f"{_sanitize_text(item.text, do_escape_html=False)}"
+                    "</code></pre>"
+                )
                 html_texts.append(text.strip())
 
             elif isinstance(item, TextItem) and item.label in labels:
 
-                text = f"<p>{item.text}</p>"
+                text = f"<p>{_sanitize_text(item.text)}</p>"
                 html_texts.append(text.strip())
             elif isinstance(item, TableItem):
 
