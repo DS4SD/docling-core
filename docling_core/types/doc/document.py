@@ -2387,7 +2387,7 @@ class DoclingDocument(BaseModel):
 
         in_ordered_list: List[bool] = []  # False
 
-        def _prepare_text(
+        def _prepare_tag_content(
             text: str, do_escape_html=True, do_replace_newline=True
         ) -> str:
             if do_escape_html:
@@ -2446,39 +2446,22 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
 
-                text = f"<h1>{_prepare_text(item.text)}</h1>"
+                text = f"<h1>{_prepare_tag_content(item.text)}</h1>"
                 html_texts.append(text.strip())
 
             elif isinstance(item, SectionHeaderItem):
 
-                section_level: int = item.level + 1
+                section_level: int = min(item.level + 1, 6)
 
                 text = (
                     f"<h{(section_level)}>"
-                    f"{_prepare_text(item.text)}</h{(section_level)}>"
-                )
-                html_texts.append(text.strip())
-
-            elif isinstance(item, TextItem) and item.label in [
-                DocItemLabel.SECTION_HEADER
-            ]:
-
-                section_level = curr_level
-
-                if section_level <= 1:
-                    section_level = 2
-
-                if section_level >= 6:
-                    section_level = 6
-
-                text = (
-                    f"<h{section_level}>{_prepare_text(item.text)}</h{section_level}>"
+                    f"{_prepare_tag_content(item.text)}</h{(section_level)}>"
                 )
                 html_texts.append(text.strip())
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
 
-                math_formula = _prepare_text(
+                math_formula = _prepare_tag_content(
                     item.text, do_escape_html=False, do_replace_newline=False
                 )
                 if formula_to_mathml:
@@ -2499,16 +2482,16 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, ListItem):
 
-                text = f"<li>{_prepare_text(item.text)}</li>"
+                text = f"<li>{_prepare_tag_content(item.text)}</li>"
                 html_texts.append(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.LIST_ITEM]:
 
-                text = f"<li>{_prepare_text(item.text)}</li>"
+                text = f"<li>{_prepare_tag_content(item.text)}</li>"
                 html_texts.append(text)
 
             elif isinstance(item, CodeItem):
-                code_text = _prepare_text(
+                code_text = _prepare_tag_content(
                     item.text, do_escape_html=False, do_replace_newline=False
                 )
                 text = f"<pre><code>{code_text}</code></pre>"
@@ -2516,7 +2499,7 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, TextItem):
 
-                text = f"<p>{_prepare_text(item.text)}</p>"
+                text = f"<p>{_prepare_tag_content(item.text)}</p>"
                 html_texts.append(text.strip())
             elif isinstance(item, TableItem):
 
