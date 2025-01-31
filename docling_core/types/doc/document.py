@@ -2481,7 +2481,7 @@ class DoclingDocument(BaseModel):
                 text = f"<li>{_sanitize_text(item.text)}</li>"
                 html_texts.append(text)
 
-            elif isinstance(item, CodeItem) and item.label in labels:
+            elif isinstance(item, CodeItem):
                 text = (
                     "<pre><code>"
                     f"{_sanitize_text(item.text, do_escape_html=False)}"
@@ -2489,7 +2489,7 @@ class DoclingDocument(BaseModel):
                 )
                 html_texts.append(text.strip())
 
-            elif isinstance(item, TextItem) and item.label in labels:
+            elif isinstance(item, TextItem):
 
                 text = f"<p>{_sanitize_text(item.text)}</p>"
                 html_texts.append(text.strip())
