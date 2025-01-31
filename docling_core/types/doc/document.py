@@ -1390,6 +1390,9 @@ class DoclingDocument(BaseModel):
     table tr:nth-child(even) td{
     background-color: LightGray;
     }
+    math annotation {
+    display: none;
+    }
     </style>
     </head>"""
 
