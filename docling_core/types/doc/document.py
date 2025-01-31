@@ -2288,7 +2288,7 @@ class DoclingDocument(BaseModel):
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
-        formula_to_mathml: bool = False,
+        formula_to_mathml: bool = True,
         page_no: Optional[int] = None,
         html_lang: str = "en",
         html_head: str = _HTML_DEFAULT_HEAD,
@@ -2355,7 +2355,7 @@ class DoclingDocument(BaseModel):
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
-        formula_to_mathml: bool = False,
+        formula_to_mathml: bool = True,
         page_no: Optional[int] = None,
         html_lang: str = "en",
         html_head: str = _HTML_DEFAULT_HEAD,
@@ -2467,9 +2467,27 @@ class DoclingDocument(BaseModel):
                 math_formula = _prepare_tag_content(
                     item.text, do_escape_html=False, do_replace_newline=False
                 )
-                if formula_to_mathml:
-                    # Building a math equation in MathML format
-                    # ref https://www.w3.org/TR/wai-aria-1.1/#math
+                text = ""
+
+                # If the formula is not processed correcty, use its image
+                if (
+                    item.text == ""
+                    and item.orig != ""
+                    and image_mode == ImageRefMode.EMBEDDED
+                    and len(item.prov) > 0
+                ):
+                    item_image = item.get_image(doc=self)
+                    if item_image is not None:
+                        img_ref = ImageRef.from_pil(item_image, dpi=72)
+                        text = (
+                            "<figure>"
+                            f'<img src="{img_ref.uri}" alt="{item.orig}" />'
+                            "</figure>"
+                        )
+
+                # Building a math equation in MathML format
+                # ref https://www.w3.org/TR/wai-aria-1.1/#math
+                elif formula_to_mathml:
                     mathml_element = latex2mathml.converter.convert_to_element(
                         math_formula, display="block"
                     )
@@ -2479,9 +2497,12 @@ class DoclingDocument(BaseModel):
                     annotation.text = math_formula
                     mathml = unescape(tostring(mathml_element, encoding="unicode"))
                     text = f"<div>{mathml}</div>"
-                else:
+
+                elif math_formula != "":
                     text = f"<pre>{math_formula}</pre>"
-                html_texts.append(text)
+
+                if text != "":
+                    html_texts.append(text)
 
             elif isinstance(item, ListItem):
 
