@@ -2387,9 +2387,13 @@ class DoclingDocument(BaseModel):
 
         in_ordered_list: List[bool] = []  # False
 
-        def _sanitize_text(text: str, do_escape_html=True) -> str:
+        def _prepare_text(
+            text: str, do_escape_html=True, do_replace_newline=True
+        ) -> str:
             if do_escape_html:
                 text = html.escape(text, quote=False)
+            if do_replace_newline:
+                text = text.replace("\n", "<br>")
             return text
 
         for ix, (item, curr_level) in enumerate(
@@ -2442,7 +2446,7 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
 
-                text = f"<h1>{_sanitize_text(item.text)}</h1>"
+                text = f"<h1>{_prepare_text(item.text)}</h1>"
                 html_texts.append(text.strip())
 
             elif isinstance(item, SectionHeaderItem):
@@ -2451,7 +2455,7 @@ class DoclingDocument(BaseModel):
 
                 text = (
                     f"<h{(section_level)}>"
-                    f"{_sanitize_text(item.text)}</h{(section_level)}>"
+                    f"{_prepare_text(item.text)}</h{(section_level)}>"
                 )
                 html_texts.append(text.strip())
 
@@ -2468,16 +2472,18 @@ class DoclingDocument(BaseModel):
                     section_level = 6
 
                 text = (
-                    f"<h{section_level}>{_sanitize_text(item.text)}</h{section_level}>"
+                    f"<h{section_level}>{_prepare_text(item.text)}</h{section_level}>"
                 )
                 html_texts.append(text.strip())
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
 
+                math_formula = _prepare_text(
+                    item.text, do_escape_html=False, do_replace_newline=False
+                )
                 if formula_to_mathml:
                     # Building a math equation in MathML format
                     # ref https://www.w3.org/TR/wai-aria-1.1/#math
-                    math_formula = _sanitize_text(item.text, do_escape_html=False)
                     mathml_element = latex2mathml.converter.convert_to_element(
                         math_formula, display="block"
                     )
@@ -2488,32 +2494,34 @@ class DoclingDocument(BaseModel):
                     mathml = unescape(tostring(mathml_element, encoding="unicode"))
                     text = f"<div>{mathml}</div>"
                 else:
-                    text = (
-                        f"<pre>{_sanitize_text(item.text, do_escape_html=False)}</pre>"
-                    )
+                    text = f"<pre>{math_formula}</pre>"
                 html_texts.append(text)
 
             elif isinstance(item, ListItem):
 
-                text = f"<li>{_sanitize_text(item.text)}</li>"
+                text = f"<li>{_prepare_text(item.text)}</li>"
                 html_texts.append(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.LIST_ITEM]:
 
-                text = f"<li>{_sanitize_text(item.text)}</li>"
+                text = f"<li>{_prepare_text(item.text)}</li>"
                 html_texts.append(text)
 
             elif isinstance(item, CodeItem):
                 text = (
                     "<pre><code>"
-                    f"{_sanitize_text(item.text, do_escape_html=False)}"
+                    f"{_prepare_text(
+                        item.text,
+                        do_escape_html=False,
+                        do_replace_newline=False
+                    )}"
                     "</code></pre>"
                 )
                 html_texts.append(text.strip())
 
             elif isinstance(item, TextItem):
 
-                text = f"<p>{_sanitize_text(item.text)}</p>"
+                text = f"<p>{_prepare_text(item.text)}</p>"
                 html_texts.append(text.strip())
             elif isinstance(item, TableItem):
 
@@ -2535,8 +2543,7 @@ class DoclingDocument(BaseModel):
 
         lines = []
         lines.extend(head_lines)
-        for i, line in enumerate(html_texts):
-            lines.append(line.replace("\n", "<br>"))
+        lines.extend(html_texts)
 
         delim = "\n"
         html_text = (delim.join(lines)).strip()
