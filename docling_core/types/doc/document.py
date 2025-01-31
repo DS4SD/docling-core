@@ -3,6 +3,7 @@
 import base64
 import copy
 import hashlib
+import html
 import json
 import mimetypes
 import os
@@ -2082,6 +2083,46 @@ class DoclingDocument(BaseModel):
         previous_level = 0  # Track the previous item's level
         in_list = False  # Track if we're currently processing list items
 
+        # Our export markdown doesn't contain any emphasis styling:
+        # Bold, Italic, or Bold-Italic
+        # Hence, any underscore that we print into Markdown is coming from document text
+        # That means we need to escape it, to properly reflect content in the markdown
+        # However, we need to preserve underscores in image URLs
+        # to maintain their validity
+        # For example: ![image](path/to_image.png) should remain unchanged
+        def _escape_underscores(text):
+            """Escape underscores but leave them intact in the URL.."""
+            # Firstly, identify all the URL patterns.
+            url_pattern = r"!\[.*?\]\((.*?)\)"
+            # Matches both inline ($...$) and block ($$...$$) LaTeX equations:
+            latex_pattern = r"\$\$?(?:\\.|[^$\\])*\$\$?"
+            combined_pattern = f"({url_pattern})|({latex_pattern})"
+
+            parts = []
+            last_end = 0
+
+            for match in re.finditer(combined_pattern, text):
+                # Text to add before the URL (needs to be escaped)
+                before_url = text[last_end : match.start()]
+                parts.append(re.sub(r"(?<!\\)_", r"\_", before_url))
+
+                # Add the full URL part (do not escape)
+                parts.append(match.group(0))
+                last_end = match.end()
+
+            # Add the final part of the text (which needs to be escaped)
+            if last_end < len(text):
+                parts.append(re.sub(r"(?<!\\)_", r"\_", text[last_end:]))
+
+            return "".join(parts)
+
+        def _append_text(text: str, do_escape_html=True, do_escape_underscores=True):
+            if do_escape_underscores and escaping_underscores:
+                text = _escape_underscores(text)
+            if do_escape_html:
+                text = html.escape(text, quote=False)
+            mdtexts.append(text)
+
         for ix, (item, level) in enumerate(
             self.iterate_items(self.body, with_groups=True, page_no=page_no)
         ):
@@ -2130,7 +2171,7 @@ class DoclingDocument(BaseModel):
                 in_list = False
                 marker = "" if strict_text else "#"
                 text = f"{marker} {item.text}"
-                mdtexts.append(text.strip() + "\n")
+                _append_text(text.strip() + "\n")
 
             elif (
                 isinstance(item, TextItem)
@@ -2143,12 +2184,12 @@ class DoclingDocument(BaseModel):
                     if len(marker) < 2:
                         marker = "##"
                 text = f"{marker} {item.text}\n"
-                mdtexts.append(text.strip() + "\n")
+                _append_text(text.strip() + "\n")
 
             elif isinstance(item, CodeItem) and item.label in labels:
                 in_list = False
                 text = f"```\n{item.text}\n```\n"
-                mdtexts.append(text)
+                _append_text(text, do_escape_underscores=False, do_escape_html=False)
 
             elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
                 in_list = True
@@ -2165,30 +2206,35 @@ class DoclingDocument(BaseModel):
                     marker = "-"  # Markdown needs only dash as item marker.
 
                 text = f"{list_indent}{marker} {item.text}"
-                mdtexts.append(text)
+                _append_text(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
                 in_list = False
-                mdtexts.append(f"$${item.text}$$\n")
+                _append_text(
+                    f"$${item.text}$$\n",
+                    do_escape_underscores=False,
+                    do_escape_html=False,
+                )
 
             elif isinstance(item, TextItem) and item.label in labels:
                 in_list = False
                 if len(item.text) and text_width > 0:
+                    text = item.text
                     wrapped_text = textwrap.fill(text, width=text_width)
-                    mdtexts.append(wrapped_text + "\n")
+                    _append_text(wrapped_text + "\n")
                 elif len(item.text):
                     text = f"{item.text}\n"
-                    mdtexts.append(text)
+                    _append_text(text)
 
             elif isinstance(item, TableItem) and not strict_text:
                 in_list = False
-                mdtexts.append(item.caption_text(self))
+                _append_text(item.caption_text(self))
                 md_table = item.export_to_markdown()
-                mdtexts.append("\n" + md_table + "\n")
+                _append_text("\n" + md_table + "\n")
 
             elif isinstance(item, PictureItem) and not strict_text:
                 in_list = False
-                mdtexts.append(item.caption_text(self))
+                _append_text(item.caption_text(self))
 
                 line = item.export_to_markdown(
                     doc=self,
@@ -2196,53 +2242,17 @@ class DoclingDocument(BaseModel):
                     image_mode=image_mode,
                 )
 
-                mdtexts.append(line)
+                _append_text(line, do_escape_html=False, do_escape_underscores=False)
 
             elif isinstance(item, DocItem) and item.label in labels:
                 in_list = False
-                text = "<missing-text>"
-                mdtexts.append(text)
+                text = "<!-- missing-text -->"
+                _append_text(text, do_escape_html=False, do_escape_underscores=False)
 
         mdtext = (delim.join(mdtexts)).strip()
         mdtext = re.sub(
             r"\n\n\n+", "\n\n", mdtext
         )  # remove cases of double or more empty lines.
-
-        # Our export markdown doesn't contain any emphasis styling:
-        # Bold, Italic, or Bold-Italic
-        # Hence, any underscore that we print into Markdown is coming from document text
-        # That means we need to escape it, to properly reflect content in the markdown
-        # However, we need to preserve underscores in image URLs
-        # to maintain their validity
-        # For example: ![image](path/to_image.png) should remain unchanged
-        def escape_underscores(text):
-            """Escape underscores but leave them intact in the URL.."""
-            # Firstly, identify all the URL patterns.
-            url_pattern = r"!\[.*?\]\((.*?)\)"
-            # Matches both inline ($...$) and block ($$...$$) LaTeX equations:
-            latex_pattern = r"\$\$?(?:\\.|[^$\\])*\$\$?"
-            combined_pattern = f"({url_pattern})|({latex_pattern})"
-
-            parts = []
-            last_end = 0
-
-            for match in re.finditer(combined_pattern, text):
-                # Text to add before the URL (needs to be escaped)
-                before_url = text[last_end : match.start()]
-                parts.append(re.sub(r"(?<!\\)_", r"\_", before_url))
-
-                # Add the full URL part (do not escape)
-                parts.append(match.group(0))
-                last_end = match.end()
-
-            # Add the final part of the text (which needs to be escaped)
-            if last_end < len(text):
-                parts.append(re.sub(r"(?<!\\)_", r"\_", text[last_end:]))
-
-            return "".join(parts)
-
-        if escaping_underscores:
-            mdtext = escape_underscores(mdtext)
 
         return mdtext
 
