@@ -2466,11 +2466,6 @@ class DoclingDocument(BaseModel):
                 )
                 html_texts.append(text.strip())
 
-            elif isinstance(item, TextItem) and item.label in [DocItemLabel.CODE]:
-
-                text = f"<pre>{_sanitize_text(item.text, do_escape_html=False)}</pre>"
-                html_texts.append(text)
-
             elif isinstance(item, ListItem):
 
                 text = f"<li>{_sanitize_text(item.text)}</li>"
