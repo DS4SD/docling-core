@@ -1393,6 +1393,17 @@ class DoclingDocument(BaseModel):
     math annotation {
     display: none;
     }
+    .formula-not-decoded {
+    background: repeating-linear-gradient(
+    45deg, /* Angle of the stripes */
+    LightGray, /* First color */
+    LightGray 10px, /* Length of the first color */
+    White 10px, /* Second color */
+    White 20px /* Length of the second color */
+    );
+    margin: 0;
+    text-align: center;
+    }
     </style>
     </head>"""
 
@@ -2503,6 +2514,10 @@ class DoclingDocument(BaseModel):
 
                 if text != "":
                     html_texts.append(text)
+                else:
+                    html_texts.append(
+                        '<div class="formula-not-decoded">Formula not decoded</div>'
+                    )
 
             elif isinstance(item, ListItem):
 
