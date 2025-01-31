@@ -2426,7 +2426,7 @@ class DoclingDocument(BaseModel):
             ]:
 
                 text = "<ol>"
-                html_texts.append(text.strip())
+                html_texts.append(text)
 
                 # Increment list nesting level when entering a new list
                 in_ordered_list.append(True)
@@ -2436,7 +2436,7 @@ class DoclingDocument(BaseModel):
             ]:
 
                 text = "<ul>"
-                html_texts.append(text.strip())
+                html_texts.append(text)
 
                 # Increment list nesting level when entering a new list
                 in_ordered_list.append(False)
@@ -2447,7 +2447,7 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
 
                 text = f"<h1>{_prepare_tag_content(item.text)}</h1>"
-                html_texts.append(text.strip())
+                html_texts.append(text)
 
             elif isinstance(item, SectionHeaderItem):
 
@@ -2457,7 +2457,7 @@ class DoclingDocument(BaseModel):
                     f"<h{(section_level)}>"
                     f"{_prepare_tag_content(item.text)}</h{(section_level)}>"
                 )
-                html_texts.append(text.strip())
+                html_texts.append(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
 
@@ -2495,12 +2495,12 @@ class DoclingDocument(BaseModel):
                     item.text, do_escape_html=False, do_replace_newline=False
                 )
                 text = f"<pre><code>{code_text}</code></pre>"
-                html_texts.append(text.strip())
+                html_texts.append(text)
 
             elif isinstance(item, TextItem):
 
                 text = f"<p>{_prepare_tag_content(item.text)}</p>"
-                html_texts.append(text.strip())
+                html_texts.append(text)
             elif isinstance(item, TableItem):
 
                 text = item.export_to_html(doc=self, add_caption=True)
