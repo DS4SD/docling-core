@@ -12,6 +12,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_header",
                         "prov": [
                             {
@@ -50,6 +51,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -91,6 +93,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -132,6 +135,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -173,6 +177,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -215,6 +220,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -257,6 +263,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -299,6 +306,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_footer",
                         "prov": [
                             {
@@ -341,6 +349,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_footer",
                         "prov": [
                             {
@@ -383,6 +392,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -425,6 +435,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -467,6 +478,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -509,6 +521,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -551,6 +564,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -593,6 +607,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -635,6 +650,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -677,6 +693,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -719,6 +736,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -761,6 +779,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "code",
                         "prov": [
                             {
@@ -803,6 +822,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -845,6 +865,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -887,6 +908,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -930,6 +952,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "footnote",
                         "prov": [
                             {
@@ -973,6 +996,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_footer",
                         "prov": [
                             {
@@ -1016,6 +1040,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "caption",
                         "prov": [
                             {
@@ -1059,6 +1084,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1102,6 +1128,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1145,6 +1172,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1188,6 +1216,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1232,6 +1261,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1276,6 +1306,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1320,6 +1351,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_footer",
                         "prov": [
                             {
@@ -1364,6 +1396,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1408,6 +1441,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1452,6 +1486,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1496,6 +1531,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1539,6 +1575,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1582,6 +1619,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1625,6 +1663,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1667,6 +1706,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1709,6 +1749,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1751,6 +1792,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_footer",
                         "prov": [
                             {
@@ -1793,6 +1835,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1835,6 +1878,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "caption",
                         "prov": [
                             {
@@ -1877,6 +1921,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "table",
                         "prov": [
                             {
@@ -1922,6 +1967,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -1964,6 +2010,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -2006,6 +2053,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -2048,6 +2096,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2090,6 +2139,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2132,6 +2182,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_footer",
                         "prov": [
                             {
@@ -2174,6 +2225,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -2216,6 +2268,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2258,6 +2311,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2300,6 +2354,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2342,6 +2397,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2384,6 +2440,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2426,6 +2483,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2468,6 +2526,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2510,6 +2569,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2552,6 +2612,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2594,6 +2655,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2636,6 +2698,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2678,6 +2741,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2720,6 +2784,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2762,6 +2827,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "list_item",
                         "prov": [
                             {
@@ -2804,6 +2870,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_footer",
                         "prov": [
                             {
@@ -2846,6 +2913,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -2888,6 +2956,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -2930,6 +2999,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -2972,6 +3042,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3014,6 +3085,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3056,6 +3128,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3098,6 +3171,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3140,6 +3214,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3182,6 +3257,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3224,6 +3300,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3266,6 +3343,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3308,6 +3386,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3350,6 +3429,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3392,6 +3472,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3434,6 +3515,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3476,6 +3558,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3518,6 +3601,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3560,6 +3644,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3602,6 +3687,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3644,6 +3730,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3686,6 +3773,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3728,6 +3816,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "caption",
                         "prov": [
                             {
@@ -3770,6 +3859,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3812,6 +3902,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3854,6 +3945,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3896,6 +3988,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -3938,6 +4031,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_footer",
                         "prov": [
                             {
@@ -3980,6 +4074,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_header",
                         "prov": [
                             {
@@ -4022,6 +4117,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4064,6 +4160,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "caption",
                         "prov": [
                             {
@@ -4106,6 +4203,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "table",
                         "prov": [
                             {
@@ -4151,6 +4249,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4193,6 +4292,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4235,6 +4335,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "caption",
                         "prov": [
                             {
@@ -4277,6 +4378,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4319,6 +4421,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4361,6 +4464,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4403,6 +4507,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4445,6 +4550,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4487,6 +4593,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "table",
                         "prov": [
                             {
@@ -4529,6 +4636,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4571,6 +4679,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4613,6 +4722,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4655,6 +4765,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4697,6 +4808,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4739,6 +4851,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4781,6 +4894,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_footer",
                         "prov": [
                             {
@@ -4823,6 +4937,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -4865,6 +4980,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "caption",
                         "prov": [
                             {
@@ -4907,6 +5023,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "table",
                         "prov": [
                             {
@@ -4952,6 +5069,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "caption",
                         "prov": [
                             {
@@ -4994,6 +5112,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -5036,6 +5155,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -5078,6 +5198,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "text",
                         "prov": [
                             {
@@ -5120,6 +5241,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "paragraph",
                         "prov": [
                             {
@@ -5162,6 +5284,7 @@
                             "$ref": "#/body"
                         },
                         "children": [],
+                        "content_layer": "body",
                         "label": "page_footer",
                         "prov": [
                             {
