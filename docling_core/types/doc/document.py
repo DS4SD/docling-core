@@ -539,7 +539,6 @@ class DocItem(
         new_line: str,
         xsize: int = 100,
         ysize: int = 100,
-        add_page_index: bool = True,
     ) -> str:
         """Get the location string for the BaseCell."""
         if not len(self.prov):
@@ -613,7 +612,6 @@ class TextItem(DocItem):
         ysize: int = 100,
         add_location: bool = True,
         add_content: bool = True,
-        add_page_index: bool = True,
     ):
         r"""Export text element to document tokens format.
 
@@ -623,7 +621,6 @@ class TextItem(DocItem):
         :param ysize: int:  (Default value = 100)
         :param add_location: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
-        :param add_page_index: bool:  (Default value = True)
 
         """
         body = f"<{self.label.value}>"
@@ -639,7 +636,6 @@ class TextItem(DocItem):
                 new_line="",
                 xsize=xsize,
                 ysize=ysize,
-                add_page_index=add_page_index,
             )
 
         if add_content and self.text is not None:
@@ -666,7 +662,6 @@ class CodeItem(TextItem):
         ysize: int = 100,
         add_location: bool = True,
         add_content: bool = True,
-        add_page_index: bool = True,
     ):
         r"""Export text element to document tokens format.
 
@@ -676,7 +671,6 @@ class CodeItem(TextItem):
         :param ysize: int:  (Default value = 100)
         :param add_location: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
-        :param add_page_index: bool:  (Default value = True)
 
         """
         body = f"<{self.label.value}>"
@@ -687,7 +681,6 @@ class CodeItem(TextItem):
                 new_line="",
                 xsize=xsize,
                 ysize=ysize,
-                add_page_index=add_page_index,
             )
 
         if add_content and self.text is not None:
@@ -714,7 +707,6 @@ class SectionHeaderItem(TextItem):
         ysize: int = 100,
         add_location: bool = True,
         add_content: bool = True,
-        add_page_index: bool = True,
     ):
         r"""Export text element to document tokens format.
 
@@ -724,7 +716,6 @@ class SectionHeaderItem(TextItem):
         :param ysize: int:  (Default value = 100)
         :param add_location: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
-        :param add_page_index: bool:  (Default value = True)
 
         """
         body = f"<{self.label.value}_level_{self.level}>"
@@ -740,7 +731,6 @@ class SectionHeaderItem(TextItem):
                 new_line="",
                 xsize=xsize,
                 ysize=ysize,
-                add_page_index=add_page_index,
             )
 
         if add_content and self.text is not None:
@@ -941,7 +931,6 @@ class PictureItem(FloatingItem):
         add_location: bool = True,
         add_caption: bool = True,
         add_content: bool = True,  # not used at the moment
-        add_page_index: bool = True,
     ):
         r"""Export picture to document tokens format.
 
@@ -952,7 +941,7 @@ class PictureItem(FloatingItem):
         :param add_location: bool:  (Default value = True)
         :param add_caption: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
-        :param # not used at the momentadd_page_index: bool:  (Default value = True)
+        :param # not used at the moment
 
         """
         body = f"{DocumentToken.BEG_PICTURE.value}{new_line}"
@@ -963,7 +952,6 @@ class PictureItem(FloatingItem):
                 new_line=new_line,
                 xsize=xsize,
                 ysize=ysize,
-                add_page_index=add_page_index,
             )
 
         classifications = [
@@ -1239,12 +1227,9 @@ class TableItem(FloatingItem):
         xsize: int = 100,
         ysize: int = 100,
         add_location: bool = True,
-        add_caption: bool = True,
-        add_content: bool = True,
         add_cell_location: bool = True,
-        add_cell_label: bool = True,
         add_cell_text: bool = True,
-        add_page_index: bool = True,
+        add_caption: bool = True,
     ):
         r"""Export table to document tokens format.
 
@@ -1253,15 +1238,11 @@ class TableItem(FloatingItem):
         :param xsize: int:  (Default value = 100)
         :param ysize: int:  (Default value = 100)
         :param add_location: bool:  (Default value = True)
-        :param add_caption: bool:  (Default value = True)
-        :param add_content: bool:  (Default value = True)
         :param add_cell_location: bool:  (Default value = True)
-        :param add_cell_label: bool:  (Default value = True)
         :param add_cell_text: bool:  (Default value = True)
-        :param add_page_index: bool:  (Default value = True)
-
+        :param add_caption: bool:  (Default value = True)
         """
-        body = f"{DocumentToken.BEG_TABLE.value}{new_line}"
+        body = f"{DocumentToken.BEG_OTSL.value}{new_line}"
 
         if add_location:
             body += self.get_location_tokens(
@@ -1270,6 +1251,8 @@ class TableItem(FloatingItem):
                 xsize=xsize,
                 ysize=ysize,
             )
+
+        body += self.export_to_otsl(doc, add_cell_location, add_cell_text, xsize, ysize)
 
         if add_caption and len(self.captions):
             text = self.caption_text(doc)
@@ -1280,62 +1263,7 @@ class TableItem(FloatingItem):
                 body += f"{DocumentToken.END_CAPTION.value}"
                 body += f"{new_line}"
 
-        if add_content and len(self.data.table_cells) > 0:
-            for i, row in enumerate(self.data.grid):
-                body += f"<row_{i}>"
-                for j, col in enumerate(row):
-
-                    text = ""
-                    if add_cell_text:
-                        text = col.text.strip()
-
-                    cell_loc = ""
-                    if (
-                        col.bbox is not None
-                        and add_cell_location
-                        and add_page_index
-                        and len(self.prov) > 0
-                    ):
-                        page_w, page_h = doc.pages[self.prov[0].page_no].size.as_tuple()
-                        cell_loc = DocumentToken.get_location(
-                            bbox=col.bbox.to_bottom_left_origin(page_h).as_tuple(),
-                            page_w=page_w,
-                            page_h=page_h,
-                            xsize=xsize,
-                            ysize=ysize,
-                        )
-                    elif (
-                        col.bbox is not None
-                        and add_cell_location
-                        and not add_page_index
-                        and len(self.prov) > 0
-                    ):
-                        page_w, page_h = doc.pages[self.prov[0].page_no].size.as_tuple()
-
-                        cell_loc = DocumentToken.get_location(
-                            bbox=col.bbox.to_bottom_left_origin(page_h).as_tuple(),
-                            page_w=page_w,
-                            page_h=page_h,
-                            xsize=xsize,
-                            ysize=ysize,
-                        )
-
-                    cell_label = ""
-                    if add_cell_label:
-                        if col.column_header:
-                            cell_label = "<col_header>"
-                        elif col.row_header:
-                            cell_label = "<row_header>"
-                        elif col.row_section:
-                            cell_label = "<row_section>"
-                        else:
-                            cell_label = "<body>"
-
-                    body += f"<col_{j}>{cell_loc}{cell_label}{text}</col_{j}>"
-
-                body += f"</row_{i}>{new_line}"
-
-        body += f"{DocumentToken.END_TABLE.value}{new_line}"
+        body += f"{DocumentToken.END_OTSL.value}{new_line}"
 
         return body
 
@@ -2623,7 +2551,10 @@ class DoclingDocument(BaseModel):
 
             return (in_ordered_list, result)
 
-        def add_page_break(result, item, previous_page_no, delim):
+        def add_page_break(result, item, previous_page_no, delim, add_page_break):
+            if not add_page_break:
+                return result, previous_page_no
+
             prov_list = item.prov
             if len(prov_list) == 0:
                 return result, previous_page_no
@@ -2690,7 +2621,7 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, SectionHeaderItem):
                 result, previous_page_no = add_page_break(
-                    result, item, previous_page_no, delim
+                    result, item, previous_page_no, delim, add_page_index
                 )
 
                 result += item.export_to_document_tokens(
@@ -2700,11 +2631,10 @@ class DoclingDocument(BaseModel):
                     ysize=ysize,
                     add_location=add_location,
                     add_content=add_content,
-                    add_page_index=add_page_index,
                 )
             elif isinstance(item, CodeItem) and (item.label in labels):
                 result, previous_page_no = add_page_break(
-                    result, item, previous_page_no, delim
+                    result, item, previous_page_no, delim, add_page_index
                 )
 
                 result += item.export_to_document_tokens(
@@ -2714,12 +2644,11 @@ class DoclingDocument(BaseModel):
                     ysize=ysize,
                     add_location=add_location,
                     add_content=add_content,
-                    add_page_index=add_page_index,
                 )
 
             elif isinstance(item, TextItem) and (item.label in labels):
                 result, previous_page_no = add_page_break(
-                    result, item, previous_page_no, delim
+                    result, item, previous_page_no, delim, add_page_index
                 )
 
                 result += item.export_to_document_tokens(
@@ -2729,31 +2658,26 @@ class DoclingDocument(BaseModel):
                     ysize=ysize,
                     add_location=add_location,
                     add_content=add_content,
-                    add_page_index=add_page_index,
                 )
 
             elif isinstance(item, TableItem) and (item.label in labels):
                 result, previous_page_no = add_page_break(
-                    result, item, previous_page_no, delim
+                    result, item, previous_page_no, delim, add_page_index
                 )
-
                 result += item.export_to_document_tokens(
                     doc=self,
                     new_line=delim,
                     xsize=xsize,
                     ysize=ysize,
-                    add_caption=True,
                     add_location=add_location,
-                    add_content=add_content,
                     add_cell_location=add_table_cell_location,
-                    add_cell_label=add_table_cell_label,
                     add_cell_text=add_table_cell_text,
-                    add_page_index=add_page_index,
+                    add_caption=True,
                 )
 
             elif isinstance(item, PictureItem) and (item.label in labels):
                 result, previous_page_no = add_page_break(
-                    result, item, previous_page_no, delim
+                    result, item, previous_page_no, delim, add_page_index
                 )
 
                 result += item.export_to_document_tokens(
@@ -2764,7 +2688,6 @@ class DoclingDocument(BaseModel):
                     add_caption=True,
                     add_location=add_location,
                     add_content=add_content,
-                    add_page_index=add_page_index,
                 )
 
         result += DocumentToken.END_DOCUMENT.value

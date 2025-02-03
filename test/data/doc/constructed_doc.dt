@@ -17,12 +17,9 @@ Affiliation 2</text>
 </ordered_list>
 <list_item>list item 4</list_item>
 </unordered_list>
-<table>
-<caption>This is the caption of table 1.</caption>
-<row_0><col_0><body>Product</col_0><col_1><body>Years</col_1><col_2><body>Years</col_2></row_0>
-<row_1><col_0><body>Product</col_0><col_1><body>2016</col_1><col_2><body>2017</col_2></row_1>
-<row_2><col_0><body>Apple</col_0><col_1><body>49823</col_1><col_2><body>695944</col_2></row_2>
-</table>
+<otsl>
+<fcel>Product<fcel>Years<lcel><nl><ucel><fcel>2016<fcel>2017<nl><fcel>Apple<fcel>49823<fcel>695944<nl><caption>This is the caption of table 1.</caption>
+</otsl>
 <picture>
 <caption>This is the caption of figure 1.</caption>
 </picture>
