@@ -2677,7 +2677,7 @@ class DoclingDocument(BaseModel):
     def save_as_document_tokens(
         self,
         filename: Path,
-        delim: str = "\n\n",
+        delim: str = "\n",
         from_element: int = 0,
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
@@ -2688,11 +2688,7 @@ class DoclingDocument(BaseModel):
         add_page_index: bool = True,
         # table specific flags
         add_table_cell_location: bool = False,
-        add_table_cell_label: bool = True,
         add_table_cell_text: bool = True,
-        # specifics
-        page_no: Optional[int] = None,
-        with_groups: bool = True,
     ):
         r"""Save the document content to a DocumentToken format."""
         out = self.export_to_document_tokens(
@@ -2707,9 +2703,7 @@ class DoclingDocument(BaseModel):
             add_page_index=add_page_index,
             # table specific flags
             add_table_cell_location=add_table_cell_location,
-            add_table_cell_label=add_table_cell_label,
             add_table_cell_text=add_table_cell_text,
-            # specifics
         )
 
         with open(filename, "w", encoding="utf-8") as fw:
@@ -2728,10 +2722,7 @@ class DoclingDocument(BaseModel):
         add_page_index: bool = True,
         # table specific flags
         add_table_cell_location: bool = False,
-        add_table_cell_label: bool = True,
         add_table_cell_text: bool = True,
-        # specifics
-        newline: bool = True,
     ) -> str:
         r"""Exports the document content to a DocumentToken format.
 
@@ -2748,7 +2739,6 @@ class DoclingDocument(BaseModel):
         :param add_content: bool:  (Default value = True)
         :param add_page_index: bool:  (Default value = True)
         :param # table specific flagsadd_table_cell_location: bool
-        :param add_table_cell_label: bool:  (Default value = True)
         :param add_table_cell_text: bool:  (Default value = True)
         :returns: The content of the document formatted as a DocTags string.
         :rtype: str
@@ -2792,11 +2782,6 @@ class DoclingDocument(BaseModel):
                 result += f"{DocumentToken.PAGE_BREAK.value}{delim}"
 
             return result, current_page_no
-
-        if newline:
-            delim = "\n"
-        else:
-            delim = ""
 
         prev_level = 0  # Track the previous item's level
 
