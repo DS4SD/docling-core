@@ -2757,9 +2757,9 @@ class DoclingDocument(BaseModel):
 
             while curr_level < prev_level and len(in_ordered_list) > 0:
                 if in_ordered_list[-1]:
-                    result += f"</ordered_list>{delim}"
+                    result += "</ordered_list>\n"
                 else:
-                    result += f"</unordered_list>{delim}"
+                    result += "</unordered_list>\n"
 
                 prev_level -= 1
                 in_ordered_list.pop()  # = in_ordered_list[:-1]
@@ -2779,7 +2779,7 @@ class DoclingDocument(BaseModel):
                 return result, current_page_no
 
             if current_page_no != previous_page_no:
-                result += f"{DocumentToken.PAGE_BREAK.value}{delim}"
+                result += f"{DocumentToken.PAGE_BREAK.value}\n"
 
             return result, current_page_no
 
