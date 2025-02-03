@@ -403,6 +403,10 @@ def _test_export_methods(doc: DoclingDocument, filename: str):
 
     # Test DocTags export ...
     dt_pred = doc.export_to_document_tokens()
+    # print("\n\n\n\n\n\n\n")
+    # print(filename)
+    # print(dt_pred)
+    # print("\n\n\n\n\n\n\n")
     _verify_regression_test(dt_pred, filename=filename, ext="dt")
 
     # Test Tables export ...
