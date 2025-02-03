@@ -669,7 +669,7 @@ class TextItem(DocItem):
         if add_content and self.text is not None:
             body += self.text.strip()
 
-        body += f"</{self.label.value}>{new_line}"
+        body += f"</{self.label.value}>\n"
 
         return body
 
@@ -714,7 +714,7 @@ class CodeItem(TextItem):
         if add_content and self.text is not None:
             body += f"<_{self.code_language.value}_>{self.text}"
 
-        body += f"</{self.label.value}>{new_line}"
+        body += f"</{self.label.value}>\n"
 
         return body
 
@@ -764,7 +764,7 @@ class SectionHeaderItem(TextItem):
         if add_content and self.text is not None:
             body += self.text.strip()
 
-        body += f"</{self.label.value}_level_{self.level}>{new_line}"
+        body += f"</{self.label.value}_level_{self.level}>\n"
 
         return body
 
@@ -1004,7 +1004,7 @@ class PictureItem(FloatingItem):
                 body += f"{DocumentToken.END_CAPTION.value}"
                 body += f"{new_line}"
 
-        body += f"{DocumentToken.END_PICTURE.value}{new_line}"
+        body += f"{DocumentToken.END_PICTURE.value}\n"
 
         return body
 
@@ -1306,7 +1306,7 @@ class TableItem(FloatingItem):
                 body += f"{DocumentToken.END_CAPTION.value}"
                 body += f"{new_line}"
 
-        body += f"{DocumentToken.END_OTSL.value}{new_line}"
+        body += f"{DocumentToken.END_OTSL.value}\n"
 
         return body
 
