@@ -1430,7 +1430,7 @@ class DoclingDocument(BaseModel):
     )
 
     furniture: Annotated[GroupItem, Field(deprecated=True)] = GroupItem(
-        name="_root_", self_ref="#/furniture"
+        name="_root_", self_ref="#/furniture", content_layer=ContentLayer.FURNITURE
     )  # List[RefItem] = []
     body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
 

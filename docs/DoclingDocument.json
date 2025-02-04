@@ -1508,7 +1508,7 @@
         "self_ref": "#/furniture",
         "parent": null,
         "children": [],
-        "content_layer": "body",
+        "content_layer": "furniture",
         "name": "_root_",
         "label": "unspecified"
       },

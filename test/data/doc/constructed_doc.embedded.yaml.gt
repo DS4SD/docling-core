@@ -14,7 +14,7 @@ body:
   self_ref: '#/body'
 furniture:
   children: []
-  content_layer: body
+  content_layer: furniture
   label: unspecified
   name: _root_
   self_ref: '#/furniture'
