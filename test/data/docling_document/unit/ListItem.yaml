@@ -1,4 +1,5 @@
 children: []
+content_layer: body
 enumerated: true
 label: list_item
 marker: (1)
@@ -7,4 +8,3 @@ parent: null
 prov: []
 self_ref: '#'
 text: whatever
-content_layer: body

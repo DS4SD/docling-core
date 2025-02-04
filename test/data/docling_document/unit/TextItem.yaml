@@ -1,8 +1,8 @@
 children: []
+content_layer: body
 label: text
 orig: whatever
 parent: null
 prov: []
 self_ref: '#'
 text: whatever
-content_layer: body
