@@ -47,7 +47,7 @@ from docling_core.types.doc.utils import relative_path
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
-CURRENT_VERSION: Final = "1.0.0"
+CURRENT_VERSION: Final = "1.1.0"
 
 DEFAULT_EXPORT_LABELS = {
     DocItemLabel.TITLE,
@@ -1441,6 +1441,23 @@ class DoclingDocument(BaseModel):
     key_value_items: List[KeyValueItem] = []
 
     pages: Dict[int, PageItem] = {}  # empty as default
+
+    @model_validator(mode="after")
+    def transform_to_content_layer(self) -> "DoclingDocument":
+        """transform_to_content_layer."""
+        # Since version 1.1.0, all NodeItems carry content_layer property.
+        # We must assign previous page_header and page_footer instances to furniture.
+        if self.version == "1.0.0":
+            for item, level in self.iterate_items(
+                with_groups=True, traverse_pictures=True
+            ):
+                if isinstance(item, DocItem) and item.label in [
+                    DocItemLabel.PAGE_HEADER,
+                    DocItemLabel.PAGE_FOOTER,
+                ]:
+                    item.content_layer = ContentLayer.FURNITURE
+
+        return self
 
     def add_group(
         self,
