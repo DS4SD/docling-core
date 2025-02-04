@@ -1835,6 +1835,7 @@ class DoclingDocument(BaseModel):
         with_groups: bool = False,
         traverse_pictures: bool = False,
         page_no: Optional[int] = None,
+        included_content_layers: List[ContentLayer] = [ContentLayer.BODY],
         _level: int = 0,  # fixed parameter, carries through the node nesting level
     ) -> typing.Iterable[Tuple[NodeItem, int]]:  # tuple of node and level
         """iterate_elements.
@@ -1851,14 +1852,22 @@ class DoclingDocument(BaseModel):
             root = self.body
 
         # Yield non-group items or group items when with_groups=True
-        if not isinstance(root, GroupItem) or with_groups:
-            if isinstance(root, DocItem):
-                if page_no is None or any(
-                    prov.page_no == page_no for prov in root.prov
-                ):
-                    yield root, _level
-            else:
-                yield root, _level
+
+        # Combine conditions to have a single yield point
+        should_yield = (
+            (not isinstance(root, GroupItem) or with_groups)
+            and (
+                not isinstance(root, DocItem)
+                or (
+                    page_no is None
+                    or any(prov.page_no == page_no for prov in root.prov)
+                )
+            )
+            and root.content_layer in included_content_layers
+        )
+
+        if should_yield:
+            yield root, _level
 
         # Handle picture traversal - only traverse children if requested
         if isinstance(root, PictureItem) and not traverse_pictures:
