@@ -195,12 +195,14 @@ def test_docitems():
             f"./test/data/docling_document/unit/{name}.yaml", "r", encoding="utf-8"
         ) as fr:
             gold = fr.read()
-        return gold
+        return yaml.safe_load(gold)
 
     def verify(dc, obj):
         pred = serialise(obj).strip()
+        pred = yaml.safe_load(pred)
+
         # print(f"\t{dc.__name__}:\n {pred}")
-        gold = read(dc.__name__).strip()
+        gold = read(dc.__name__)
 
         assert pred == gold, f"pred!=gold for {dc.__name__}"
 
