@@ -44,7 +44,7 @@ from docling_core.types.doc import BoundingBox, Size
 from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.labels import CodeLanguageLabel, DocItemLabel, GroupLabel
 from docling_core.types.doc.tokens import DocumentToken, TableToken
-from docling_core.types.doc.utils import relative_path
+from docling_core.types.doc.utils import get_text_direction, relative_path
 
 _logger = logging.getLogger(__name__)
 
@@ -866,7 +866,8 @@ class PictureItem(FloatingItem):
 
         caption_text = ""
         if len(text) > 0:
-            caption_text = f"<figcaption>{text}</figcaption>"
+            dir = get_text_direction(text)
+            caption_text = f'<figcaption dir="{dir}">{text}</figcaption>'
 
         default_response = f"<figure>{caption_text}</figure>"
 
@@ -1090,15 +1091,23 @@ class TableItem(FloatingItem):
                 if colspan > 1:
                     opening_tag += f' colspan="{colspan}"'
 
+                dir = get_text_direction(content)
+                opening_tag += f' dir="{dir}"'
+
                 body += f"<{opening_tag}>{content}</{celltag}>"
             body += "</tr>"
 
+        dir = get_text_direction(text)
+
         if len(text) > 0 and len(body) > 0:
-            body = f"<table><caption>{text}</caption><tbody>{body}</tbody></table>"
+            body = (
+                f'<table><caption dir="{dir}">{text}</caption>'
+                f"<tbody>{body}</tbody></table>"
+            )
         elif len(text) == 0 and len(body) > 0:
             body = f"<table><tbody>{body}</tbody></table>"
         elif len(text) > 0 and len(body) == 0:
-            body = f"<table><caption>{text}</caption></table>"
+            body = f'<table><caption dir="{dir}">{text}</caption></table>'
         else:
             body = "<table></table>"
 
@@ -2470,16 +2479,18 @@ class DoclingDocument(BaseModel):
                 continue
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
-
-                text = f"<h1>{_prepare_tag_content(item.text)}</h1>"
+                text_inner = _prepare_tag_content(item.text)
+                dir = get_text_direction(item.text)
+                text = f'<h1 dir="{dir}">{text_inner}</h1>'
                 html_texts.append(text)
 
             elif isinstance(item, SectionHeaderItem):
 
                 section_level: int = min(item.level + 1, 6)
+                dir = get_text_direction(item.text)
 
                 text = (
-                    f"<h{(section_level)}>"
+                    f'<h{(section_level)} dir="{dir}">'
                     f"{_prepare_tag_content(item.text)}</h{(section_level)}>"
                 )
                 html_texts.append(text)
@@ -2544,13 +2555,13 @@ class DoclingDocument(BaseModel):
                     )
 
             elif isinstance(item, ListItem):
-
-                text = f"<li>{_prepare_tag_content(item.text)}</li>"
+                dir = get_text_direction(item.text)
+                text = f'<li dir="{dir}">{_prepare_tag_content(item.text)}</li>'
                 html_texts.append(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.LIST_ITEM]:
-
-                text = f"<li>{_prepare_tag_content(item.text)}</li>"
+                dir = get_text_direction(item.text)
+                text = f'<li dir="{dir}">{_prepare_tag_content(item.text)}</li>'
                 html_texts.append(text)
 
             elif isinstance(item, CodeItem):
@@ -2561,8 +2572,8 @@ class DoclingDocument(BaseModel):
                 html_texts.append(text)
 
             elif isinstance(item, TextItem):
-
-                text = f"<p>{_prepare_tag_content(item.text)}</p>"
+                dir = get_text_direction(item.text)
+                text = f'<p dir="{dir}">{_prepare_tag_content(item.text)}</p>'
                 html_texts.append(text)
             elif isinstance(item, TableItem):
 

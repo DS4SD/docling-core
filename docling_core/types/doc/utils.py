@@ -5,6 +5,7 @@
 
 """Utils for document types."""
 
+import unicodedata
 from pathlib import Path
 
 
@@ -46,3 +47,19 @@ def relative_path(src: Path, target: Path) -> Path:
 
     # Combine and return the result
     return Path(*up_segments, *down_segments)
+
+
+def get_text_direction(text):
+    """Determine the text direction of a given string as LTR or RTL script."""
+    if not text:
+        return "ltr"  # Default for empty input
+
+    rtl_scripts = {"R", "AL"}
+    rtl_chars = sum(unicodedata.bidirectional(c) in rtl_scripts for c in text)
+
+    return (
+        "rtl"
+        if unicodedata.bidirectional(text[0]) in rtl_scripts
+        or rtl_chars > len(text) / 2
+        else "ltr"
+    )
