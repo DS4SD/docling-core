@@ -2499,7 +2499,7 @@ class DoclingDocument(BaseModel):
                 section_level: int = min(item.level + 1, 6)
 
                 text = get_html_tag_with_text_direction(
-                    html_tag=f"h{section_level}", text=item.text
+                    html_tag=f"h{section_level}", text=_prepare_tag_content(item.text)
                 )
                 html_texts.append(text)
 
