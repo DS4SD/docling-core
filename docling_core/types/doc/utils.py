@@ -49,7 +49,17 @@ def relative_path(src: Path, target: Path) -> Path:
     return Path(*up_segments, *down_segments)
 
 
-def get_text_direction(text):
+def get_html_tag_with_text_direction(html_tag:str, text:str) -> str:
+
+    text_dir = get_text_direction(text)
+
+    if text_dir=="ltr":
+        return f"<{html_tag}>{text}</{html_tag}>"
+    else:
+        return f"<{html_tag} dir={text_dir}>{text}</{html_tag}>"
+    
+
+def get_text_direction(text:str) -> str:
     """Determine the text direction of a given string as LTR or RTL script."""
     if not text:
         return "ltr"  # Default for empty input
