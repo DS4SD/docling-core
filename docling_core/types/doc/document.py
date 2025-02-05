@@ -1109,12 +1109,6 @@ class TableItem(FloatingItem):
             caption_text = get_html_tag_with_text_direction(
                 html_tag="caption", text=text
             )
-            """
-            body = (
-                f'<table><caption dir="{dir}">{text}</caption>'
-                f"<tbody>{body}</tbody></table>"
-            )
-            """
             body = f"<table>{caption_text}<tbody>{body}</tbody></table>"
 
         elif len(text) == 0 and len(body) > 0:
@@ -1123,7 +1117,6 @@ class TableItem(FloatingItem):
             caption_text = get_html_tag_with_text_direction(
                 html_tag="caption", text=text
             )
-            # body = f'<table><caption dir="{dir}">{text}</caption></table>'
             body = f"<table>{caption_text}</table>"
         else:
             body = "<table></table>"
@@ -2497,8 +2490,6 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
                 text_inner = _prepare_tag_content(item.text)
-                # dir = get_text_direction(item.text)
-                # text = f'<h1 dir="{dir}">{text_inner}</h1>'
                 text = get_html_tag_with_text_direction(html_tag="h1", text=text_inner)
 
                 html_texts.append(text)
@@ -2507,14 +2498,6 @@ class DoclingDocument(BaseModel):
 
                 section_level: int = min(item.level + 1, 6)
 
-                """
-                dir = get_text_direction(item.text)
-
-                text = (
-                    f'<h{(section_level)} dir="{dir}">'
-                    f"{_prepare_tag_content(item.text)}</h{(section_level)}>"
-                )
-                """
                 text = get_html_tag_with_text_direction(
                     html_tag=f"h{section_level}", text=item.text
                 )
@@ -2580,16 +2563,12 @@ class DoclingDocument(BaseModel):
                     )
 
             elif isinstance(item, ListItem):
-                # dir = get_text_direction(item.text)
-                # text = f'<li dir="{dir}">{_prepare_tag_content(item.text)}</li>'
                 text = get_html_tag_with_text_direction(
                     html_tag="li", text=_prepare_tag_content(item.text)
                 )
                 html_texts.append(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.LIST_ITEM]:
-                # dir = get_text_direction(item.text)
-                # text = f'<li dir="{dir}">{_prepare_tag_content(item.text)}</li>'
                 text = get_html_tag_with_text_direction(
                     html_tag="li", text=_prepare_tag_content(item.text)
                 )
@@ -2603,8 +2582,6 @@ class DoclingDocument(BaseModel):
                 html_texts.append(text)
 
             elif isinstance(item, TextItem):
-                # dir = get_text_direction(item.text)
-                # text = f'<p dir="{dir}">{_prepare_tag_content(item.text)}</p>'
 
                 text = get_html_tag_with_text_direction(
                     html_tag="p", text=_prepare_tag_content(item.text)
