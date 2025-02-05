@@ -1442,22 +1442,21 @@ class DoclingDocument(BaseModel):
 
     pages: Dict[int, PageItem] = {}  # empty as default
 
-    @model_validator(mode="after")
-    def transform_to_content_layer(self) -> "DoclingDocument":
+    @model_validator(mode="before")
+    @classmethod
+    def transform_to_content_layer(cls, data: dict) -> dict:
         """transform_to_content_layer."""
         # Since version 1.1.0, all NodeItems carry content_layer property.
         # We must assign previous page_header and page_footer instances to furniture.
-        if self.version == "1.0.0":
-            for item, level in self.iterate_items(
-                with_groups=True, traverse_pictures=True
-            ):
-                if isinstance(item, DocItem) and item.label in [
-                    DocItemLabel.PAGE_HEADER,
-                    DocItemLabel.PAGE_FOOTER,
+        # Note: model_validators which check on the version must use "before".
+        if "version" in data and data["version"] == "1.0.0":
+            for item in data.get("texts", []):
+                if "label" in item and item["label"] in [
+                    DocItemLabel.PAGE_HEADER.value,
+                    DocItemLabel.PAGE_FOOTER.value,
                 ]:
-                    item.content_layer = ContentLayer.FURNITURE
-
-        return self
+                    item["content_layer"] = "furniture"
+        return data
 
     def add_group(
         self,
