@@ -1352,7 +1352,7 @@ class KeyValueItem(DocItem):
     label: typing.Literal[DocItemLabel.KEY_VALUE_REGION] = DocItemLabel.KEY_VALUE_REGION
 
     elements: List[KeyOrValueCell]
-    links: List[Tuple[int, int]]
+    links: List[Tuple[int, int]]  # List of (key_id, value_id) linking key-value pairs
 
 
 ContentItem = Annotated[
@@ -1864,6 +1864,41 @@ class DoclingDocument(BaseModel):
         parent.children.append(RefItem(cref=cref))
 
         return section_header_item
+
+    def add_key_value_item(
+        self,
+        elements: List[KeyOrValueCell],
+        links: List[Tuple[int, int]],
+        prov: Optional[ProvenanceItem] = None,
+        parent: Optional[NodeItem] = None,
+    ):
+        """add_key_value_item.
+
+        :param elements: List[KeyOrValueCell]:
+        :param links: List[Tuple[int:
+        :param int]]:
+        :param prov: Optional[ProvenanceItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
+        """
+        if not parent:
+            parent = self.body
+
+        key_value_index = len(self.key_value_items)
+        cref = f"#/key_value_items/{key_value_index}"
+
+        kv_item = KeyValueItem(
+            elements=elements,
+            links=links,
+            self_ref=cref,
+            parent=parent.get_ref(),
+        )
+        if prov:
+            kv_item.prov.append(prov)
+
+        self.key_value_items.append(kv_item)
+        parent.children.append(RefItem(cref=cref))
+
+        return kv_item
 
     def num_pages(self):
         """num_pages."""
