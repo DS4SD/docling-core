@@ -63,6 +63,8 @@ DEFAULT_EXPORT_LABELS = {
     DocItemLabel.LIST_ITEM,
     DocItemLabel.CODE,
     DocItemLabel.REFERENCE,
+    DocItemLabel.PAGE_HEADER,
+    DocItemLabel.PAGE_FOOTER,
 }
 
 
@@ -511,6 +513,9 @@ class ContentLayer(str, Enum):
 
     BODY = "body"
     FURNITURE = "furniture"
+
+
+DEFAULT_CONTENT_LAYERS = {ContentLayer.BODY}
 
 
 class NodeItem(BaseModel):
@@ -1851,7 +1856,7 @@ class DoclingDocument(BaseModel):
         with_groups: bool = False,
         traverse_pictures: bool = False,
         page_no: Optional[int] = None,
-        included_content_layers: List[ContentLayer] = [ContentLayer.BODY],
+        included_content_layers: set[ContentLayer] = DEFAULT_CONTENT_LAYERS,
         _level: int = 0,  # fixed parameter, carries through the node nesting level
     ) -> typing.Iterable[Tuple[NodeItem, int]]:  # tuple of node and level
         """iterate_elements.
