@@ -56,7 +56,7 @@ def get_html_tag_with_text_direction(html_tag:str, text:str) -> str:
     if text_dir=="ltr":
         return f"<{html_tag}>{text}</{html_tag}>"
     else:
-        return f"<{html_tag} dir={text_dir}>{text}</{html_tag}>"
+        return f"<{html_tag} dir=\"{text_dir}\">{text}</{html_tag}>"
     
 
 def get_text_direction(text:str) -> str:
