@@ -1328,10 +1328,31 @@ class TableItem(FloatingItem):
         return body
 
 
+class KeyOrValueCellType(str, Enum):
+    """KeyOrValueCellType."""
+
+    KEY = "key"
+    VALUE = "value"
+
+
+class KeyOrValueCell(BaseModel):
+    """KeyOrValueCell."""
+
+    id: int
+    text: str  # sanitized text
+    orig: str  # text as seen on document
+
+    bbox: Optional[BoundingBox] = None
+    cell_type: KeyOrValueCellType
+
+
 class KeyValueItem(DocItem):
     """KeyValueItem."""
 
     label: typing.Literal[DocItemLabel.KEY_VALUE_REGION] = DocItemLabel.KEY_VALUE_REGION
+
+    elements: List[KeyOrValueCell]
+    links: List[Tuple[int, int]]
 
 
 ContentItem = Annotated[
