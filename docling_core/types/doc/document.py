@@ -1346,13 +1346,32 @@ class KeyOrValueCell(BaseModel):
     cell_type: KeyOrValueCellType
 
 
+class KeyValueLinkType(str, Enum):
+    """KeyValueLinkType."""
+
+    # To be updated
+    IS_A = "is_a"
+    PART_OF = "part_of"
+    PARENT_OF = "parent_of"
+    CHILD_OF = "child_of"
+
+
+class KeyValueLink(BaseModel):
+    """KeyValueLink."""
+
+    key_id: int
+    value_id: int
+
+    link_type: KeyValueLinkType = KeyValueLinkType.IS_A
+
+
 class KeyValueItem(DocItem):
     """KeyValueItem."""
 
     label: typing.Literal[DocItemLabel.KEY_VALUE_REGION] = DocItemLabel.KEY_VALUE_REGION
 
     elements: List[KeyOrValueCell]
-    links: List[Tuple[int, int]]  # List of (key_id, value_id) linking key-value pairs
+    links: List[KeyValueLink]  # List of (key_id, value_id) linking key-value pairs
 
 
 ContentItem = Annotated[
