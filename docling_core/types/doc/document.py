@@ -701,7 +701,7 @@ class CodeItem(TextItem):
         :param add_content: bool:  (Default value = True)
 
         """
-        body = f"<{DocumentToken.BEG_CODE.value}>"
+        body = f"{DocumentToken.BEG_CODE.value}{new_line}"
 
         if add_location:
             body += self.get_location_tokens(
@@ -714,7 +714,7 @@ class CodeItem(TextItem):
         if add_content and self.text is not None:
             body += f"<_{self.code_language.value}_>{self.text}"
 
-        body += f"</{DocumentToken.END_CODE.value}>\n"
+        body += f"{DocumentToken.END_CODE.value}\n"
 
         return body
 
