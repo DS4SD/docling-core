@@ -377,7 +377,6 @@ def _test_serialize_and_reload(doc):
 
 
 def _verify_regression_test(pred: str, filename: str, ext: str):
-
     if os.path.exists(filename + f".{ext}") and not GENERATE:
         with open(filename + f".{ext}", "r", encoding="utf-8") as fr:
             gt_true = fr.read()

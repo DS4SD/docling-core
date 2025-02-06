@@ -2691,9 +2691,6 @@ class DoclingDocument(BaseModel):
         add_table_cell_text: bool = True,
     ):
         r"""Save the document content to a DocumentToken format."""
-        labels.update(
-            [DocItemLabel.FOOTNOTE, DocItemLabel.PAGE_FOOTER, DocItemLabel.PAGE_HEADER]
-        )
         out = self.export_to_document_tokens(
             delim=delim,
             from_element=from_element,
@@ -2746,6 +2743,10 @@ class DoclingDocument(BaseModel):
         :returns: The content of the document formatted as a DocTags string.
         :rtype: str
         """
+        labels = labels.copy()
+        labels.update(
+            [DocItemLabel.FOOTNOTE, DocItemLabel.PAGE_FOOTER, DocItemLabel.PAGE_HEADER]
+        )
 
         def close_lists(
             curr_level: int,
