@@ -1887,15 +1887,14 @@ class DoclingDocument(BaseModel):
     def add_key_value_item(
         self,
         elements: List[KeyOrValueCell],
-        links: List[Tuple[int, int]],
+        links: List[KeyValueLink],
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
     ):
         """add_key_value_item.
 
         :param elements: List[KeyOrValueCell]:
-        :param links: List[Tuple[int:
-        :param int]]:
+        :param links: List[KeyValueLink]:
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
         :param parent: Optional[NodeItem]:  (Default value = None)
         """
