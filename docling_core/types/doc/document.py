@@ -564,8 +564,8 @@ class DocItem(
         self,
         doc: "DoclingDocument",
         new_line: str,
-        xsize: int = 100,
-        ysize: int = 100,
+        xsize: int = 500,
+        ysize: int = 500,
     ) -> str:
         """Get the location string for the BaseCell."""
         if not len(self.prov):
@@ -576,7 +576,7 @@ class DocItem(
             page_w, page_h = doc.pages[prov.page_no].size.as_tuple()
 
             loc_str = DocumentToken.get_location(
-                bbox=prov.bbox.to_bottom_left_origin(page_h).as_tuple(),
+                bbox=prov.bbox.to_top_left_origin(page_h).as_tuple(),
                 page_w=page_w,
                 page_h=page_h,
                 xsize=xsize,
@@ -636,8 +636,8 @@ class TextItem(DocItem):
         self,
         doc: "DoclingDocument",
         new_line: str = "\n",
-        xsize: int = 100,
-        ysize: int = 100,
+        xsize: int = 500,
+        ysize: int = 500,
         add_location: bool = True,
         add_content: bool = True,
     ):
@@ -645,8 +645,8 @@ class TextItem(DocItem):
 
         :param doc: "DoclingDocument":
         :param new_line: str:  (Default value = "\n")
-        :param xsize: int:  (Default value = 100)
-        :param ysize: int:  (Default value = 100)
+        :param xsize: int:  (Default value = 500)
+        :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
 
@@ -686,8 +686,8 @@ class CodeItem(TextItem):
         self,
         doc: "DoclingDocument",
         new_line: str = "\n",
-        xsize: int = 100,
-        ysize: int = 100,
+        xsize: int = 500,
+        ysize: int = 500,
         add_location: bool = True,
         add_content: bool = True,
     ):
@@ -695,13 +695,13 @@ class CodeItem(TextItem):
 
         :param doc: "DoclingDocument":
         :param new_line: str:  (Default value = "\n")
-        :param xsize: int:  (Default value = 100)
-        :param ysize: int:  (Default value = 100)
+        :param xsize: int:  (Default value = 500)
+        :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
 
         """
-        body = f"<{self.label.value}>"
+        body = f"<{DocumentToken.BEG_CODE.value}>"
 
         if add_location:
             body += self.get_location_tokens(
@@ -714,7 +714,7 @@ class CodeItem(TextItem):
         if add_content and self.text is not None:
             body += f"<_{self.code_language.value}_>{self.text}"
 
-        body += f"</{self.label.value}>\n"
+        body += f"</{DocumentToken.END_CODE.value}>\n"
 
         return body
 
@@ -731,8 +731,8 @@ class SectionHeaderItem(TextItem):
         self,
         doc: "DoclingDocument",
         new_line: str = "\n",
-        xsize: int = 100,
-        ysize: int = 100,
+        xsize: int = 500,
+        ysize: int = 500,
         add_location: bool = True,
         add_content: bool = True,
     ):
@@ -740,8 +740,8 @@ class SectionHeaderItem(TextItem):
 
         :param doc: "DoclingDocument":
         :param new_line: str:  (Default value = "\n")
-        :param xsize: int:  (Default value = 100)
-        :param ysize: int:  (Default value = 100)
+        :param xsize: int:  (Default value = 500)
+        :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
 
@@ -956,8 +956,8 @@ class PictureItem(FloatingItem):
         self,
         doc: "DoclingDocument",
         new_line: str = "\n",
-        xsize: int = 100,
-        ysize: int = 100,
+        xsize: int = 500,
+        ysize: int = 500,
         add_location: bool = True,
         add_caption: bool = True,
         add_content: bool = True,  # not used at the moment
@@ -966,8 +966,8 @@ class PictureItem(FloatingItem):
 
         :param doc: "DoclingDocument":
         :param new_line: str:  (Default value = "\n")
-        :param xsize: int:  (Default value = 100)
-        :param ysize: int:  (Default value = 100)
+        :param xsize: int:  (Default value = 500)
+        :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
         :param add_caption: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
@@ -1176,8 +1176,8 @@ class TableItem(FloatingItem):
         doc: "DoclingDocument",
         add_cell_location: bool = True,
         add_cell_text: bool = True,
-        xsize: int = 100,
-        ysize: int = 100,
+        xsize: int = 500,
+        ysize: int = 500,
     ) -> str:
         """Export the table as OTSL."""
         # Possible OTSL tokens...
@@ -1267,8 +1267,8 @@ class TableItem(FloatingItem):
         self,
         doc: "DoclingDocument",
         new_line: str = "\n",
-        xsize: int = 100,
-        ysize: int = 100,
+        xsize: int = 500,
+        ysize: int = 500,
         add_location: bool = True,
         add_cell_location: bool = True,
         add_cell_text: bool = True,
@@ -1278,8 +1278,8 @@ class TableItem(FloatingItem):
 
         :param doc: "DoclingDocument":
         :param new_line: str:  (Default value = "\n")
-        :param xsize: int:  (Default value = 100)
-        :param ysize: int:  (Default value = 100)
+        :param xsize: int:  (Default value = 500)
+        :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
         :param add_cell_location: bool:  (Default value = True)
         :param add_cell_text: bool:  (Default value = True)
@@ -2681,8 +2681,8 @@ class DoclingDocument(BaseModel):
         from_element: int = 0,
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
-        xsize: int = 100,
-        ysize: int = 100,
+        xsize: int = 500,
+        ysize: int = 500,
         add_location: bool = True,
         add_content: bool = True,
         add_page_index: bool = True,
@@ -2715,8 +2715,8 @@ class DoclingDocument(BaseModel):
         from_element: int = 0,
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
-        xsize: int = 100,
-        ysize: int = 100,
+        xsize: int = 500,
+        ysize: int = 500,
         add_location: bool = True,
         add_content: bool = True,
         add_page_index: bool = True,
@@ -2733,8 +2733,8 @@ class DoclingDocument(BaseModel):
         :param from_element: int:  (Default value = 0)
         :param to_element: Optional[int]:  (Default value = None)
         :param labels: set[DocItemLabel]
-        :param xsize: int:  (Default value = 100)
-        :param ysize: int:  (Default value = 100)
+        :param xsize: int:  (Default value = 500)
+        :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
         :param add_page_index: bool:  (Default value = True)

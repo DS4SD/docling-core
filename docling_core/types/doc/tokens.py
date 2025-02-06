@@ -81,6 +81,8 @@ class DocumentToken(Enum):
     END_CAPTION = "</caption>"
     BEG_EQUATION = "<formula>"
     END_EQUATION = "</formula>"
+    BEG_CODE = "<code>"
+    END_CODE = "</code>"
     BEG_LIST = "<list>"
     END_LIST = "</list>"
     BEG_LISTITEM = "<list-item>"
