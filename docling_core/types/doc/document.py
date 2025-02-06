@@ -2691,6 +2691,9 @@ class DoclingDocument(BaseModel):
         add_table_cell_text: bool = True,
     ):
         r"""Save the document content to a DocumentToken format."""
+        labels.update(
+            [DocItemLabel.FOOTNOTE, DocItemLabel.PAGE_FOOTER, DocItemLabel.PAGE_HEADER]
+        )
         out = self.export_to_document_tokens(
             delim=delim,
             from_element=from_element,
@@ -2842,7 +2845,7 @@ class DoclingDocument(BaseModel):
                     add_location=add_location,
                     add_content=add_content,
                 )
-            elif isinstance(item, CodeItem) and (item.label in labels):
+            elif isinstance(item, CodeItem):
                 result, previous_page_no = add_page_break(
                     result, item, previous_page_no, delim, add_page_index
                 )
@@ -2856,7 +2859,7 @@ class DoclingDocument(BaseModel):
                     add_content=add_content,
                 )
 
-            elif isinstance(item, TextItem) and (item.label in labels):
+            elif isinstance(item, TextItem):
                 result, previous_page_no = add_page_break(
                     result, item, previous_page_no, delim, add_page_index
                 )
@@ -2870,7 +2873,7 @@ class DoclingDocument(BaseModel):
                     add_content=add_content,
                 )
 
-            elif isinstance(item, TableItem) and (item.label in labels):
+            elif isinstance(item, TableItem):
                 result, previous_page_no = add_page_break(
                     result, item, previous_page_no, delim, add_page_index
                 )
@@ -2885,7 +2888,7 @@ class DoclingDocument(BaseModel):
                     add_caption=True,
                 )
 
-            elif isinstance(item, PictureItem) and (item.label in labels):
+            elif isinstance(item, PictureItem):
                 result, previous_page_no = add_page_break(
                     result, item, previous_page_no, delim, add_page_index
                 )
