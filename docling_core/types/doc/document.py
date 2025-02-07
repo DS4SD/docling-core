@@ -13,7 +13,6 @@ import sys
 import textwrap
 import typing
 import warnings
-from enum import Enum
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
@@ -1328,13 +1327,6 @@ class TableItem(FloatingItem):
         return body
 
 
-class KeyOrValueCellType(str, Enum):
-    """KeyOrValueCellType."""
-
-    KEY = "key"
-    VALUE = "value"
-
-
 class KeyOrValueCell(BaseModel):
     """KeyOrValueCell."""
 
@@ -1343,17 +1335,6 @@ class KeyOrValueCell(BaseModel):
     orig: str  # text as seen on document
 
     bbox: Optional[BoundingBox] = None
-    cell_type: KeyOrValueCellType
-
-
-class KeyValueLinkType(str, Enum):
-    """KeyValueLinkType."""
-
-    # To be updated
-    IS_A = "is_a"
-    PART_OF = "part_of"
-    PARENT_OF = "parent_of"
-    CHILD_OF = "child_of"
 
 
 class KeyValueLink(BaseModel):
@@ -1361,8 +1342,6 @@ class KeyValueLink(BaseModel):
 
     key_id: int
     value_id: int
-
-    link_type: KeyValueLinkType = KeyValueLinkType.IS_A
 
 
 class KeyValueItem(DocItem):
