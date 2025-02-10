@@ -190,6 +190,10 @@
           "title": "Children",
           "type": "array"
         },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
         "label": {
           "const": "code",
           "default": "code",
@@ -289,6 +293,15 @@
       "title": "CodeLanguageLabel",
       "type": "string"
     },
+    "ContentLayer": {
+      "description": "ContentLayer.",
+      "enum": [
+        "body",
+        "furniture"
+      ],
+      "title": "ContentLayer",
+      "type": "string"
+    },
     "CoordOrigin": {
       "description": "CoordOrigin.",
       "enum": [
@@ -365,6 +378,10 @@
           },
           "title": "Children",
           "type": "array"
+        },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
         },
         "name": {
           "default": "group",
@@ -500,6 +517,10 @@
           "title": "Children",
           "type": "array"
         },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
         "label": {
           "const": "key_value_region",
           "default": "key_value_region",
@@ -583,6 +604,10 @@
           },
           "title": "Children",
           "type": "array"
+        },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
         },
         "label": {
           "const": "list_item",
@@ -791,6 +816,10 @@
           },
           "title": "Children",
           "type": "array"
+        },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
         },
         "label": {
           "const": "picture",
@@ -1189,6 +1218,10 @@
           "title": "Children",
           "type": "array"
         },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
         "label": {
           "const": "section_header",
           "default": "section_header",
@@ -1367,6 +1400,10 @@
           "title": "Children",
           "type": "array"
         },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
         "label": {
           "default": "table",
           "enum": [
@@ -1458,6 +1495,10 @@
           "title": "Children",
           "type": "array"
         },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
         "label": {
           "enum": [
             "caption",
@@ -1511,7 +1552,7 @@
       "type": "string"
     },
     "version": {
-      "default": "1.0.0",
+      "default": "1.1.0",
       "pattern": "^(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
       "title": "Version",
       "type": "string"
@@ -1537,9 +1578,11 @@
         "self_ref": "#/furniture",
         "parent": null,
         "children": [],
+        "content_layer": "furniture",
         "name": "_root_",
         "label": "unspecified"
-      }
+      },
+      "deprecated": true
     },
     "body": {
       "$ref": "#/$defs/GroupItem",
@@ -1547,6 +1590,7 @@
         "self_ref": "#/body",
         "parent": null,
         "children": [],
+        "content_layer": "body",
         "name": "_root_",
         "label": "unspecified"
       }

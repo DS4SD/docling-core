@@ -13,6 +13,7 @@ import sys
 import textwrap
 import typing
 import warnings
+from enum import Enum
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
@@ -54,7 +55,7 @@ _logger = logging.getLogger(__name__)
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
-CURRENT_VERSION: Final = "1.0.0"
+CURRENT_VERSION: Final = "1.1.0"
 
 DEFAULT_EXPORT_LABELS = {
     DocItemLabel.TITLE,
@@ -70,6 +71,8 @@ DEFAULT_EXPORT_LABELS = {
     DocItemLabel.LIST_ITEM,
     DocItemLabel.CODE,
     DocItemLabel.REFERENCE,
+    DocItemLabel.PAGE_HEADER,
+    DocItemLabel.PAGE_FOOTER,
 }
 
 
@@ -513,12 +516,24 @@ class ProvenanceItem(BaseModel):
     charspan: Tuple[int, int]
 
 
+class ContentLayer(str, Enum):
+    """ContentLayer."""
+
+    BODY = "body"
+    FURNITURE = "furniture"
+
+
+DEFAULT_CONTENT_LAYERS = {ContentLayer.BODY}
+
+
 class NodeItem(BaseModel):
     """NodeItem."""
 
     self_ref: str = Field(pattern=_JSON_POINTER_REGEX)
     parent: Optional[RefItem] = None
     children: List[RefItem] = []
+
+    content_layer: ContentLayer = ContentLayer.BODY
 
     model_config = ConfigDict(extra="forbid")
 
@@ -1462,8 +1477,8 @@ class DoclingDocument(BaseModel):
         # generated from synthetic data.
     )
 
-    furniture: GroupItem = GroupItem(
-        name="_root_", self_ref="#/furniture"
+    furniture: Annotated[GroupItem, Field(deprecated=True)] = GroupItem(
+        name="_root_", self_ref="#/furniture", content_layer=ContentLayer.FURNITURE
     )  # List[RefItem] = []
     body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
 
@@ -1475,11 +1490,28 @@ class DoclingDocument(BaseModel):
 
     pages: Dict[int, PageItem] = {}  # empty as default
 
+    @model_validator(mode="before")
+    @classmethod
+    def transform_to_content_layer(cls, data: dict) -> dict:
+        """transform_to_content_layer."""
+        # Since version 1.1.0, all NodeItems carry content_layer property.
+        # We must assign previous page_header and page_footer instances to furniture.
+        # Note: model_validators which check on the version must use "before".
+        if "version" in data and data["version"] == "1.0.0":
+            for item in data.get("texts", []):
+                if "label" in item and item["label"] in [
+                    DocItemLabel.PAGE_HEADER.value,
+                    DocItemLabel.PAGE_FOOTER.value,
+                ]:
+                    item["content_layer"] = "furniture"
+        return data
+
     def add_group(
         self,
         label: Optional[GroupLabel] = None,
         name: Optional[str] = None,
         parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
     ) -> GroupItem:
         """add_group.
 
@@ -1499,6 +1531,8 @@ class DoclingDocument(BaseModel):
             group.name = name
         if label is not None:
             group.label = label
+        if content_layer:
+            group.content_layer = content_layer
 
         self.groups.append(group)
         parent.children.append(RefItem(cref=cref))
@@ -1513,6 +1547,7 @@ class DoclingDocument(BaseModel):
         orig: Optional[str] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
     ):
         """add_list_item.
 
@@ -1543,6 +1578,8 @@ class DoclingDocument(BaseModel):
         )
         if prov:
             list_item.prov.append(prov)
+        if content_layer:
+            list_item.content_layer = content_layer
 
         self.texts.append(list_item)
         parent.children.append(RefItem(cref=cref))
@@ -1556,6 +1593,7 @@ class DoclingDocument(BaseModel):
         orig: Optional[str] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
     ):
         """add_text.
 
@@ -1569,16 +1607,40 @@ class DoclingDocument(BaseModel):
         # Catch a few cases that are in principle allowed
         # but that will create confusion down the road
         if label in [DocItemLabel.TITLE]:
-            return self.add_title(text=text, orig=orig, prov=prov, parent=parent)
+            return self.add_title(
+                text=text,
+                orig=orig,
+                prov=prov,
+                parent=parent,
+                content_layer=content_layer,
+            )
 
         elif label in [DocItemLabel.LIST_ITEM]:
-            return self.add_list_item(text=text, orig=orig, prov=prov, parent=parent)
+            return self.add_list_item(
+                text=text,
+                orig=orig,
+                prov=prov,
+                parent=parent,
+                content_layer=content_layer,
+            )
 
         elif label in [DocItemLabel.SECTION_HEADER]:
-            return self.add_heading(text=text, orig=orig, prov=prov, parent=parent)
+            return self.add_heading(
+                text=text,
+                orig=orig,
+                prov=prov,
+                parent=parent,
+                content_layer=content_layer,
+            )
 
         elif label in [DocItemLabel.CODE]:
-            return self.add_code(text=text, orig=orig, prov=prov, parent=parent)
+            return self.add_code(
+                text=text,
+                orig=orig,
+                prov=prov,
+                parent=parent,
+                content_layer=content_layer,
+            )
 
         else:
 
@@ -1600,6 +1662,9 @@ class DoclingDocument(BaseModel):
             if prov:
                 text_item.prov.append(prov)
 
+            if content_layer:
+                text_item.content_layer = content_layer
+
             self.texts.append(text_item)
             parent.children.append(RefItem(cref=cref))
 
@@ -1612,6 +1677,7 @@ class DoclingDocument(BaseModel):
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
         label: DocItemLabel = DocItemLabel.TABLE,
+        content_layer: Optional[ContentLayer] = None,
     ):
         """add_table.
 
@@ -1633,6 +1699,9 @@ class DoclingDocument(BaseModel):
         )
         if prov:
             tbl_item.prov.append(prov)
+        if content_layer:
+            tbl_item.content_layer = content_layer
+
         if caption:
             tbl_item.captions.append(caption.get_ref())
 
@@ -1648,6 +1717,7 @@ class DoclingDocument(BaseModel):
         caption: Optional[Union[TextItem, RefItem]] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
     ):
         """add_picture.
 
@@ -1672,6 +1742,8 @@ class DoclingDocument(BaseModel):
         )
         if prov:
             fig_item.prov.append(prov)
+        if content_layer:
+            fig_item.content_layer = content_layer
         if caption:
             fig_item.captions.append(caption.get_ref())
 
@@ -1686,6 +1758,7 @@ class DoclingDocument(BaseModel):
         orig: Optional[str] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
     ):
         """add_title.
 
@@ -1711,6 +1784,8 @@ class DoclingDocument(BaseModel):
         )
         if prov:
             text_item.prov.append(prov)
+        if content_layer:
+            text_item.content_layer = content_layer
 
         self.texts.append(text_item)
         parent.children.append(RefItem(cref=cref))
@@ -1724,6 +1799,7 @@ class DoclingDocument(BaseModel):
         orig: Optional[str] = None,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
     ):
         """add_code.
 
@@ -1749,6 +1825,8 @@ class DoclingDocument(BaseModel):
         )
         if code_language:
             code_item.code_language = code_language
+        if content_layer:
+            code_item.content_layer = content_layer
         if prov:
             code_item.prov.append(prov)
 
@@ -1764,6 +1842,7 @@ class DoclingDocument(BaseModel):
         level: LevelNumber = 1,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
     ):
         """add_heading.
 
@@ -1791,6 +1870,8 @@ class DoclingDocument(BaseModel):
         )
         if prov:
             section_header_item.prov.append(prov)
+        if content_layer:
+            section_header_item.content_layer = content_layer
 
         self.texts.append(section_header_item)
         parent.children.append(RefItem(cref=cref))
@@ -1852,6 +1933,7 @@ class DoclingDocument(BaseModel):
         with_groups: bool = False,
         traverse_pictures: bool = False,
         page_no: Optional[int] = None,
+        included_content_layers: set[ContentLayer] = DEFAULT_CONTENT_LAYERS,
         _level: int = 0,  # fixed parameter, carries through the node nesting level
     ) -> typing.Iterable[Tuple[NodeItem, int]]:  # tuple of node and level
         """iterate_elements.
@@ -1868,14 +1950,22 @@ class DoclingDocument(BaseModel):
             root = self.body
 
         # Yield non-group items or group items when with_groups=True
-        if not isinstance(root, GroupItem) or with_groups:
-            if isinstance(root, DocItem):
-                if page_no is None or any(
-                    prov.page_no == page_no for prov in root.prov
-                ):
-                    yield root, _level
-            else:
-                yield root, _level
+
+        # Combine conditions to have a single yield point
+        should_yield = (
+            (not isinstance(root, GroupItem) or with_groups)
+            and (
+                not isinstance(root, DocItem)
+                or (
+                    page_no is None
+                    or any(prov.page_no == page_no for prov in root.prov)
+                )
+            )
+            and root.content_layer in included_content_layers
+        )
+
+        if should_yield:
+            yield root, _level
 
         # Handle picture traversal - only traverse children if requested
         if isinstance(root, PictureItem) and not traverse_pictures:

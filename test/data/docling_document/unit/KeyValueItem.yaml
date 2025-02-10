@@ -15,3 +15,4 @@ links:
 parent: null
 prov: []
 self_ref: '#'
+content_layer: body
