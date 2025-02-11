@@ -75,6 +75,16 @@ DEFAULT_EXPORT_LABELS = {
     DocItemLabel.PAGE_FOOTER,
 }
 
+DOCUMENT_TOKENS_EXPORT_LABELS = DEFAULT_EXPORT_LABELS.copy()
+DOCUMENT_TOKENS_EXPORT_LABELS.update(
+    [
+        DocItemLabel.FOOTNOTE,
+        DocItemLabel.PAGE_FOOTER,
+        DocItemLabel.PAGE_HEADER,
+        DocItemLabel.CAPTION,
+    ]
+)
+
 
 class BasePictureData(BaseModel):
     """BasePictureData."""
@@ -635,7 +645,7 @@ class TextItem(DocItem):
     def export_to_document_tokens(
         self,
         doc: "DoclingDocument",
-        new_line: str = "\n",
+        new_line: str = "",
         xsize: int = 500,
         ysize: int = 500,
         add_location: bool = True,
@@ -644,30 +654,25 @@ class TextItem(DocItem):
         r"""Export text element to document tokens format.
 
         :param doc: "DoclingDocument":
-        :param new_line: str:  (Default value = "\n")
+        :param new_line: str (Default value = "")
         :param xsize: int:  (Default value = 500)
         :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
 
         """
-        body = f"<{self.label.value}>"
-
-        # TODO: This must be done through an explicit mapping.
-        # assert DocumentToken.is_known_token(
-        #    body
-        # ), f"failed DocumentToken.is_known_token({body})"
+        body = f"<{self.label.value}>{new_line}"
 
         if add_location:
             body += self.get_location_tokens(
                 doc=doc,
-                new_line="",
+                new_line=new_line,
                 xsize=xsize,
                 ysize=ysize,
             )
 
         if add_content and self.text is not None:
-            body += self.text.strip()
+            body += f"{self.text.strip()}{new_line}"
 
         body += f"</{self.label.value}>\n"
 
@@ -685,7 +690,7 @@ class CodeItem(TextItem):
     def export_to_document_tokens(
         self,
         doc: "DoclingDocument",
-        new_line: str = "\n",
+        new_line: str = "",
         xsize: int = 500,
         ysize: int = 500,
         add_location: bool = True,
@@ -694,7 +699,7 @@ class CodeItem(TextItem):
         r"""Export text element to document tokens format.
 
         :param doc: "DoclingDocument":
-        :param new_line: str:  (Default value = "\n")
+        :param new_line: str (Default value = "")
         :param xsize: int:  (Default value = 500)
         :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
@@ -706,13 +711,13 @@ class CodeItem(TextItem):
         if add_location:
             body += self.get_location_tokens(
                 doc=doc,
-                new_line="",
+                new_line=new_line,
                 xsize=xsize,
                 ysize=ysize,
             )
 
         if add_content and self.text is not None:
-            body += f"<_{self.code_language.value}_>{self.text}"
+            body += f"<_{self.code_language.value}_>{self.text}{new_line}"
 
         body += f"{DocumentToken.END_CODE.value}\n"
 
@@ -730,7 +735,7 @@ class SectionHeaderItem(TextItem):
     def export_to_document_tokens(
         self,
         doc: "DoclingDocument",
-        new_line: str = "\n",
+        new_line: str = "",
         xsize: int = 500,
         ysize: int = 500,
         add_location: bool = True,
@@ -739,14 +744,14 @@ class SectionHeaderItem(TextItem):
         r"""Export text element to document tokens format.
 
         :param doc: "DoclingDocument":
-        :param new_line: str:  (Default value = "\n")
+        :param new_line: str (Default value = "")
         :param xsize: int:  (Default value = 500)
         :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
         :param add_content: bool:  (Default value = True)
 
         """
-        body = f"<{self.label.value}_level_{self.level}>"
+        body = f"<{self.label.value}_level_{self.level}>{new_line}"
 
         # TODO: This must be done through an explicit mapping.
         # assert DocumentToken.is_known_token(
@@ -756,13 +761,13 @@ class SectionHeaderItem(TextItem):
         if add_location:
             body += self.get_location_tokens(
                 doc=doc,
-                new_line="",
+                new_line=new_line,
                 xsize=xsize,
                 ysize=ysize,
             )
 
         if add_content and self.text is not None:
-            body += self.text.strip()
+            body += f"{self.text.strip()}{new_line}"
 
         body += f"</{self.label.value}_level_{self.level}>\n"
 
@@ -955,7 +960,7 @@ class PictureItem(FloatingItem):
     def export_to_document_tokens(
         self,
         doc: "DoclingDocument",
-        new_line: str = "\n",
+        new_line: str = "",
         xsize: int = 500,
         ysize: int = 500,
         add_location: bool = True,
@@ -965,7 +970,7 @@ class PictureItem(FloatingItem):
         r"""Export picture to document tokens format.
 
         :param doc: "DoclingDocument":
-        :param new_line: str:  (Default value = "\n")
+        :param new_line: str (Default value = "")
         :param xsize: int:  (Default value = 500)
         :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
@@ -1000,6 +1005,13 @@ class PictureItem(FloatingItem):
 
             if len(text):
                 body += f"{DocumentToken.BEG_CAPTION.value}"
+                for caption in self.captions:
+                    body += caption.resolve(doc).get_location_tokens(
+                        doc=doc,
+                        new_line=new_line,
+                        xsize=xsize,
+                        ysize=ysize,
+                    )
                 body += f"{text.strip()}"
                 body += f"{DocumentToken.END_CAPTION.value}"
                 body += f"{new_line}"
@@ -1266,7 +1278,7 @@ class TableItem(FloatingItem):
     def export_to_document_tokens(
         self,
         doc: "DoclingDocument",
-        new_line: str = "\n",
+        new_line: str = "",
         xsize: int = 500,
         ysize: int = 500,
         add_location: bool = True,
@@ -1277,7 +1289,7 @@ class TableItem(FloatingItem):
         r"""Export table to document tokens format.
 
         :param doc: "DoclingDocument":
-        :param new_line: str:  (Default value = "\n")
+        :param new_line: str (Default value = "")
         :param xsize: int:  (Default value = 500)
         :param ysize: int:  (Default value = 500)
         :param add_location: bool:  (Default value = True)
@@ -1302,6 +1314,13 @@ class TableItem(FloatingItem):
 
             if len(text):
                 body += f"{DocumentToken.BEG_CAPTION.value}"
+                for caption in self.captions:
+                    body += caption.resolve(doc).get_location_tokens(
+                        doc=doc,
+                        new_line=new_line,
+                        xsize=xsize,
+                        ysize=ysize,
+                    )
                 body += f"{text.strip()}"
                 body += f"{DocumentToken.END_CAPTION.value}"
                 body += f"{new_line}"
@@ -2677,10 +2696,10 @@ class DoclingDocument(BaseModel):
     def save_as_document_tokens(
         self,
         filename: Path,
-        delim: str = "\n",
+        delim: str = "",
         from_element: int = 0,
         to_element: int = sys.maxsize,
-        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+        labels: set[DocItemLabel] = DOCUMENT_TOKENS_EXPORT_LABELS,
         xsize: int = 500,
         ysize: int = 500,
         add_location: bool = True,
@@ -2709,12 +2728,12 @@ class DoclingDocument(BaseModel):
         with open(filename, "w", encoding="utf-8") as fw:
             fw.write(out)
 
-    def export_to_document_tokens(
+    def export_to_document_tokens(  # noqa: C901
         self,
-        delim: str = "\n",
+        delim: str = "",
         from_element: int = 0,
         to_element: int = sys.maxsize,
-        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+        labels: set[DocItemLabel] = DOCUMENT_TOKENS_EXPORT_LABELS,
         xsize: int = 500,
         ysize: int = 500,
         add_location: bool = True,
@@ -2723,13 +2742,13 @@ class DoclingDocument(BaseModel):
         # table specific flags
         add_table_cell_location: bool = False,
         add_table_cell_text: bool = True,
-    ) -> str:
+    ) -> str:  # noqa: C901
         r"""Exports the document content to a DocumentToken format.
 
         Operates on a slice of the document's body as defined through arguments
         from_element and to_element; defaulting to the whole main_text.
 
-        :param delim: str:  (Default value = "\n\n")
+        :param delim: str:  (Default value = "")
         :param from_element: int:  (Default value = 0)
         :param to_element: Optional[int]:  (Default value = None)
         :param labels: set[DocItemLabel]
@@ -2743,170 +2762,184 @@ class DoclingDocument(BaseModel):
         :returns: The content of the document formatted as a DocTags string.
         :rtype: str
         """
-        labels = labels.copy()
-        labels.update(
-            [DocItemLabel.FOOTNOTE, DocItemLabel.PAGE_FOOTER, DocItemLabel.PAGE_HEADER]
-        )
 
-        def close_lists(
-            curr_level: int,
-            prev_level: int,
-            in_ordered_list: List[bool],
-            result: str,
-            delim: str,
-        ):
-
-            if len(in_ordered_list) == 0:
-                return (in_ordered_list, result)
-
-            while curr_level < prev_level and len(in_ordered_list) > 0:
-                if in_ordered_list[-1]:
-                    result += "</ordered_list>\n"
+        def _close_lists(
+            current_level: int,
+            previous_level: int,
+            ordered_list_stack: List[bool],
+            output_parts: List[str],
+        ) -> List[bool]:
+            """Close open list tags until the nesting level matches item's level."""
+            while current_level < previous_level and ordered_list_stack:
+                last_is_ordered = ordered_list_stack.pop()
+                if last_is_ordered:
+                    output_parts.append("</ordered_list>\n")
                 else:
-                    result += "</unordered_list>\n"
+                    output_parts.append("</unordered_list>\n")
+                previous_level -= 1
+            return ordered_list_stack
 
-                prev_level -= 1
-                in_ordered_list.pop()  # = in_ordered_list[:-1]
+        def _add_page_break_if_needed(
+            output_parts: List[str],
+            item,
+            prev_page_no,
+            page_break_enabled: bool,
+        ):
+            """Inserts a page-break token.
 
-            return (in_ordered_list, result)
+            Inserts a page-break token if the item's page number is different
+            from the previous item and page breaks are enabled.
+            Returns the updated output_parts list and the current page number.
+            """
+            if not page_break_enabled:
+                return output_parts, prev_page_no
 
-        def add_page_break(result, item, previous_page_no, delim, add_page_break):
-            if not add_page_break:
-                return result, previous_page_no
+            if not item.prov:
+                return output_parts, prev_page_no
 
-            prov_list = item.prov
-            if len(prov_list) == 0:
-                return result, previous_page_no
-            current_page_no = prov_list[0].page_no
+            current_page_no = item.prov[0].page_no
+            if prev_page_no is None:
+                return output_parts, current_page_no
 
-            if previous_page_no is None:
-                return result, current_page_no
+            if current_page_no != prev_page_no:
+                output_parts.append(f"{DocumentToken.PAGE_BREAK.value}\n")
 
-            if current_page_no != previous_page_no:
-                result += f"{DocumentToken.PAGE_BREAK.value}\n"
+            return output_parts, current_page_no
 
-            return result, current_page_no
+        def _get_standalone_captions(document_body):
+            """Identify captions that are not attached to any table or figure."""
+            all_captions = set()
+            matched_captions = set()
+            for item, _ in self.iterate_items(document_body, with_groups=True):
+                if item.label == DocItemLabel.CAPTION:
+                    all_captions.update([item.self_ref])
+                if item.label in [DocItemLabel.PICTURE, DocItemLabel.TABLE]:
+                    matched_captions.update([caption.cref for caption in item.captions])
 
-        prev_level = 0  # Track the previous item's level
+            return all_captions - matched_captions
 
-        in_ordered_list: List[bool] = []  # False
-
-        result = f"{DocumentToken.BEG_DOCUMENT.value}{delim}"
+        # Initialization
+        output_parts: List[str] = []
+        ordered_list_stack: List[bool] = []
+        previous_level = 0
         previous_page_no = None
-        for ix, (item, curr_level) in enumerate(
+
+        # Precompute standalone captions
+        standalone_captions = _get_standalone_captions(self.body)
+
+        # Begin document
+        output_parts.append(f"{DocumentToken.BEG_DOCUMENT.value}{delim}")
+
+        for ix, (item, current_level) in enumerate(
             self.iterate_items(self.body, with_groups=True)
         ):
-            # If we've moved to a lower level, we're exiting one or more groups
-            if curr_level < prev_level and len(in_ordered_list) > 0:
-                # Calculate how many levels we've exited
-                # level_difference = previous_level - level
-                # Decrement list_nesting_level for each list group we've exited
-                # list_nesting_level = max(0, list_nesting_level - level_difference)
-
-                in_ordered_list, result = close_lists(
-                    curr_level=curr_level,
-                    prev_level=prev_level,
-                    in_ordered_list=in_ordered_list,
-                    result=result,
-                    delim=delim,
+            # Close lists if we've moved to a lower nesting level
+            if current_level < previous_level and ordered_list_stack:
+                ordered_list_stack = _close_lists(
+                    current_level, previous_level, ordered_list_stack, output_parts
                 )
+            previous_level = current_level
 
-            prev_level = curr_level  # Update previous_level for next iteration
+            # Skip items outside the specified element range
+            if ix < from_element or ix >= to_element:
+                continue
 
-            if ix < from_element or to_element <= ix:
-                continue  # skip as many items as you want
+            # Skip items whose label is not in the allowed set
+            if isinstance(item, DocItem) and (item.label not in labels):
+                continue
 
-            if (isinstance(item, DocItem)) and (item.label not in labels):
-                continue  # skip any label that is not whitelisted
+            # Skip captions that are not standalone as they will be included below
+            # by the export functions of Table and Picture
+            if (
+                isinstance(item, TextItem)
+                and item.label == DocItemLabel.CAPTION
+                and item.self_ref not in standalone_captions
+            ):
+                continue
 
-            if isinstance(item, GroupItem) and item.label in [
-                GroupLabel.ORDERED_LIST,
-            ]:
+            # Handle list groups
+            if isinstance(item, GroupItem):
+                if item.label == GroupLabel.ORDERED_LIST:
+                    output_parts.append(f"<ordered_list>{delim}")
+                    ordered_list_stack.append(True)
+                elif item.label == GroupLabel.LIST:
+                    output_parts.append(f"<unordered_list>{delim}")
+                    ordered_list_stack.append(False)
+                continue
 
-                result += f"<ordered_list>{delim}"
-                in_ordered_list.append(True)
+            # For other item types, optionally insert page-break if the page changed
+            output_parts, previous_page_no = _add_page_break_if_needed(
+                output_parts, item, previous_page_no, add_page_index
+            )
 
-            elif isinstance(item, GroupItem) and item.label in [
-                GroupLabel.LIST,
-            ]:
-
-                result += f"<unordered_list>{delim}"
-                in_ordered_list.append(False)
-
-            elif isinstance(item, SectionHeaderItem):
-                result, previous_page_no = add_page_break(
-                    result, item, previous_page_no, delim, add_page_index
-                )
-
-                result += item.export_to_document_tokens(
-                    doc=self,
-                    new_line=delim,
-                    xsize=xsize,
-                    ysize=ysize,
-                    add_location=add_location,
-                    add_content=add_content,
+            if isinstance(item, SectionHeaderItem):
+                output_parts.append(
+                    item.export_to_document_tokens(
+                        doc=self,
+                        new_line=delim,
+                        xsize=xsize,
+                        ysize=ysize,
+                        add_location=add_location,
+                        add_content=add_content,
+                    )
                 )
             elif isinstance(item, CodeItem):
-                result, previous_page_no = add_page_break(
-                    result, item, previous_page_no, delim, add_page_index
+                output_parts.append(
+                    item.export_to_document_tokens(
+                        doc=self,
+                        new_line=delim,
+                        xsize=xsize,
+                        ysize=ysize,
+                        add_location=add_location,
+                        add_content=add_content,
+                    )
                 )
-
-                result += item.export_to_document_tokens(
-                    doc=self,
-                    new_line=delim,
-                    xsize=xsize,
-                    ysize=ysize,
-                    add_location=add_location,
-                    add_content=add_content,
-                )
-
             elif isinstance(item, TextItem):
-                result, previous_page_no = add_page_break(
-                    result, item, previous_page_no, delim, add_page_index
+                output_parts.append(
+                    item.export_to_document_tokens(
+                        doc=self,
+                        new_line=delim,
+                        xsize=xsize,
+                        ysize=ysize,
+                        add_location=add_location,
+                        add_content=add_content,
+                    )
                 )
-
-                result += item.export_to_document_tokens(
-                    doc=self,
-                    new_line=delim,
-                    xsize=xsize,
-                    ysize=ysize,
-                    add_location=add_location,
-                    add_content=add_content,
-                )
-
             elif isinstance(item, TableItem):
-                result, previous_page_no = add_page_break(
-                    result, item, previous_page_no, delim, add_page_index
+                output_parts.append(
+                    item.export_to_document_tokens(
+                        doc=self,
+                        new_line=delim,
+                        xsize=xsize,
+                        ysize=ysize,
+                        add_location=add_location,
+                        add_cell_location=add_table_cell_location,
+                        add_cell_text=add_table_cell_text,
+                        add_caption=True,
+                    )
                 )
-                result += item.export_to_document_tokens(
-                    doc=self,
-                    new_line=delim,
-                    xsize=xsize,
-                    ysize=ysize,
-                    add_location=add_location,
-                    add_cell_location=add_table_cell_location,
-                    add_cell_text=add_table_cell_text,
-                    add_caption=True,
-                )
-
             elif isinstance(item, PictureItem):
-                result, previous_page_no = add_page_break(
-                    result, item, previous_page_no, delim, add_page_index
+                output_parts.append(
+                    item.export_to_document_tokens(
+                        doc=self,
+                        new_line=delim,
+                        xsize=xsize,
+                        ysize=ysize,
+                        add_caption=True,
+                        add_location=add_location,
+                        add_content=add_content,
+                    )
                 )
 
-                result += item.export_to_document_tokens(
-                    doc=self,
-                    new_line=delim,
-                    xsize=xsize,
-                    ysize=ysize,
-                    add_caption=True,
-                    add_location=add_location,
-                    add_content=add_content,
-                )
+        # End any lists that might still be open
+        ordered_list_stack = _close_lists(
+            0, previous_level, ordered_list_stack, output_parts
+        )
 
-        result += DocumentToken.END_DOCUMENT.value
+        # End document
+        output_parts.append(DocumentToken.END_DOCUMENT.value)
 
-        return result
+        return "".join(output_parts)
 
     def _export_to_indented_text(
         self, indent="  ", max_text_len: int = -1, explicit_tables: bool = False

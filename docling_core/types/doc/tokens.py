@@ -16,7 +16,7 @@ class TableToken(Enum):
 
     CELL_LABEL_COLUMN_HEADER = "<column_header>"
     CELL_LABEL_ROW_HEADER = "<row_header>"
-    CELL_LABEL_SECTION_HEADERE = "<shed>"
+    CELL_LABEL_SECTION_HEADER = "<shed>"
     CELL_LABEL_DATA = "<data>"
 
     OTSL_ECEL = "<ecel>"  # empty cell
@@ -120,10 +120,6 @@ class DocumentToken(Enum):
                 f"</section_header_level_{i}>",
             ]
 
-        # Adding dynamically generated page-tokens
-        # for i in range(0, max_pages + 1):
-        #     special_tokens.append(f"<page_{i}>")
-
         # Add dynamically picture classification tokens
         for _, member in PictureClassificationLabel.__members__.items():
             special_tokens.append(f"<{member}>")
@@ -159,11 +155,6 @@ class DocumentToken(Enum):
     def get_picture_classification_token(classification: str) -> str:
         """Function to get picture classification tokens."""
         return f"<{classification}>"
-
-    # @staticmethod
-    # def get_page_token(page: int):
-    #     """Function to get page tokens."""
-    #     return f"<page_{page}>"
 
     @staticmethod
     def get_location_token(val: float, rnorm: int = 100):

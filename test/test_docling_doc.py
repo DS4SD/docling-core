@@ -33,7 +33,7 @@ from docling_core.types.doc.document import (  # BoundingBox,
 )
 from docling_core.types.doc.labels import DocItemLabel, GroupLabel
 
-GENERATE = False
+GENERATE = True
 
 
 def test_doc_origin():
@@ -388,15 +388,15 @@ def _verify_regression_test(pred: str, filename: str, ext: str):
 
 
 def _test_export_methods(doc: DoclingDocument, filename: str):
-    ### Iterate all elements
+    # Iterate all elements
     et_pred = doc.export_to_element_tree()
     _verify_regression_test(et_pred, filename=filename, ext="et")
 
-    ## Export stuff
+    # Export stuff
     md_pred = doc.export_to_markdown()
     _verify_regression_test(md_pred, filename=filename, ext="md")
 
-    # Test HTML export ...
+    # Test sHTML export ...
     html_pred = doc.export_to_html()
     _verify_regression_test(html_pred, filename=filename, ext="html")
 
