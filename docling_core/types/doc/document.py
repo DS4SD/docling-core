@@ -2742,7 +2742,7 @@ class DoclingDocument(BaseModel):
         # table specific flags
         add_table_cell_location: bool = False,
         add_table_cell_text: bool = True,
-    ) -> str:  # noqa: C901
+    ) -> str:
         r"""Exports the document content to a DocumentToken format.
 
         Operates on a slice of the document's body as defined through arguments
