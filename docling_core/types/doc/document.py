@@ -2379,7 +2379,7 @@ class DoclingDocument(BaseModel):
             text_width=text_width,
             page_no=page_no,
             included_content_layers=included_content_layers,
-            traverse_inline=False,
+            is_inline_scope=False,
             visited_ids=set(),
         )
         return tmp or ""
@@ -2399,7 +2399,7 @@ class DoclingDocument(BaseModel):
         text_width: int,
         page_no: Optional[int],
         included_content_layers: set[ContentLayer],
-        traverse_inline: bool,
+        is_inline_scope: bool,
         visited_ids: set[str],
     ) -> Optional[str]:
         paragraphs: list[str] = []
@@ -2461,7 +2461,7 @@ class DoclingDocument(BaseModel):
                 with_groups=True,
                 page_no=page_no,
                 included_content_layers=included_content_layers,
-                traverse_inline=traverse_inline,
+                traverse_inline=is_inline_scope,
             )
         ):
             # If we've moved to a lower level, we're exiting one or more groups
@@ -2515,7 +2515,7 @@ class DoclingDocument(BaseModel):
                     indent=indent,
                     text_width=text_width,
                     page_no=page_no,
-                    traverse_inline=True,
+                    is_inline_scope=True,
                     visited_ids=visited_ids,
                 )
                 if inline_text:
@@ -2542,7 +2542,7 @@ class DoclingDocument(BaseModel):
                 _ingest_text(text.strip())
 
             elif isinstance(item, CodeItem) and item.label in labels:
-                text = f"`{item.text}`" if traverse_inline else f"```\n{item.text}\n```"
+                text = f"`{item.text}`" if is_inline_scope else f"```\n{item.text}\n```"
                 _ingest_text(text, do_escape_underscores=False, do_escape_html=False)
 
             elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
