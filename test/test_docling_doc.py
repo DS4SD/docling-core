@@ -19,7 +19,9 @@ from docling_core.types.doc.document import (  # BoundingBox,
     DocumentOrigin,
     FloatingItem,
     ImageRef,
+    KeyOrValueCell,
     KeyValueItem,
+    KeyValueLink,
     ListItem,
     PictureItem,
     ProvenanceItem,
@@ -236,6 +238,11 @@ def test_docitems():
             obj = dc(
                 label=DocItemLabel.KEY_VALUE_REGION,
                 self_ref="#",
+                elements=[
+                    KeyOrValueCell(id=0, text="whatever", orig="whatever", bbox=None),
+                    KeyOrValueCell(id=1, text="whatever", orig="whatever", bbox=None),
+                ],
+                links=[KeyValueLink(key_id=0, value_id=1)],
             )
             verify(dc, obj)
 

@@ -1,5 +1,17 @@
 children: []
+elements:
+- bbox: null
+  id: 0
+  orig: whatever
+  text: whatever
+- bbox: null
+  id: 1
+  orig: whatever
+  text: whatever
 label: key_value_region
+links:
+- key_id: 0
+  value_id: 1
 parent: null
 prov: []
 self_ref: '#'

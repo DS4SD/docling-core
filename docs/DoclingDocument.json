@@ -437,6 +437,41 @@
       "title": "ImageRef",
       "type": "object"
     },
+    "KeyOrValueCell": {
+      "description": "KeyOrValueCell.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "orig": {
+          "title": "Orig",
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "orig"
+      ],
+      "title": "KeyOrValueCell",
+      "type": "object"
+    },
     "KeyValueItem": {
       "additionalProperties": false,
       "description": "KeyValueItem.",
@@ -478,12 +513,47 @@
           },
           "title": "Prov",
           "type": "array"
+        },
+        "elements": {
+          "items": {
+            "$ref": "#/$defs/KeyOrValueCell"
+          },
+          "title": "Elements",
+          "type": "array"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/KeyValueLink"
+          },
+          "title": "Links",
+          "type": "array"
         }
       },
       "required": [
-        "self_ref"
+        "self_ref",
+        "elements",
+        "links"
       ],
       "title": "KeyValueItem",
+      "type": "object"
+    },
+    "KeyValueLink": {
+      "description": "KeyValueLink.",
+      "properties": {
+        "key_id": {
+          "title": "Key Id",
+          "type": "integer"
+        },
+        "value_id": {
+          "title": "Value Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "key_id",
+        "value_id"
+      ],
+      "title": "KeyValueLink",
       "type": "object"
     },
     "ListItem": {
