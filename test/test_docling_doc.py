@@ -1043,3 +1043,25 @@ def test_save_to_disk():
     _verify_saved_output(filename=filename, paths=paths)
 
     assert True
+
+
+def test_inline():
+    test_files = [
+        "inline",
+        # "inline_within_list",  # TODO: reactivate test case once fixed
+    ]
+    for test_file in test_files:
+        filename = Path(f"test/data/doc/{test_file}.yaml")
+        doc = DoclingDocument.load_from_yaml(filename=filename)
+        act_data = doc.export_to_markdown()
+
+        if GENERATE:
+            with open(
+                f"test/data/doc/{test_file}.yaml.md", mode="w", encoding="utf-8"
+            ) as f:
+                f.write(act_data)
+                f.write("\n")
+        else:
+            with open(f"test/data/doc/{test_file}.yaml.md", encoding="utf-8") as fp:
+                exp_data = fp.read().rstrip()
+            assert act_data == exp_data

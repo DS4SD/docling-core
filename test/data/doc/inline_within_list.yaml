@@ -1,0 +1,84 @@
+body:
+  children:
+  - $ref: '#/texts/0'
+  - $ref: '#/groups/0'
+  label: unspecified
+  name: _root_
+  self_ref: '#/body'
+furniture:
+  children: []
+  label: unspecified
+  name: _root_
+  self_ref: '#/furniture'
+groups:
+- children:
+  - $ref: '#/groups/1'
+  - $ref: '#/texts/4'
+  content_layer: body
+  label: list
+  name: group
+  parent:
+    $ref: '#/body'
+  self_ref: '#/groups/0'
+- children:
+  - $ref: '#/texts/1'
+  - $ref: '#/texts/2'
+  - $ref: '#/texts/3'
+  label: inline
+  name: dummy
+  parent:
+    $ref: '#/groups/0'
+  self_ref: '#/groups/1'
+key_value_items: []
+name: t
+origin:
+  binary_hash: 15025997186286759208
+  filename: inline_example.md
+  mimetype: text/markdown
+pages: {}
+pictures: []
+schema_name: DoclingDocument
+tables: []
+texts:
+- children: []
+  label: paragraph
+  orig: foo
+  parent:
+    $ref: '#/body'
+  prov: []
+  self_ref: '#/texts/0'
+  text: foo
+- children: []
+  label: paragraph
+  orig: First code line is always
+  parent:
+    $ref: '#/groups/1'
+  prov: []
+  self_ref: '#/texts/1'
+  text: First code line is always
+- children: []
+  code_language: unknown
+  label: code
+  orig: print("Hello world")
+  parent:
+    $ref: '#/groups/1'
+  prov: []
+  self_ref: '#/texts/2'
+  text: print("Hello world")
+- children: []
+  label: paragraph
+  orig: '!'
+  parent:
+    $ref: '#/groups/1'
+  prov: []
+  self_ref: '#/texts/3'
+  text: '!'
+- children: []
+  label: paragraph
+  orig: bar
+  parent:
+    $ref: '#/groups/0'
+  prov: []
+  self_ref: '#/texts/4'
+  text: bar
+version: 1.2.0

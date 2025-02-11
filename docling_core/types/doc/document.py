@@ -61,7 +61,7 @@ _logger = logging.getLogger(__name__)
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
-CURRENT_VERSION: Final = "1.1.0"
+CURRENT_VERSION: Final = "1.2.0"
 
 DEFAULT_EXPORT_LABELS = {
     DocItemLabel.TITLE,
@@ -861,11 +861,11 @@ class PictureItem(FloatingItem):
         image_placeholder: str = "<!-- image -->",
     ) -> str:
         """Export picture to Markdown format."""
-        default_response = "\n" + image_placeholder + "\n"
+        default_response = image_placeholder
         error_response = (
-            "\n<!-- 🖼️❌ Image not available. "
+            "<!-- 🖼️❌ Image not available. "
             "Please use `PdfPipelineOptions(generate_picture_images=True)`"
-            " --> \n"
+            " -->"
         )
 
         if image_mode == ImageRefMode.PLACEHOLDER:
@@ -879,7 +879,7 @@ class PictureItem(FloatingItem):
                 and isinstance(self.image.uri, AnyUrl)
                 and self.image.uri.scheme == "data"
             ):
-                text = f"\n![Image]({self.image.uri})\n"
+                text = f"![Image]({self.image.uri})"
                 return text
 
             # get the self.image._pil or crop it out of the page-image
@@ -887,7 +887,7 @@ class PictureItem(FloatingItem):
 
             if img is not None:
                 imgb64 = self._image_to_base64(img)
-                text = f"\n![Image](data:image/png;base64,{imgb64})\n"
+                text = f"![Image](data:image/png;base64,{imgb64})"
 
                 return text
             else:
@@ -899,7 +899,7 @@ class PictureItem(FloatingItem):
             ):
                 return default_response
 
-            text = f"\n![Image]({quote(str(self.image.uri))})\n"
+            text = f"![Image]({quote(str(self.image.uri))})"
             return text
 
         else:
@@ -2009,6 +2009,7 @@ class DoclingDocument(BaseModel):
         page_no: Optional[int] = None,
         included_content_layers: set[ContentLayer] = DEFAULT_CONTENT_LAYERS,
         _level: int = 0,  # fixed parameter, carries through the node nesting level
+        traverse_inline: bool = True,
     ) -> typing.Iterable[Tuple[NodeItem, int]]:  # tuple of node and level
         """iterate_elements.
 
@@ -2017,6 +2018,7 @@ class DoclingDocument(BaseModel):
         :param traverse_pictures: bool:  (Default value = False)
         :param page_no: Optional[int]:  (Default value = None)
         :param _level:  (Default value = 0)
+        :param traverse_inline: bool:  (Default value = True)
         :param # fixed parameter:
         :param carries through the node nesting level:
         """
@@ -2041,8 +2043,12 @@ class DoclingDocument(BaseModel):
         if should_yield:
             yield root, _level
 
-        # Handle picture traversal - only traverse children if requested
-        if isinstance(root, PictureItem) and not traverse_pictures:
+        # Prevent children traversal when necessary
+        if (isinstance(root, PictureItem) and not traverse_pictures) or (
+            isinstance(root, GroupItem)
+            and root.label == GroupLabel.INLINE
+            and not traverse_inline
+        ):
             return
 
         # Traverse children
@@ -2056,6 +2062,7 @@ class DoclingDocument(BaseModel):
                     page_no=page_no,
                     _level=_level + 1,
                     included_content_layers=included_content_layers,
+                    traverse_inline=traverse_inline,
                 )
 
     def _clear_picture_pil_cache(self):
@@ -2239,6 +2246,20 @@ class DoclingDocument(BaseModel):
         with open(filename, "w", encoding="utf-8") as fw:
             yaml.dump(out, fw, default_flow_style=default_flow_style)
 
+    @classmethod
+    def load_from_yaml(cls, filename: Path) -> "DoclingDocument":
+        """load_from_yaml.
+
+        Args:
+            filename: The filename to load a YAML-serialized DoclingDocument from.
+
+        Returns:
+            DoclingDocument: the loaded DoclingDocument
+        """
+        with open(filename, encoding="utf-8") as f:
+            data = yaml.load(f, Loader=yaml.FullLoader)
+        return DoclingDocument.model_validate(data)
+
     def export_to_dict(
         self,
         mode: str = "json",
@@ -2254,7 +2275,7 @@ class DoclingDocument(BaseModel):
         self,
         filename: Path,
         artifacts_dir: Optional[Path] = None,
-        delim: str = "\n",
+        delim: str = "\n\n",  # TODO: deprecate
         from_element: int = 0,
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
@@ -2297,7 +2318,7 @@ class DoclingDocument(BaseModel):
 
     def export_to_markdown(  # noqa: C901
         self,
-        delim: str = "\n",
+        delim: str = "\n\n",  # TODO deprecate
         from_element: int = 0,
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
@@ -2344,10 +2365,52 @@ class DoclingDocument(BaseModel):
         :returns: The exported Markdown representation.
         :rtype: str
         """
-        mdtexts: list[str] = []
+        tmp = self._export_to_markdown(
+            node=self.body,
+            delim=delim,
+            from_element=from_element,
+            to_element=to_element,
+            labels=labels,
+            strict_text=strict_text,
+            escaping_underscores=escaping_underscores,
+            image_placeholder=image_placeholder,
+            image_mode=image_mode,
+            indent=indent,
+            text_width=text_width,
+            page_no=page_no,
+            included_content_layers=included_content_layers,
+            traverse_inline=False,
+            visited_ids=set(),
+        )
+        return tmp or ""
+
+    def _export_to_markdown(  # noqa: C901
+        self,
+        node: NodeItem,
+        delim: str,
+        from_element: int,
+        to_element: int,
+        labels: set[DocItemLabel],
+        strict_text: bool,
+        escaping_underscores: bool,
+        image_placeholder: str,
+        image_mode: ImageRefMode,
+        indent: int,
+        text_width: int,
+        page_no: Optional[int],
+        included_content_layers: set[ContentLayer],
+        traverse_inline: bool,
+        visited_ids: set[str],
+    ) -> Optional[str]:
+        paragraphs: list[str] = []
+        list_item_texts: list[str] = []
         list_nesting_level = 0  # Track the current list nesting level
         previous_level = 0  # Track the previous item's level
         in_list = False  # Track if we're currently processing list items
+        if node.self_ref in visited_ids:
+            return None
+        else:
+            visited_ids.add(node.self_ref)
 
         # Our export markdown doesn't contain any emphasis styling:
         # Bold, Italic, or Bold-Italic
@@ -2382,19 +2445,23 @@ class DoclingDocument(BaseModel):
 
             return "".join(parts)
 
-        def _append_text(text: str, do_escape_html=True, do_escape_underscores=True):
+        def _ingest_text(text: str, do_escape_html=True, do_escape_underscores=True):
             if do_escape_underscores and escaping_underscores:
                 text = _escape_underscores(text)
             if do_escape_html:
                 text = html.escape(text, quote=False)
-            mdtexts.append(text)
+            if in_list:
+                list_item_texts.append(text)
+            else:
+                paragraphs.append(text)
 
         for ix, (item, level) in enumerate(
             self.iterate_items(
-                self.body,
+                node,
                 with_groups=True,
                 page_no=page_no,
                 included_content_layers=included_content_layers,
+                traverse_inline=traverse_inline,
             )
         ):
             # If we've moved to a lower level, we're exiting one or more groups
@@ -2412,58 +2479,73 @@ class DoclingDocument(BaseModel):
             if (isinstance(item, DocItem)) and (item.label not in labels):
                 continue  # skip any label that is not whitelisted
 
-            # Handle newlines between different types of content
-            if (
-                len(mdtexts) > 0
-                and not isinstance(item, (ListItem, GroupItem))
-                and in_list
-            ):
-                mdtexts[-1] += "\n"
-                in_list = False
+            in_list = (
+                isinstance(item, GroupItem)
+                and item.label
+                in [
+                    GroupLabel.LIST,
+                    GroupLabel.ORDERED_LIST,
+                ]
+            ) or isinstance(item, ListItem)
+
+            # dump list in case just completed
+            if len(list_item_texts) > 0 and not in_list:
+                paragraphs.append("\n".join(list_item_texts))
+                list_item_texts.clear()
 
             if isinstance(item, GroupItem) and item.label in [
                 GroupLabel.LIST,
                 GroupLabel.ORDERED_LIST,
             ]:
-
-                if list_nesting_level == 0:  # Check if we're on the top level.
-                    # In that case a new list starts directly after another list.
-                    mdtexts.append("\n")  # Add a blank line
-
                 # Increment list nesting level when entering a new list
                 list_nesting_level += 1
-                in_list = True
                 continue
+
+            if isinstance(item, GroupItem) and item.label == GroupLabel.INLINE:
+                inline_text = self._export_to_markdown(
+                    node=item,
+                    delim=" ",
+                    from_element=from_element,
+                    to_element=to_element,
+                    labels=labels,
+                    strict_text=strict_text,
+                    escaping_underscores=escaping_underscores,
+                    image_placeholder=image_placeholder,
+                    image_mode=image_mode,
+                    indent=indent,
+                    text_width=text_width,
+                    page_no=page_no,
+                    traverse_inline=True,
+                    visited_ids=visited_ids,
+                )
+                if inline_text:
+                    _ingest_text(inline_text)
 
             elif isinstance(item, GroupItem):
                 continue
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
-                in_list = False
                 marker = "" if strict_text else "#"
                 text = f"{marker} {item.text}"
-                _append_text(text.strip() + "\n")
+                _ingest_text(text.strip())
 
             elif (
                 isinstance(item, TextItem)
                 and item.label in [DocItemLabel.SECTION_HEADER]
             ) or isinstance(item, SectionHeaderItem):
-                in_list = False
                 marker = ""
                 if not strict_text:
                     marker = "#" * level
                     if len(marker) < 2:
                         marker = "##"
-                text = f"{marker} {item.text}\n"
-                _append_text(text.strip() + "\n")
+                text = f"{marker} {item.text}"
+                _ingest_text(text.strip())
 
             elif isinstance(item, CodeItem) and item.label in labels:
-                in_list = False
-                text = f"```\n{item.text}\n```\n"
-                _append_text(text, do_escape_underscores=False, do_escape_html=False)
+                text = f"`{item.text}`" if traverse_inline else f"```\n{item.text}\n```"
+                _ingest_text(text, do_escape_underscores=False, do_escape_html=False)
 
             elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
-                in_list = True
                 # Calculate indent based on list_nesting_level
                 # -1 because level 1 needs no indent
                 list_indent = " " * (indent * (list_nesting_level - 1))
@@ -2477,42 +2559,38 @@ class DoclingDocument(BaseModel):
                     marker = "-"  # Markdown needs only dash as item marker.
 
                 text = f"{list_indent}{marker} {item.text}"
-                _append_text(text)
+                _ingest_text(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
-                in_list = False
                 if item.text != "":
-                    _append_text(
-                        f"$${item.text}$$\n",
+                    _ingest_text(
+                        f"$${item.text}$$",
                         do_escape_underscores=False,
                         do_escape_html=False,
                     )
                 elif item.orig != "":
-                    _append_text(
-                        "<!-- formula-not-decoded -->\n",
+                    _ingest_text(
+                        "<!-- formula-not-decoded -->",
                         do_escape_underscores=False,
                         do_escape_html=False,
                     )
 
             elif isinstance(item, TextItem) and item.label in labels:
-                in_list = False
                 if len(item.text) and text_width > 0:
                     text = item.text
                     wrapped_text = textwrap.fill(text, width=text_width)
-                    _append_text(wrapped_text + "\n")
+                    _ingest_text(wrapped_text)
                 elif len(item.text):
-                    text = f"{item.text}\n"
-                    _append_text(text)
+                    _ingest_text(item.text)
 
             elif isinstance(item, TableItem) and not strict_text:
-                in_list = False
-                _append_text(item.caption_text(self))
+                if caption_text := item.caption_text(self):
+                    _ingest_text(caption_text)
                 md_table = item.export_to_markdown()
-                _append_text("\n" + md_table + "\n")
+                _ingest_text(md_table)
 
             elif isinstance(item, PictureItem) and not strict_text:
-                in_list = False
-                _append_text(item.caption_text(self))
+                _ingest_text(item.caption_text(self))
 
                 line = item.export_to_markdown(
                     doc=self,
@@ -2520,18 +2598,17 @@ class DoclingDocument(BaseModel):
                     image_mode=image_mode,
                 )
 
-                _append_text(line, do_escape_html=False, do_escape_underscores=False)
+                _ingest_text(line, do_escape_html=False, do_escape_underscores=False)
 
             elif isinstance(item, DocItem) and item.label in labels:
-                in_list = False
                 text = "<!-- missing-text -->"
-                _append_text(text, do_escape_html=False, do_escape_underscores=False)
+                _ingest_text(text, do_escape_html=False, do_escape_underscores=False)
 
-        mdtext = (delim.join(mdtexts)).strip()
-        mdtext = re.sub(
-            r"\n\n\n+", "\n\n", mdtext
-        )  # remove cases of double or more empty lines.
+        # dump any trailing list
+        if len(list_item_texts) > 0:
+            paragraphs.append("\n".join(list_item_texts))
 
+        mdtext = (delim.join(paragraphs)).strip()
         return mdtext
 
     def export_to_text(  # noqa: C901
