@@ -79,8 +79,6 @@ DOCUMENT_TOKENS_EXPORT_LABELS = DEFAULT_EXPORT_LABELS.copy()
 DOCUMENT_TOKENS_EXPORT_LABELS.update(
     [
         DocItemLabel.FOOTNOTE,
-        DocItemLabel.PAGE_FOOTER,
-        DocItemLabel.PAGE_HEADER,
         DocItemLabel.CAPTION,
     ]
 )
@@ -1915,6 +1913,7 @@ class DoclingDocument(BaseModel):
                     traverse_pictures=traverse_pictures,
                     page_no=page_no,
                     _level=_level + 1,
+                    included_content_layers=included_content_layers,
                 )
 
     def _clear_picture_pil_cache(self):
@@ -2831,7 +2830,11 @@ class DoclingDocument(BaseModel):
         output_parts.append(f"{DocumentToken.BEG_DOCUMENT.value}{delim}")
 
         for ix, (item, current_level) in enumerate(
-            self.iterate_items(self.body, with_groups=True)
+            self.iterate_items(
+                self.body,
+                with_groups=True,
+                included_content_layers={ContentLayer.BODY, ContentLayer.FURNITURE},
+            )
         ):
             # Close lists if we've moved to a lower nesting level
             if current_level < previous_level and ordered_list_stack:
