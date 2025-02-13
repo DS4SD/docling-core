@@ -656,7 +656,7 @@ def _construct_doc() -> DoclingDocument:
     x2, y2 = x1 + square_size, y1 + square_size
 
     # Draw the red square
-    draw.rectangle([x1, y1, x2, y2], fill="red")
+    # draw.rectangle([x1, y1, x2, y2], fill="red")
 
     fig_caption_2 = doc.add_text(
         label=DocItemLabel.CAPTION, text="This is the caption of figure 2."
