@@ -139,25 +139,27 @@ class TableCellLabel(str, Enum):
         """Get string value."""
         return str(self.value)
 
+
 class GraphCellLabel(str, Enum):
-    """KeyValueCellLabel"""
+    """GraphCellLabel."""
 
     KEY = "key"
     VALUE = "value"
 
     CHECKBOX_SELECTED = "checkbox_selected"
-    CHECKBOX_UNSELECTED = "checkbox_unselected"    
-    
+    CHECKBOX_UNSELECTED = "checkbox_unselected"
+
 
 class GraphLinkLabel(str, Enum):
-    """KeyValueLinkLabel"""
+    """GraphLinkLabel."""
 
     TO_VALUE = "to_value"
     TO_KEY = "to_key"
 
     TO_PARENT = "to_parent"
     TO_CHILD = "to_child"
-    
+
+
 class CodeLanguageLabel(str, Enum):
     """CodeLanguageLabel."""
 
