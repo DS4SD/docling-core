@@ -351,6 +351,171 @@
       "title": "DocumentOrigin",
       "type": "object"
     },
+    "FormItem": {
+      "additionalProperties": false,
+      "description": "KeyValueItem.",
+      "properties": {
+        "self_ref": {
+          "pattern": "^#(?:/([\\w-]+)(?:/(\\d+))?)?$",
+          "title": "Self Ref",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefItem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "children": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RefItem"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
+        "label": {
+          "const": "form",
+          "default": "form",
+          "title": "Label",
+          "type": "string"
+        },
+        "prov": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProvenanceItem"
+          },
+          "title": "Prov",
+          "type": "array"
+        },
+        "cells": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/GraphCell"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "links": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/GraphLink"
+          },
+          "title": "Links",
+          "type": "array"
+        }
+      },
+      "required": [
+        "self_ref"
+      ],
+      "title": "FormItem",
+      "type": "object"
+    },
+    "GraphCell": {
+      "description": "GraphCell.",
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/GraphCellLabel"
+        },
+        "cell_id": {
+          "title": "Cell Id",
+          "type": "integer"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "orig": {
+          "title": "Orig",
+          "type": "string"
+        },
+        "page_no": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page No"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "label",
+        "cell_id",
+        "text",
+        "orig"
+      ],
+      "title": "GraphCell",
+      "type": "object"
+    },
+    "GraphCellLabel": {
+      "description": "GraphCellLabel.",
+      "enum": [
+        "key",
+        "value",
+        "checkbox_selected",
+        "checkbox_unselected"
+      ],
+      "title": "GraphCellLabel",
+      "type": "string"
+    },
+    "GraphLink": {
+      "description": "KeyValueLink.",
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/GraphLinkLabel"
+        },
+        "source_cell_id": {
+          "title": "Source Cell Id",
+          "type": "integer"
+        },
+        "target_cell_id": {
+          "title": "Target Cell Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "label",
+        "source_cell_id",
+        "target_cell_id"
+      ],
+      "title": "GraphLink",
+      "type": "object"
+    },
+    "GraphLinkLabel": {
+      "description": "GraphLinkLabel.",
+      "enum": [
+        "to_value",
+        "to_key",
+        "to_parent",
+        "to_child"
+      ],
+      "title": "GraphLinkLabel",
+      "type": "string"
+    },
     "GroupItem": {
       "additionalProperties": false,
       "description": "GroupItem.",
@@ -454,41 +619,6 @@
       "title": "ImageRef",
       "type": "object"
     },
-    "KeyOrValueCell": {
-      "description": "KeyOrValueCell.",
-      "properties": {
-        "id": {
-          "title": "Id",
-          "type": "integer"
-        },
-        "text": {
-          "title": "Text",
-          "type": "string"
-        },
-        "orig": {
-          "title": "Orig",
-          "type": "string"
-        },
-        "bbox": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/BoundingBox"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        }
-      },
-      "required": [
-        "id",
-        "text",
-        "orig"
-      ],
-      "title": "KeyOrValueCell",
-      "type": "object"
-    },
     "KeyValueItem": {
       "additionalProperties": false,
       "description": "KeyValueItem.",
@@ -535,46 +665,27 @@
           "title": "Prov",
           "type": "array"
         },
-        "elements": {
+        "cells": {
+          "default": [],
           "items": {
-            "$ref": "#/$defs/KeyOrValueCell"
+            "$ref": "#/$defs/GraphCell"
           },
-          "title": "Elements",
+          "title": "Cells",
           "type": "array"
         },
         "links": {
+          "default": [],
           "items": {
-            "$ref": "#/$defs/KeyValueLink"
+            "$ref": "#/$defs/GraphLink"
           },
           "title": "Links",
           "type": "array"
         }
       },
       "required": [
-        "self_ref",
-        "elements",
-        "links"
+        "self_ref"
       ],
       "title": "KeyValueItem",
-      "type": "object"
-    },
-    "KeyValueLink": {
-      "description": "KeyValueLink.",
-      "properties": {
-        "key_id": {
-          "title": "Key Id",
-          "type": "integer"
-        },
-        "value_id": {
-          "title": "Value Id",
-          "type": "integer"
-        }
-      },
-      "required": [
-        "key_id",
-        "value_id"
-      ],
-      "title": "KeyValueLink",
       "type": "object"
     },
     "ListItem": {
@@ -1646,6 +1757,14 @@
         "$ref": "#/$defs/KeyValueItem"
       },
       "title": "Key Value Items",
+      "type": "array"
+    },
+    "form_items": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/FormItem"
+      },
+      "title": "Form Items",
       "type": "array"
     },
     "pages": {
