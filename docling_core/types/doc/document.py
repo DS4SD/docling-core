@@ -13,6 +13,7 @@ import sys
 import textwrap
 import typing
 import warnings
+from enum import Enum
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Final, List, Literal, Optional, Tuple, Union
@@ -1107,7 +1108,9 @@ class TableItem(FloatingItem):
         return md_table
 
     def export_to_html(
-        self, doc: Optional["DoclingDocument"] = None, add_caption: bool = True
+        self,
+        doc: Optional["DoclingDocument"] = None,
+        add_caption: bool = True,
     ) -> str:
         """Export the table as html."""
         if doc is None:
@@ -1485,7 +1488,9 @@ class DoclingDocument(BaseModel):
     )
 
     furniture: Annotated[GroupItem, Field(deprecated=True)] = GroupItem(
-        name="_root_", self_ref="#/furniture", content_layer=ContentLayer.FURNITURE
+        name="_root_",
+        self_ref="#/furniture",
+        content_layer=ContentLayer.FURNITURE,
     )  # List[RefItem] = []
     body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
 
@@ -2112,7 +2117,8 @@ class DoclingDocument(BaseModel):
                             img.save(loc_path)
                             if reference_path is not None:
                                 obj_path = relative_path(
-                                    reference_path.resolve(), loc_path.resolve()
+                                    reference_path.resolve(),
+                                    loc_path.resolve(),
                                 )
                             else:
                                 obj_path = loc_path
@@ -2130,7 +2136,10 @@ class DoclingDocument(BaseModel):
         """Print_element_tree."""
         for ix, (item, level) in enumerate(self.iterate_items(with_groups=True)):
             if isinstance(item, GroupItem):
-                print(" " * level, f"{ix}: {item.label.value} with name={item.name}")
+                print(
+                    " " * level,
+                    f"{ix}: {item.label.value} with name={item.name}",
+                )
             elif isinstance(item, DocItem):
                 print(" " * level, f"{ix}: {item.label.value}")
 
@@ -2611,7 +2620,11 @@ class DoclingDocument(BaseModel):
 
             return (in_ordered_list, html_texts)
 
-        head_lines = ["<!DOCTYPE html>", f'<html lang="{html_lang}">', html_head]
+        head_lines = [
+            "<!DOCTYPE html>",
+            f'<html lang="{html_lang}">',
+            html_head,
+        ]
         html_texts: list[str] = []
 
         prev_level = 0  # Track the previous item's level
@@ -2686,7 +2699,8 @@ class DoclingDocument(BaseModel):
                 section_level: int = min(item.level + 1, 6)
 
                 text = get_html_tag_with_text_direction(
-                    html_tag=f"h{section_level}", text=_prepare_tag_content(item.text)
+                    html_tag=f"h{section_level}",
+                    text=_prepare_tag_content(item.text),
                 )
                 html_texts.append(text)
 
@@ -2943,13 +2957,19 @@ class DoclingDocument(BaseModel):
             self.iterate_items(
                 self.body,
                 with_groups=True,
-                included_content_layers={ContentLayer.BODY, ContentLayer.FURNITURE},
+                included_content_layers={
+                    ContentLayer.BODY,
+                    ContentLayer.FURNITURE,
+                },
             )
         ):
             # Close lists if we've moved to a lower nesting level
             if current_level < previous_level and ordered_list_stack:
                 ordered_list_stack = _close_lists(
-                    current_level, previous_level, ordered_list_stack, output_parts
+                    current_level,
+                    previous_level,
+                    ordered_list_stack,
+                    output_parts,
                 )
             previous_level = current_level
 
@@ -3055,7 +3075,10 @@ class DoclingDocument(BaseModel):
         return "".join(output_parts)
 
     def _export_to_indented_text(
-        self, indent="  ", max_text_len: int = -1, explicit_tables: bool = False
+        self,
+        indent="  ",
+        max_text_len: int = -1,
+        explicit_tables: bool = False,
     ):
         """Export the document to indented text to expose hierarchy."""
         result = []
