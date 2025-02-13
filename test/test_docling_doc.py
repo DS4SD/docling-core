@@ -7,6 +7,7 @@ from unittest.mock import Mock
 import pytest
 import yaml
 from PIL import Image as PILImage
+from PIL import ImageDraw
 from pydantic import AnyUrl, ValidationError
 
 from docling_core.types.doc.base import BoundingBox, CoordOrigin, ImageRefMode, Size
@@ -644,6 +645,17 @@ def _construct_doc() -> DoclingDocument:
     # Draw a red disk touching the borders
     # draw = ImageDraw.Draw(fig2_image)
     # draw.ellipse((0, 0, size[0] - 1, size[1] - 1), fill="red")
+
+    # Create a drawing object
+    draw = ImageDraw.Draw(fig2_image)
+
+    # Define the coordinates of the red square (x1, y1, x2, y2)
+    square_size = 20  # Adjust as needed
+    x1, y1 = 22, 22  # Adjust position
+    x2, y2 = x1 + square_size, y1 + square_size
+
+    # Draw the red square
+    draw.rectangle([x1, y1, x2, y2], fill="red")
 
     fig_caption_2 = doc.add_text(
         label=DocItemLabel.CAPTION, text="This is the caption of figure 2."
