@@ -7,7 +7,6 @@ from unittest.mock import Mock
 import pytest
 import yaml
 from PIL import Image as PILImage
-from PIL import ImageDraw
 from pydantic import AnyUrl, ValidationError
 
 from docling_core.types.doc.base import BoundingBox, CoordOrigin, ImageRefMode, Size
@@ -42,7 +41,7 @@ from docling_core.types.doc.labels import (
     GroupLabel,
 )
 
-GENERATE = True
+GENERATE = False
 
 
 def test_doc_origin():
