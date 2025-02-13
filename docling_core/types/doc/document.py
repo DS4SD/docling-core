@@ -42,7 +42,13 @@ from docling_core.search.package import VERSION_PATTERN
 from docling_core.types.base import _JSON_POINTER_REGEX
 from docling_core.types.doc import BoundingBox, Size
 from docling_core.types.doc.base import ImageRefMode
-from docling_core.types.doc.labels import CodeLanguageLabel, DocItemLabel, GroupLabel, GraphCellLabel, GraphLinkLabel
+from docling_core.types.doc.labels import (
+    CodeLanguageLabel,
+    DocItemLabel,
+    GraphCellLabel,
+    GraphLinkLabel,
+    GroupLabel,
+)
 from docling_core.types.doc.tokens import DocumentToken, TableToken
 from docling_core.types.doc.utils import (
     get_html_tag_with_text_direction,
@@ -1330,8 +1336,8 @@ class TableItem(FloatingItem):
 class GraphCell(BaseModel):
     """GraphCell."""
 
-    label: GraphCellLabel 
-    
+    label: GraphCellLabel
+
     cell_id: int
 
     text: str  # sanitized text
@@ -1344,26 +1350,29 @@ class GraphCell(BaseModel):
 class GraphLink(BaseModel):
     """KeyValueLink."""
 
-    label: GraphLinkLabel 
-    
+    label: GraphLinkLabel
+
     source_cell_id: int
     target_cell_id: int
 
-    
-class GraphItem(DocItem):
 
-    cells: List[GraphCell]
-    links: List[GraphLink]  # List of (key_id, value_id) linking key-value pairs
-    
+class GraphItem(DocItem):
+    """GraphItem."""
+
+    cells: List[GraphCell] = []
+    links: List[GraphLink] = []
+
+
 class KeyValueItem(GraphItem):
     """KeyValueItem."""
 
     label: typing.Literal[DocItemLabel.KEY_VALUE_REGION] = DocItemLabel.KEY_VALUE_REGION
 
+
 class FormItem(GraphItem):
     """KeyValueItem."""
 
-    label: typing.Literal[DocItemLabel.FORM] = DocItemLabel.FORM    
+    label: typing.Literal[DocItemLabel.FORM] = DocItemLabel.FORM
 
 
 ContentItem = Annotated[
@@ -1898,7 +1907,7 @@ class DoclingDocument(BaseModel):
         cref = f"#/key_value_items/{key_value_index}"
 
         kv_item = KeyValueItem(
-            elements=elements,
+            cells=cells,
             links=links,
             self_ref=cref,
             parent=parent.get_ref(),
@@ -1931,21 +1940,20 @@ class DoclingDocument(BaseModel):
         form_index = len(self.form_items)
         cref = f"#/form_items/{form_index}"
 
-        kv_item = KeyValueItem(
-            elements=elements,
+        form_item = FormItem(
+            cells=cells,
             links=links,
             self_ref=cref,
             parent=parent.get_ref(),
         )
         if prov:
-            kv_item.prov.append(prov)
+            form_item.prov.append(prov)
 
-        self.form_items.append(kv_item)
+        self.form_items.append(form_item)
         parent.children.append(RefItem(cref=cref))
 
-        return kv_item
+        return form_item
 
-    
     def num_pages(self):
         """num_pages."""
         return len(self.pages.values())

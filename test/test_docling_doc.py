@@ -19,12 +19,12 @@ from docling_core.types.doc.document import (  # BoundingBox,
     DoclingDocument,
     DocumentOrigin,
     FloatingItem,
-    ImageRef,
+    FormItem,
     GraphCell,
-    GraphLink,
     GraphItem,
+    GraphLink,
+    ImageRef,
     KeyValueItem,
-    FormItem,    
     ListItem,
     PictureItem,
     ProvenanceItem,
@@ -35,7 +35,12 @@ from docling_core.types.doc.document import (  # BoundingBox,
     TableItem,
     TextItem,
 )
-from docling_core.types.doc.labels import DocItemLabel, GroupLabel, GraphCellLabel, GraphLinkLabel
+from docling_core.types.doc.labels import (
+    DocItemLabel,
+    GraphCellLabel,
+    GraphLinkLabel,
+    GroupLabel,
+)
 
 GENERATE = False
 
@@ -205,7 +210,7 @@ def test_docitems():
     def verify(dc, obj):
         pred = serialise(obj).strip()
         pred = yaml.safe_load(pred)
-        
+
         # print(f"\t{dc.__name__}:\n {pred}")
         gold = read(dc.__name__)
 
@@ -244,12 +249,30 @@ def test_docitems():
                 label=DocItemLabel.KEY_VALUE_REGION,
                 self_ref="#",
                 cells=[
-                    GraphCell(label=GraphCellLabel.KEY, cell_id=0, text="number", orig="#", bbox=None),
-                    GraphCell(label=GraphCellLabel.VALUE, cell_id=1, text="1", orig="1", bbox=None),
+                    GraphCell(
+                        label=GraphCellLabel.KEY,
+                        cell_id=0,
+                        text="number",
+                        orig="#",
+                        bbox=None,
+                    ),
+                    GraphCell(
+                        label=GraphCellLabel.VALUE,
+                        cell_id=1,
+                        text="1",
+                        orig="1",
+                        bbox=None,
+                    ),
                 ],
                 links=[
-                    GraphLink(label=GraphLinkLabel.TO_VALUE, source_cell_id=0, target_cell_id=1),
-                    GraphLink(label=GraphLinkLabel.TO_KEY, source_cell_id=1, target_cell_id=0),
+                    GraphLink(
+                        label=GraphLinkLabel.TO_VALUE,
+                        source_cell_id=0,
+                        target_cell_id=1,
+                    ),
+                    GraphLink(
+                        label=GraphLinkLabel.TO_KEY, source_cell_id=1, target_cell_id=0
+                    ),
                 ],
             )
             verify(dc, obj)
@@ -259,15 +282,33 @@ def test_docitems():
                 label=DocItemLabel.FORM,
                 self_ref="#",
                 cells=[
-                    GraphCell(label=GraphCellLabel.KEY, cell_id=0, text="number", orig="#", bbox=None),
-                    GraphCell(label=GraphCellLabel.VALUE, cell_id=1, text="1", orig="1", bbox=None),
+                    GraphCell(
+                        label=GraphCellLabel.KEY,
+                        cell_id=0,
+                        text="number",
+                        orig="#",
+                        bbox=None,
+                    ),
+                    GraphCell(
+                        label=GraphCellLabel.VALUE,
+                        cell_id=1,
+                        text="1",
+                        orig="1",
+                        bbox=None,
+                    ),
                 ],
                 links=[
-                    GraphLink(label=GraphLinkLabel.TO_VALUE, source_cell_id=0, target_cell_id=1),
-                    GraphLink(label=GraphLinkLabel.TO_KEY, source_cell_id=1, target_cell_id=0),
+                    GraphLink(
+                        label=GraphLinkLabel.TO_VALUE,
+                        source_cell_id=0,
+                        target_cell_id=1,
+                    ),
+                    GraphLink(
+                        label=GraphLinkLabel.TO_KEY, source_cell_id=1, target_cell_id=0
+                    ),
                 ],
             )
-            verify(dc, obj)            
+            verify(dc, obj)
 
         elif dc is SectionHeaderItem:
             obj = dc(
