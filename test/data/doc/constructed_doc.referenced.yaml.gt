@@ -12,6 +12,7 @@ body:
   label: unspecified
   name: _root_
   self_ref: '#/body'
+form_items: []
 furniture:
   children: []
   content_layer: furniture
