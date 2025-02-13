@@ -43,7 +43,7 @@ from docling_core.search.package import VERSION_PATTERN
 from docling_core.types.base import _JSON_POINTER_REGEX
 from docling_core.types.doc import BoundingBox, Size
 from docling_core.types.doc.base import ImageRefMode
-from docling_core.types.doc.labels import CodeLanguageLabel, DocItemLabel, GroupLabel
+from docling_core.types.doc.labels import CodeLanguageLabel, DocItemLabel, GroupLabel, GraphCellLabel, GraphLinkLabel
 from docling_core.types.doc.tokens import DocumentToken, TableToken
 from docling_core.types.doc.utils import (
     get_html_tag_with_text_direction,
@@ -1342,30 +1342,43 @@ class TableItem(FloatingItem):
         return body
 
 
-class KeyOrValueCell(BaseModel):
-    """KeyOrValueCell."""
+class GraphCell(BaseModel):
+    """GraphCell."""
 
-    id: int
+    label: GraphCellLabel 
+    
+    cell_id: int
+
     text: str  # sanitized text
     orig: str  # text as seen on document
 
+    page_no: Optional[int] = None
     bbox: Optional[BoundingBox] = None
 
 
-class KeyValueLink(BaseModel):
+class GraphLink(BaseModel):
     """KeyValueLink."""
 
-    key_id: int
-    value_id: int
+    label: GraphLinkLabel 
+    
+    source_cell_id: int
+    target_cell_id: int
 
+    
+class GraphItem(DocItem):
 
-class KeyValueItem(DocItem):
+    cells: List[GraphCell]
+    links: List[GraphLink]  # List of (key_id, value_id) linking key-value pairs
+    
+class KeyValueItem(GraphItem):
     """KeyValueItem."""
 
     label: typing.Literal[DocItemLabel.KEY_VALUE_REGION] = DocItemLabel.KEY_VALUE_REGION
 
-    elements: List[KeyOrValueCell]
-    links: List[KeyValueLink]  # List of (key_id, value_id) linking key-value pairs
+class FormItem(GraphItem):
+    """KeyValueItem."""
+
+    label: typing.Literal[DocItemLabel.FORM] = DocItemLabel.FORM    
 
 
 ContentItem = Annotated[
@@ -1487,6 +1500,7 @@ class DoclingDocument(BaseModel):
     pictures: List[PictureItem] = []
     tables: List[TableItem] = []
     key_value_items: List[KeyValueItem] = []
+    form_items: List[FormItem] = []
 
     pages: Dict[int, PageItem] = {}  # empty as default
 
@@ -1880,8 +1894,8 @@ class DoclingDocument(BaseModel):
 
     def add_key_value_item(
         self,
-        elements: List[KeyOrValueCell],
-        links: List[KeyValueLink],
+        cells: List[GraphCell],
+        links: List[GraphLink],
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
     ):
@@ -1912,6 +1926,41 @@ class DoclingDocument(BaseModel):
 
         return kv_item
 
+    def add_form_item(
+        self,
+        cells: List[GraphCell] = [],
+        links: List[GraphLink] = [],
+        prov: Optional[ProvenanceItem] = None,
+        parent: Optional[NodeItem] = None,
+    ):
+        """add_form_item.
+
+        :param elements: List[KeyOrValueCell]:
+        :param links: List[KeyValueLink]:
+        :param prov: Optional[ProvenanceItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
+        """
+        if not parent:
+            parent = self.body
+
+        form_index = len(self.form_items)
+        cref = f"#/form_items/{form_index}"
+
+        kv_item = KeyValueItem(
+            elements=elements,
+            links=links,
+            self_ref=cref,
+            parent=parent.get_ref(),
+        )
+        if prov:
+            kv_item.prov.append(prov)
+
+        self.form_items.append(kv_item)
+        parent.children.append(RefItem(cref=cref))
+
+        return kv_item
+
+    
     def num_pages(self):
         """num_pages."""
         return len(self.pages.values())

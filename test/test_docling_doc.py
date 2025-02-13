@@ -20,9 +20,11 @@ from docling_core.types.doc.document import (  # BoundingBox,
     DocumentOrigin,
     FloatingItem,
     ImageRef,
-    KeyOrValueCell,
+    GraphCell,
+    GraphLink,
+    GraphItem,
     KeyValueItem,
-    KeyValueLink,
+    FormItem,    
     ListItem,
     PictureItem,
     ProvenanceItem,
@@ -33,7 +35,7 @@ from docling_core.types.doc.document import (  # BoundingBox,
     TableItem,
     TextItem,
 )
-from docling_core.types.doc.labels import DocItemLabel, GroupLabel
+from docling_core.types.doc.labels import DocItemLabel, GroupLabel, GraphCellLabel, GraphLinkLabel
 
 GENERATE = False
 
@@ -203,7 +205,7 @@ def test_docitems():
     def verify(dc, obj):
         pred = serialise(obj).strip()
         pred = yaml.safe_load(pred)
-
+        
         # print(f"\t{dc.__name__}:\n {pred}")
         gold = read(dc.__name__)
 
@@ -241,13 +243,31 @@ def test_docitems():
             obj = dc(
                 label=DocItemLabel.KEY_VALUE_REGION,
                 self_ref="#",
-                elements=[
-                    KeyOrValueCell(id=0, text="whatever", orig="whatever", bbox=None),
-                    KeyOrValueCell(id=1, text="whatever", orig="whatever", bbox=None),
+                cells=[
+                    GraphCell(label=GraphCellLabel.KEY, cell_id=0, text="number", orig="#", bbox=None),
+                    GraphCell(label=GraphCellLabel.VALUE, cell_id=1, text="1", orig="1", bbox=None),
                 ],
-                links=[KeyValueLink(key_id=0, value_id=1)],
+                links=[
+                    GraphLink(label=GraphLinkLabel.TO_VALUE, source_cell_id=0, target_cell_id=1),
+                    GraphLink(label=GraphLinkLabel.TO_KEY, source_cell_id=1, target_cell_id=0),
+                ],
             )
             verify(dc, obj)
+
+        elif dc is FormItem:
+            obj = dc(
+                label=DocItemLabel.FORM,
+                self_ref="#",
+                cells=[
+                    GraphCell(label=GraphCellLabel.KEY, cell_id=0, text="number", orig="#", bbox=None),
+                    GraphCell(label=GraphCellLabel.VALUE, cell_id=1, text="1", orig="1", bbox=None),
+                ],
+                links=[
+                    GraphLink(label=GraphLinkLabel.TO_VALUE, source_cell_id=0, target_cell_id=1),
+                    GraphLink(label=GraphLinkLabel.TO_KEY, source_cell_id=1, target_cell_id=0),
+                ],
+            )
+            verify(dc, obj)            
 
         elif dc is SectionHeaderItem:
             obj = dc(
@@ -279,6 +299,8 @@ def test_docitems():
                 code_language="Python",
             )
             verify(dc, obj)
+        elif dc is GraphItem:
+            continue
         else:
             raise RuntimeError(f"New derived class detected {dc.__name__}")
 
