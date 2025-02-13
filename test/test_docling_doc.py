@@ -42,7 +42,7 @@ from docling_core.types.doc.labels import (
     GroupLabel,
 )
 
-GENERATE = False
+GENERATE = True
 
 
 def test_doc_origin():
@@ -643,8 +643,8 @@ def _construct_doc() -> DoclingDocument:
     fig2_image = PILImage.new("RGB", size, "black")
 
     # Draw a red disk touching the borders
-    draw = ImageDraw.Draw(fig2_image)
-    draw.ellipse((0, 0, size[0] - 1, size[1] - 1), fill="red")
+    # draw = ImageDraw.Draw(fig2_image)
+    # draw.ellipse((0, 0, size[0] - 1, size[1] - 1), fill="red")
 
     fig_caption_2 = doc.add_text(
         label=DocItemLabel.CAPTION, text="This is the caption of figure 2."
