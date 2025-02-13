@@ -647,7 +647,7 @@ def _construct_doc() -> DoclingDocument:
     # draw.ellipse((0, 0, size[0] - 1, size[1] - 1), fill="red")
 
     # Create a drawing object
-    draw = ImageDraw.Draw(fig2_image)
+    ImageDraw.Draw(fig2_image)
 
     # Define the coordinates of the red square (x1, y1, x2, y2)
     square_size = 20  # Adjust as needed
