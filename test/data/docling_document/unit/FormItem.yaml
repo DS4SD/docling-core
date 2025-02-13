@@ -13,7 +13,7 @@ cells:
   text: '1'
 children: []
 content_layer: body
-label: key_value_region
+label: form
 links:
 - label: to_value
   source_cell_id: 0
