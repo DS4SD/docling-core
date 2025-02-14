@@ -1346,8 +1346,10 @@ class GraphCell(BaseModel):
     text: str  # sanitized text
     orig: str  # text as seen on document
 
-    page_no: Optional[int] = None
-    bbox: Optional[BoundingBox] = None
+    prov: Optional[ProvenanceItem] = None
+
+    # in case you have a text, table or picture item
+    item_ref: Optional[RefItem] = None
 
 
 class GraphLink(BaseModel):
@@ -1359,23 +1361,45 @@ class GraphLink(BaseModel):
     target_cell_id: int
 
 
-class GraphItem(DocItem):
-    """GraphItem."""
+class GraphData(BaseModel):
+    """GraphData."""
 
     cells: List[GraphCell] = []
     links: List[GraphLink] = []
 
+    @field_validator("links")
+    @classmethod
+    def validate_links(cls, links, values):
+        """Ensure that each link is valid."""
+        if "cells" not in values:
+            return links  # No cells to validate against
 
-class KeyValueItem(GraphItem):
+        valid_cell_ids = {cell.cell_id for cell in values["cells"]}
+
+        for link in links:
+            if link.source_cell_id not in valid_cell_ids:
+                raise ValueError(f"Invalid source_cell_id {link.source_cell_id} in GraphLink")
+            if link.target_cell_id not in valid_cell_ids:
+                raise ValueError(f"Invalid target_cell_id {link.target_cell_id} in GraphLink")
+
+        return links
+
+    
+
+class KeyValueItem(FloatingItem):
     """KeyValueItem."""
 
     label: typing.Literal[DocItemLabel.KEY_VALUE_REGION] = DocItemLabel.KEY_VALUE_REGION
 
+    graph: GraphData
 
-class FormItem(GraphItem):
+
+class FormItem(FloatingItem):
     """KeyValueItem."""
 
     label: typing.Literal[DocItemLabel.FORM] = DocItemLabel.FORM
+
+    graph: GraphData
 
 
 ContentItem = Annotated[
@@ -1893,8 +1917,7 @@ class DoclingDocument(BaseModel):
 
     def add_key_value_item(
         self,
-        cells: List[GraphCell],
-        links: List[GraphLink],
+        graph: GraphData,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
     ):
@@ -1912,8 +1935,7 @@ class DoclingDocument(BaseModel):
         cref = f"#/key_value_items/{key_value_index}"
 
         kv_item = KeyValueItem(
-            cells=cells,
-            links=links,
+            graph=graph,
             self_ref=cref,
             parent=parent.get_ref(),
         )
@@ -1927,8 +1949,7 @@ class DoclingDocument(BaseModel):
 
     def add_form_item(
         self,
-        cells: List[GraphCell] = [],
-        links: List[GraphLink] = [],
+        graph: GraphData,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
     ):
@@ -1946,8 +1967,7 @@ class DoclingDocument(BaseModel):
         cref = f"#/form_items/{form_index}"
 
         form_item = FormItem(
-            cells=cells,
-            links=links,
+            graph=graph,
             self_ref=cref,
             parent=parent.get_ref(),
         )

@@ -1,26 +1,31 @@
-cells:
-- bbox: null
-  cell_id: 0
-  label: key
-  orig: '#'
-  page_no: null
-  text: number
-- bbox: null
-  cell_id: 1
-  label: value
-  orig: '1'
-  page_no: null
-  text: '1'
+captions: []
 children: []
 content_layer: body
+footnotes: []
+graph:
+  cells:
+  - cell_id: 0
+    item_ref: null
+    label: key
+    orig: '#'
+    prov: null
+    text: number
+  - cell_id: 1
+    item_ref: null
+    label: value
+    orig: '1'
+    prov: null
+    text: '1'
+  links:
+  - label: to_value
+    source_cell_id: 0
+    target_cell_id: 1
+  - label: to_key
+    source_cell_id: 1
+    target_cell_id: 0
+image: null
 label: form
-links:
-- label: to_value
-  source_cell_id: 0
-  target_cell_id: 1
-- label: to_key
-  source_cell_id: 1
-  target_cell_id: 0
 parent: null
 prov: []
+references: []
 self_ref: '#'

@@ -143,15 +143,18 @@ class TableCellLabel(str, Enum):
 class GraphCellLabel(str, Enum):
     """GraphCellLabel."""
 
+    UNSPECIFIED = "unspecified"
+
     KEY = "key"
     VALUE = "value"
 
-    CHECKBOX_SELECTED = "checkbox_selected"
-    CHECKBOX_UNSELECTED = "checkbox_unselected"
+    CHECKBOX = "checkbox"
 
 
 class GraphLinkLabel(str, Enum):
     """GraphLinkLabel."""
+
+    UNSPECIFIED = "unspecified"
 
     TO_VALUE = "to_value"
     TO_KEY = "to_key"

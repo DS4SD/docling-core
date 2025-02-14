@@ -21,7 +21,7 @@ from docling_core.types.doc.document import (  # BoundingBox,
     FloatingItem,
     FormItem,
     GraphCell,
-    GraphItem,
+    GraphData,
     GraphLink,
     ImageRef,
     KeyValueItem,
@@ -209,6 +209,10 @@ def test_docitems():
 
     def verify(dc, obj):
         pred = serialise(obj).strip()
+
+        if dc is KeyValueItem or dc is FormItem:
+            write(dc.__name__, pred)
+
         pred = yaml.safe_load(pred)
 
         # print(f"\t{dc.__name__}:\n {pred}")
@@ -245,23 +249,20 @@ def test_docitems():
             verify(dc, obj)
 
         elif dc is KeyValueItem:
-            obj = dc(
-                label=DocItemLabel.KEY_VALUE_REGION,
-                self_ref="#",
+
+            graph = GraphData(
                 cells=[
                     GraphCell(
                         label=GraphCellLabel.KEY,
                         cell_id=0,
                         text="number",
                         orig="#",
-                        bbox=None,
                     ),
                     GraphCell(
                         label=GraphCellLabel.VALUE,
                         cell_id=1,
                         text="1",
                         orig="1",
-                        bbox=None,
                     ),
                 ],
                 links=[
@@ -275,26 +276,29 @@ def test_docitems():
                     ),
                 ],
             )
+
+            obj = dc(
+                label=DocItemLabel.KEY_VALUE_REGION,
+                graph=graph,
+                self_ref="#",
+            )
             verify(dc, obj)
 
         elif dc is FormItem:
-            obj = dc(
-                label=DocItemLabel.FORM,
-                self_ref="#",
+
+            graph = GraphData(
                 cells=[
                     GraphCell(
                         label=GraphCellLabel.KEY,
                         cell_id=0,
                         text="number",
                         orig="#",
-                        bbox=None,
                     ),
                     GraphCell(
                         label=GraphCellLabel.VALUE,
                         cell_id=1,
                         text="1",
                         orig="1",
-                        bbox=None,
                     ),
                 ],
                 links=[
@@ -307,6 +311,12 @@ def test_docitems():
                         label=GraphLinkLabel.TO_KEY, source_cell_id=1, target_cell_id=0
                     ),
                 ],
+            )
+
+            obj = dc(
+                label=DocItemLabel.FORM,
+                graph=graph,
+                self_ref="#",
             )
             verify(dc, obj)
 
@@ -340,7 +350,7 @@ def test_docitems():
                 code_language="Python",
             )
             verify(dc, obj)
-        elif dc is GraphItem:
+        elif dc is GraphData:  # we skip this on purpose
             continue
         else:
             raise RuntimeError(f"New derived class detected {dc.__name__}")
