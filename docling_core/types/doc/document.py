@@ -685,6 +685,11 @@ class CodeItem(TextItem):
     )
     code_language: CodeLanguageLabel = CodeLanguageLabel.UNKNOWN
 
+    captions: List[RefItem] = []
+    references: List[RefItem] = []
+    footnotes: List[RefItem] = []
+    image: Optional[ImageRef] = None
+
     def export_to_document_tokens(
         self,
         doc: "DoclingDocument",
