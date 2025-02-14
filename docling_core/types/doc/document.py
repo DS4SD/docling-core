@@ -1364,27 +1364,29 @@ class GraphLink(BaseModel):
 class GraphData(BaseModel):
     """GraphData."""
 
-    cells: List[GraphCell] = []
-    links: List[GraphLink] = []
+    cells: List[GraphCell] = Field(default_factory=list)
+    links: List[GraphLink] = Field(default_factory=list)
 
     @field_validator("links")
     @classmethod
-    def validate_links(cls, links, values):
+    def validate_links(cls, links, info):
         """Ensure that each link is valid."""
-        if "cells" not in values:
-            return links  # No cells to validate against
+        cells = info.data.get("cells", [])
 
-        valid_cell_ids = {cell.cell_id for cell in values["cells"]}
+        valid_cell_ids = {cell.cell_id for cell in cells}
 
         for link in links:
             if link.source_cell_id not in valid_cell_ids:
-                raise ValueError(f"Invalid source_cell_id {link.source_cell_id} in GraphLink")
+                raise ValueError(
+                    f"Invalid source_cell_id {link.source_cell_id} in GraphLink"
+                )
             if link.target_cell_id not in valid_cell_ids:
-                raise ValueError(f"Invalid target_cell_id {link.target_cell_id} in GraphLink")
+                raise ValueError(
+                    f"Invalid target_cell_id {link.target_cell_id} in GraphLink"
+                )
 
         return links
 
-    
 
 class KeyValueItem(FloatingItem):
     """KeyValueItem."""

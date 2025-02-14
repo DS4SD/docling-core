@@ -397,25 +397,48 @@
           "title": "Prov",
           "type": "array"
         },
-        "cells": {
+        "captions": {
           "default": [],
           "items": {
-            "$ref": "#/$defs/GraphCell"
+            "$ref": "#/$defs/RefItem"
           },
-          "title": "Cells",
+          "title": "Captions",
           "type": "array"
         },
-        "links": {
+        "references": {
           "default": [],
           "items": {
-            "$ref": "#/$defs/GraphLink"
+            "$ref": "#/$defs/RefItem"
           },
-          "title": "Links",
+          "title": "References",
           "type": "array"
+        },
+        "footnotes": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RefItem"
+          },
+          "title": "Footnotes",
+          "type": "array"
+        },
+        "image": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "graph": {
+          "$ref": "#/$defs/GraphData"
         }
       },
       "required": [
-        "self_ref"
+        "self_ref",
+        "graph"
       ],
       "title": "FormItem",
       "type": "object"
@@ -438,22 +461,21 @@
           "title": "Orig",
           "type": "string"
         },
-        "page_no": {
+        "prov": {
           "anyOf": [
             {
-              "type": "integer"
+              "$ref": "#/$defs/ProvenanceItem"
             },
             {
               "type": "null"
             }
           ],
-          "default": null,
-          "title": "Page No"
+          "default": null
         },
-        "bbox": {
+        "item_ref": {
           "anyOf": [
             {
-              "$ref": "#/$defs/BoundingBox"
+              "$ref": "#/$defs/RefItem"
             },
             {
               "type": "null"
@@ -474,13 +496,34 @@
     "GraphCellLabel": {
       "description": "GraphCellLabel.",
       "enum": [
+        "unspecified",
         "key",
         "value",
-        "checkbox_selected",
-        "checkbox_unselected"
+        "checkbox"
       ],
       "title": "GraphCellLabel",
       "type": "string"
+    },
+    "GraphData": {
+      "description": "GraphData.",
+      "properties": {
+        "cells": {
+          "items": {
+            "$ref": "#/$defs/GraphCell"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/GraphLink"
+          },
+          "title": "Links",
+          "type": "array"
+        }
+      },
+      "title": "GraphData",
+      "type": "object"
     },
     "GraphLink": {
       "description": "KeyValueLink.",
@@ -508,6 +551,7 @@
     "GraphLinkLabel": {
       "description": "GraphLinkLabel.",
       "enum": [
+        "unspecified",
         "to_value",
         "to_key",
         "to_parent",
@@ -665,25 +709,48 @@
           "title": "Prov",
           "type": "array"
         },
-        "cells": {
+        "captions": {
           "default": [],
           "items": {
-            "$ref": "#/$defs/GraphCell"
+            "$ref": "#/$defs/RefItem"
           },
-          "title": "Cells",
+          "title": "Captions",
           "type": "array"
         },
-        "links": {
+        "references": {
           "default": [],
           "items": {
-            "$ref": "#/$defs/GraphLink"
+            "$ref": "#/$defs/RefItem"
           },
-          "title": "Links",
+          "title": "References",
           "type": "array"
+        },
+        "footnotes": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RefItem"
+          },
+          "title": "Footnotes",
+          "type": "array"
+        },
+        "image": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "graph": {
+          "$ref": "#/$defs/GraphData"
         }
       },
       "required": [
-        "self_ref"
+        "self_ref",
+        "graph"
       ],
       "title": "KeyValueItem",
       "type": "object"
