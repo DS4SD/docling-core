@@ -1355,7 +1355,7 @@ class GraphCell(BaseModel):
 
 
 class GraphLink(BaseModel):
-    """KeyValueLink."""
+    """GraphLink."""
 
     label: GraphLinkLabel
 
@@ -1399,7 +1399,7 @@ class KeyValueItem(FloatingItem):
 
 
 class FormItem(FloatingItem):
-    """KeyValueItem."""
+    """FormItem."""
 
     label: typing.Literal[DocItemLabel.FORM] = DocItemLabel.FORM
 
@@ -1924,16 +1924,15 @@ class DoclingDocument(BaseModel):
 
         return section_header_item
 
-    def add_key_value_item(
+    def add_key_values(
         self,
         graph: GraphData,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
     ):
-        """add_key_value_item.
+        """add_key_values.
 
-        :param elements: List[KeyOrValueCell]:
-        :param links: List[KeyValueLink]:
+        :param graph: GraphData:
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
         :param parent: Optional[NodeItem]:  (Default value = None)
         """
@@ -1956,16 +1955,15 @@ class DoclingDocument(BaseModel):
 
         return kv_item
 
-    def add_form_item(
+    def add_form(
         self,
         graph: GraphData,
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
     ):
-        """add_form_item.
+        """add_form.
 
-        :param elements: List[KeyOrValueCell]:
-        :param links: List[KeyValueLink]:
+        :param graph: GraphData:
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
         :param parent: Optional[NodeItem]:  (Default value = None)
         """

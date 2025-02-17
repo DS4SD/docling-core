@@ -388,7 +388,7 @@
     },
     "FormItem": {
       "additionalProperties": false,
-      "description": "KeyValueItem.",
+      "description": "FormItem.",
       "properties": {
         "self_ref": {
           "pattern": "^#(?:/([\\w-]+)(?:/(\\d+))?)?$",
@@ -561,7 +561,7 @@
       "type": "object"
     },
     "GraphLink": {
-      "description": "KeyValueLink.",
+      "description": "GraphLink.",
       "properties": {
         "label": {
           "$ref": "#/$defs/GraphLinkLabel"
