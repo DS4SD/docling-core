@@ -38,9 +38,9 @@ DOC_WITH_MISSING_PAGE_IMAGE = {
             "content_layer": "body",
             "label": "text",
             "orig": "Avec la même démarche que celle suivie pour la "
-                    "description de lamplification de type Doherty on notera "
-                    "les quantités de Fourier suivantes pour la fréquence "
-                    "fondamentale",
+            "description de lamplification de type Doherty on notera "
+            "les quantités de Fourier suivantes pour la fréquence "
+            "fondamentale",
             "parent": {"$ref": "#/body"},
             "prov": [
                 {
@@ -57,9 +57,9 @@ DOC_WITH_MISSING_PAGE_IMAGE = {
             ],
             "self_ref": "#/texts/0",
             "text": "Avec la même démarche que celle suivie pour la "
-                    "description de lamplification de type Doherty on notera "
-                    "les quantités de Fourier suivantes pour la fréquence "
-                    "fondamentale",
+            "description de lamplification de type Doherty on notera "
+            "les quantités de Fourier suivantes pour la fréquence "
+            "fondamentale",
         },
         {
             "children": [],
