@@ -2764,18 +2764,21 @@ class DoclingDocument(BaseModel):
                             "</figure>"
                         )
 
+                img_fallback = _image_fallback(item)
+
                 # If the formula is not processed correcty, use its image
                 if (
                     item.text == ""
                     and item.orig != ""
                     and image_mode == ImageRefMode.EMBEDDED
                     and len(item.prov) > 0
+                    and img_fallback is not None
                 ):
-                    text = _image_fallback(item)
+                    text = img_fallback
 
                 # Building a math equation in MathML format
                 # ref https://www.w3.org/TR/wai-aria-1.1/#math
-                elif formula_to_mathml:
+                elif formula_to_mathml and img_fallback is not None:
                     try:
                         mathml_element = latex2mathml.converter.convert_to_element(
                             math_formula, display="block"
@@ -2792,7 +2795,7 @@ class DoclingDocument(BaseModel):
                             f"Error {err.__class__.__name__}, formula={math_formula}"
                         )
                         if image_mode == ImageRefMode.EMBEDDED and len(item.prov) > 0:
-                            text = _image_fallback(item)
+                            text = img_fallback
                         else:
                             text = f"<pre>{math_formula}</pre>"
 
