@@ -367,7 +367,7 @@ class BoundingBox(BaseModel):
         return False
 
     @classmethod
-    def union(cls, boxes: List["BoundingBox"]) -> "BoundingBox":
+    def enclosing_bbox(cls, boxes: List["BoundingBox"]) -> "BoundingBox":
         """Create a bounding box that covers all of the given boxes."""
         if not boxes:
             raise ValueError("No bounding boxes provided for union.")
