@@ -861,8 +861,13 @@ class PictureItem(FloatingItem):
         image_placeholder: str = "<!-- image -->",
     ) -> str:
         """Export picture to Markdown format."""
-        default_response = "\n" + image_placeholder + "\n"
+        caption_text = ""
+        if add_caption and len(self.captions):
+            caption_text = "\n" + self.caption_text(doc) + "\n"
+
+        default_response = f"{caption_text}\n{image_placeholder}\n"
         error_response = (
+            f"{caption_text}"
             "\n<!-- 🖼️❌ Image not available. "
             "Please use `PdfPipelineOptions(generate_picture_images=True)`"
             " --> \n"
@@ -879,7 +884,7 @@ class PictureItem(FloatingItem):
                 and isinstance(self.image.uri, AnyUrl)
                 and self.image.uri.scheme == "data"
             ):
-                text = f"\n![Image]({self.image.uri})\n"
+                text = f"{caption_text}\n![Image]({self.image.uri})\n"
                 return text
 
             # get the self.image._pil or crop it out of the page-image
@@ -887,7 +892,7 @@ class PictureItem(FloatingItem):
 
             if img is not None:
                 imgb64 = self._image_to_base64(img)
-                text = f"\n![Image](data:image/png;base64,{imgb64})\n"
+                text = f"{caption_text}\n![Image](data:image/png;base64,{imgb64})\n"
 
                 return text
             else:
@@ -899,7 +904,7 @@ class PictureItem(FloatingItem):
             ):
                 return default_response
 
-            text = f"\n![Image]({quote(str(self.image.uri))})\n"
+            text = f"{caption_text}\n![Image]({quote(str(self.image.uri))})\n"
             return text
 
         else:
@@ -2512,10 +2517,10 @@ class DoclingDocument(BaseModel):
 
             elif isinstance(item, PictureItem) and not strict_text:
                 in_list = False
-                _append_text(item.caption_text(self))
 
                 line = item.export_to_markdown(
                     doc=self,
+                    add_caption=True,
                     image_placeholder=image_placeholder,
                     image_mode=image_mode,
                 )
