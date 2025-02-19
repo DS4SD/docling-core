@@ -2778,7 +2778,7 @@ class DoclingDocument(BaseModel):
 
                 # Building a math equation in MathML format
                 # ref https://www.w3.org/TR/wai-aria-1.1/#math
-                elif formula_to_mathml and img_fallback is not None:
+                elif formula_to_mathml:
                     try:
                         mathml_element = latex2mathml.converter.convert_to_element(
                             math_formula, display="block"
@@ -2794,9 +2794,13 @@ class DoclingDocument(BaseModel):
                             "Malformed formula cannot be rendered. "
                             f"Error {err.__class__.__name__}, formula={math_formula}"
                         )
-                        if image_mode == ImageRefMode.EMBEDDED and len(item.prov) > 0:
+                        if (
+                            image_mode == ImageRefMode.EMBEDDED
+                            and len(item.prov) > 0
+                            and img_fallback is not None
+                        ):
                             text = img_fallback
-                        else:
+                        elif len(math_formula) > 0:
                             text = f"<pre>{math_formula}</pre>"
 
                 elif math_formula != "":
