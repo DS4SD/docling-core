@@ -2009,7 +2009,6 @@ class DoclingDocument(BaseModel):
         page_no: Optional[int] = None,
         included_content_layers: set[ContentLayer] = DEFAULT_CONTENT_LAYERS,
         _level: int = 0,  # fixed parameter, carries through the node nesting level
-        traverse_inline: bool = True,
     ) -> typing.Iterable[Tuple[NodeItem, int]]:  # tuple of node and level
         """iterate_elements.
 
@@ -2018,7 +2017,6 @@ class DoclingDocument(BaseModel):
         :param traverse_pictures: bool:  (Default value = False)
         :param page_no: Optional[int]:  (Default value = None)
         :param _level:  (Default value = 0)
-        :param traverse_inline: bool:  (Default value = True)
         :param # fixed parameter:
         :param carries through the node nesting level:
         """
@@ -2043,12 +2041,8 @@ class DoclingDocument(BaseModel):
         if should_yield:
             yield root, _level
 
-        # Prevent children traversal when necessary
-        if (isinstance(root, PictureItem) and not traverse_pictures) or (
-            isinstance(root, GroupItem)
-            and root.label == GroupLabel.INLINE
-            and not traverse_inline
-        ):
+        # Handle picture traversal - only traverse children if requested
+        if isinstance(root, PictureItem) and not traverse_pictures:
             return
 
         # Traverse children
@@ -2062,7 +2056,6 @@ class DoclingDocument(BaseModel):
                     page_no=page_no,
                     _level=_level + 1,
                     included_content_layers=included_content_layers,
-                    traverse_inline=traverse_inline,
                 )
 
     def _clear_picture_pil_cache(self):
@@ -2380,7 +2373,7 @@ class DoclingDocument(BaseModel):
             page_no=page_no,
             included_content_layers=included_content_layers,
             is_inline_scope=False,
-            visited_ids=set(),
+            visited=set(),
         )
         return tmp or ""
 
@@ -2400,17 +2393,13 @@ class DoclingDocument(BaseModel):
         page_no: Optional[int],
         included_content_layers: set[ContentLayer],
         is_inline_scope: bool,
-        visited_ids: set[str],
+        visited: set[str],  # refs of visited items
     ) -> Optional[str]:
         paragraphs: list[str] = []
         list_item_texts: list[str] = []
         list_nesting_level = 0  # Track the current list nesting level
         previous_level = 0  # Track the previous item's level
         in_list = False  # Track if we're currently processing list items
-        if node.self_ref in visited_ids:
-            return None
-        else:
-            visited_ids.add(node.self_ref)
 
         # Our export markdown doesn't contain any emphasis styling:
         # Bold, Italic, or Bold-Italic
@@ -2461,9 +2450,13 @@ class DoclingDocument(BaseModel):
                 with_groups=True,
                 page_no=page_no,
                 included_content_layers=included_content_layers,
-                traverse_inline=is_inline_scope,
             )
         ):
+            if item.self_ref in visited:
+                continue
+            else:
+                visited.add(item.self_ref)
+
             # If we've moved to a lower level, we're exiting one or more groups
             if level < previous_level:
                 # Calculate how many levels we've exited
@@ -2516,7 +2509,7 @@ class DoclingDocument(BaseModel):
                     text_width=text_width,
                     page_no=page_no,
                     is_inline_scope=True,
-                    visited_ids=visited_ids,
+                    visited=visited,
                 )
                 if inline_text:
                     _ingest_text(inline_text)
