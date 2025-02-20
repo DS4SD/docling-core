@@ -2508,6 +2508,7 @@ class DoclingDocument(BaseModel):
                     indent=indent,
                     text_width=text_width,
                     page_no=page_no,
+                    included_content_layers=included_content_layers,
                     is_inline_scope=True,
                     visited=visited,
                 )
