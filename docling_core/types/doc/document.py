@@ -2358,7 +2358,7 @@ class DoclingDocument(BaseModel):
         :returns: The exported Markdown representation.
         :rtype: str
         """
-        tmp = self._export_to_markdown(
+        return self._export_to_markdown(
             node=self.body,
             delim=delim,
             from_element=from_element,
@@ -2375,7 +2375,6 @@ class DoclingDocument(BaseModel):
             is_inline_scope=False,
             visited=set(),
         )
-        return tmp or ""
 
     def _export_to_markdown(  # noqa: C901
         self,
@@ -2394,8 +2393,8 @@ class DoclingDocument(BaseModel):
         included_content_layers: set[ContentLayer],
         is_inline_scope: bool,
         visited: set[str],  # refs of visited items
-    ) -> Optional[str]:
-        paragraphs: list[str] = []
+    ) -> str:
+        components: list[str] = []  # components to concatenate
         list_item_texts: list[str] = []
         list_nesting_level = 0  # Track the current list nesting level
         previous_level = 0  # Track the previous item's level
@@ -2442,7 +2441,7 @@ class DoclingDocument(BaseModel):
             if in_list:
                 list_item_texts.append(text)
             else:
-                paragraphs.append(text)
+                components.append(text)
 
         for ix, (item, level) in enumerate(
             self.iterate_items(
@@ -2483,7 +2482,7 @@ class DoclingDocument(BaseModel):
 
             # dump list in case just completed
             if len(list_item_texts) > 0 and not in_list:
-                paragraphs.append("\n".join(list_item_texts))
+                components.append("\n".join(list_item_texts))
                 list_item_texts.clear()
 
             if isinstance(item, GroupItem) and item.label in [
@@ -2600,9 +2599,9 @@ class DoclingDocument(BaseModel):
 
         # dump any trailing list
         if len(list_item_texts) > 0:
-            paragraphs.append("\n".join(list_item_texts))
+            components.append("\n".join(list_item_texts))
 
-        mdtext = (delim.join(paragraphs)).strip()
+        mdtext = (delim.join(components)).strip()
         return mdtext
 
     def export_to_text(  # noqa: C901
