@@ -32,3 +32,18 @@ This is the caption of figure 1.
 This is the caption of figure 2.
 
 ![Image](constructed_images/image_000001_f3cc103136423a57975750907ebc1d367e2985ac6338976d4d5a439f50323f4a.png)
+
+- subitem of list
+- item 1 of list
+- item 2 of list
+
+- item 1 of neighboring list
+- item 2 of neighboring list
+    - item 1 of sub list
+    - Here a code snippet: `print("Hello world")` (to be displayed inline)
+
+And a code block:
+
+```
+print("Hello world")
+```

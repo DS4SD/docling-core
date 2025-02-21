@@ -2358,9 +2358,8 @@ class DoclingDocument(BaseModel):
         :returns: The exported Markdown representation.
         :rtype: str
         """
-        return self._export_to_markdown(
+        comps = self._get_markdown_components(
             node=self.body,
-            delim=delim,
             from_element=from_element,
             to_element=to_element,
             labels=labels,
@@ -2372,14 +2371,15 @@ class DoclingDocument(BaseModel):
             text_width=text_width,
             page_no=page_no,
             included_content_layers=included_content_layers,
+            list_level=0,
             is_inline_scope=False,
             visited=set(),
         )
+        return delim.join(comps)
 
-    def _export_to_markdown(  # noqa: C901
+    def _get_markdown_components(  # noqa: C901
         self,
         node: NodeItem,
-        delim: str,
         from_element: int,
         to_element: int,
         labels: set[DocItemLabel],
@@ -2391,14 +2391,11 @@ class DoclingDocument(BaseModel):
         text_width: int,
         page_no: Optional[int],
         included_content_layers: set[ContentLayer],
+        list_level: int,
         is_inline_scope: bool,
         visited: set[str],  # refs of visited items
-    ) -> str:
+    ) -> list[str]:
         components: list[str] = []  # components to concatenate
-        list_item_texts: list[str] = []
-        list_nesting_level = 0  # Track the current list nesting level
-        previous_level = 0  # Track the previous item's level
-        in_list = False  # Track if we're currently processing list items
 
         # Our export markdown doesn't contain any emphasis styling:
         # Bold, Italic, or Bold-Italic
@@ -2438,9 +2435,7 @@ class DoclingDocument(BaseModel):
                 text = _escape_underscores(text)
             if do_escape_html:
                 text = html.escape(text, quote=False)
-            if in_list:
-                list_item_texts.append(text)
-            else:
+            if text:
                 components.append(text)
 
         for ix, (item, level) in enumerate(
@@ -2456,66 +2451,74 @@ class DoclingDocument(BaseModel):
             else:
                 visited.add(item.self_ref)
 
-            # If we've moved to a lower level, we're exiting one or more groups
-            if level < previous_level:
-                # Calculate how many levels we've exited
-                level_difference = previous_level - level
-                # Decrement list_nesting_level for each list group we've exited
-                list_nesting_level = max(0, list_nesting_level - level_difference)
-
-            previous_level = level  # Update previous_level for next iteration
-
             if ix < from_element or to_element <= ix:
                 continue  # skip as many items as you want
 
-            if (isinstance(item, DocItem)) and (item.label not in labels):
+            elif (isinstance(item, DocItem)) and (item.label not in labels):
                 continue  # skip any label that is not whitelisted
 
-            in_list = (
-                isinstance(item, GroupItem)
-                and item.label
-                in [
+            elif isinstance(item, GroupItem):
+                if item.label in [
                     GroupLabel.LIST,
                     GroupLabel.ORDERED_LIST,
-                ]
-            ) or isinstance(item, ListItem)
-
-            # dump list in case just completed
-            if len(list_item_texts) > 0 and not in_list:
-                components.append("\n".join(list_item_texts))
-                list_item_texts.clear()
-
-            if isinstance(item, GroupItem) and item.label in [
-                GroupLabel.LIST,
-                GroupLabel.ORDERED_LIST,
-            ]:
-                # Increment list nesting level when entering a new list
-                list_nesting_level += 1
-                continue
-
-            if isinstance(item, GroupItem) and item.label == GroupLabel.INLINE:
-                inline_text = self._export_to_markdown(
-                    node=item,
-                    delim=" ",
-                    from_element=from_element,
-                    to_element=to_element,
-                    labels=labels,
-                    strict_text=strict_text,
-                    escaping_underscores=escaping_underscores,
-                    image_placeholder=image_placeholder,
-                    image_mode=image_mode,
-                    indent=indent,
-                    text_width=text_width,
-                    page_no=page_no,
-                    included_content_layers=included_content_layers,
-                    is_inline_scope=True,
-                    visited=visited,
-                )
-                if inline_text:
-                    _ingest_text(inline_text)
-
-            elif isinstance(item, GroupItem):
-                continue
+                ]:
+                    comps = self._get_markdown_components(
+                        node=item,
+                        from_element=from_element,
+                        to_element=to_element,
+                        labels=labels,
+                        strict_text=strict_text,
+                        escaping_underscores=escaping_underscores,
+                        image_placeholder=image_placeholder,
+                        image_mode=image_mode,
+                        indent=indent,
+                        text_width=text_width,
+                        page_no=page_no,
+                        included_content_layers=included_content_layers,
+                        list_level=list_level + 1,
+                        is_inline_scope=is_inline_scope,
+                        visited=visited,
+                    )
+                    # NOTE: assumes unordered (flag & marker currently in ListItem)
+                    indent_str = f"{(list_level if components else 0) * indent * ' '}"
+                    text = "\n".join(
+                        [
+                            (
+                                # if starting with sublist, promote to top-level
+                                cpt.lstrip()
+                                if not components
+                                else (
+                                    # avoid additional marker on already evaled sublists
+                                    cpt
+                                    if cpt and cpt[0] == " "
+                                    else f"{indent_str}- {cpt}"
+                                )
+                            )
+                            for cpt in comps
+                        ]
+                    )
+                    _ingest_text(text=text)
+                elif item.label == GroupLabel.INLINE:
+                    comps = self._get_markdown_components(
+                        node=item,
+                        from_element=from_element,
+                        to_element=to_element,
+                        labels=labels,
+                        strict_text=strict_text,
+                        escaping_underscores=escaping_underscores,
+                        image_placeholder=image_placeholder,
+                        image_mode=image_mode,
+                        indent=indent,
+                        text_width=text_width,
+                        page_no=page_no,
+                        included_content_layers=included_content_layers,
+                        list_level=list_level,
+                        is_inline_scope=True,
+                        visited=visited,
+                    )
+                    _ingest_text(" ".join(comps))
+                else:
+                    continue
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
                 marker = "" if strict_text else "#"
@@ -2537,22 +2540,6 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, CodeItem) and item.label in labels:
                 text = f"`{item.text}`" if is_inline_scope else f"```\n{item.text}\n```"
                 _ingest_text(text, do_escape_underscores=False, do_escape_html=False)
-
-            elif isinstance(item, ListItem) and item.label in [DocItemLabel.LIST_ITEM]:
-                # Calculate indent based on list_nesting_level
-                # -1 because level 1 needs no indent
-                list_indent = " " * (indent * (list_nesting_level - 1))
-
-                marker = ""
-                if strict_text:
-                    marker = ""
-                elif item.enumerated:
-                    marker = item.marker
-                else:
-                    marker = "-"  # Markdown needs only dash as item marker.
-
-                text = f"{list_indent}{marker} {item.text}"
-                _ingest_text(text)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
                 if item.text != "":
@@ -2597,12 +2584,7 @@ class DoclingDocument(BaseModel):
                 text = "<!-- missing-text -->"
                 _ingest_text(text, do_escape_html=False, do_escape_underscores=False)
 
-        # dump any trailing list
-        if len(list_item_texts) > 0:
-            components.append("\n".join(list_item_texts))
-
-        mdtext = (delim.join(components)).strip()
-        return mdtext
+        return components
 
     def export_to_text(  # noqa: C901
         self,

@@ -459,12 +459,12 @@ def _test_serialize_and_reload(doc):
 def _verify_regression_test(pred: str, filename: str, ext: str):
     if os.path.exists(filename + f".{ext}") and not GENERATE:
         with open(filename + f".{ext}", "r", encoding="utf-8") as fr:
-            gt_true = fr.read()
+            gt_true = fr.read().rstrip()
 
         assert gt_true == pred, f"Does not pass regression-test for {filename}.{ext}"
     else:
         with open(filename + f".{ext}", "w", encoding="utf-8") as fw:
-            fw.write(pred)
+            fw.write(f"{pred}\n")
 
 
 def _test_export_methods(doc: DoclingDocument, filename: str):
@@ -673,6 +673,34 @@ def _construct_doc() -> DoclingDocument:
     fig2_item = doc.add_picture(
         image=ImageRef.from_pil(image=fig2_image, dpi=72), caption=fig_caption_2
     )
+
+    g1 = doc.add_group(label=GroupLabel.LIST, parent=None)
+    gn = doc.add_group(label=GroupLabel.LIST, parent=g1)
+    doc.add_list_item(text="subitem of list", parent=gn)
+    doc.add_list_item(text="item 1 of list", parent=g1)
+    doc.add_list_item(text="item 2 of list", parent=g1)
+
+    g2 = doc.add_group(label=GroupLabel.LIST, parent=None)
+    doc.add_list_item(text="item 1 of neighboring list", parent=g2)
+    doc.add_list_item(text="item 2 of neighboring list", parent=g2)
+
+    g2_subgroup = doc.add_group(label=GroupLabel.LIST, parent=g2)
+    doc.add_list_item(text="item 1 of sub list", parent=g2_subgroup)
+
+    inline_gr = doc.add_group(label=GroupLabel.INLINE, parent=g2_subgroup)
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH,
+        text="Here a code snippet:",
+        parent=inline_gr,
+    )
+    doc.add_code(text='print("Hello world")', parent=inline_gr)
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH, text="(to be displayed inline)", parent=inline_gr
+    )
+
+    doc.add_text(label=DocItemLabel.PARAGRAPH, text="And a code block:", parent=None)
+    doc.add_code(text='print("Hello world")', parent=None)
+
     return doc
 
 
@@ -1043,25 +1071,3 @@ def test_save_to_disk():
     _verify_saved_output(filename=filename, paths=paths)
 
     assert True
-
-
-def test_inline():
-    test_files = [
-        "inline",
-        # "inline_within_list",  # TODO: reactivate test case once fixed
-    ]
-    for test_file in test_files:
-        filename = Path(f"test/data/doc/{test_file}.yaml")
-        doc = DoclingDocument.load_from_yaml(filename=filename)
-        act_data = doc.export_to_markdown()
-
-        if GENERATE:
-            with open(
-                f"test/data/doc/{test_file}.yaml.md", mode="w", encoding="utf-8"
-            ) as f:
-                f.write(act_data)
-                f.write("\n")
-        else:
-            with open(f"test/data/doc/{test_file}.yaml.md", encoding="utf-8") as fp:
-                exp_data = fp.read().rstrip()
-            assert act_data == exp_data

@@ -8,6 +8,10 @@ body:
   - $ref: '#/pictures/0'
   - $ref: '#/texts/14'
   - $ref: '#/pictures/1'
+  - $ref: '#/groups/3'
+  - $ref: '#/groups/5'
+  - $ref: '#/texts/24'
+  - $ref: '#/texts/25'
   content_layer: body
   label: unspecified
   name: _root_
@@ -52,6 +56,53 @@ groups:
   parent:
     $ref: '#/groups/1'
   self_ref: '#/groups/2'
+- children:
+  - $ref: '#/groups/4'
+  - $ref: '#/texts/16'
+  - $ref: '#/texts/17'
+  content_layer: body
+  label: list
+  name: group
+  parent:
+    $ref: '#/body'
+  self_ref: '#/groups/3'
+- children:
+  - $ref: '#/texts/15'
+  content_layer: body
+  label: list
+  name: group
+  parent:
+    $ref: '#/groups/3'
+  self_ref: '#/groups/4'
+- children:
+  - $ref: '#/texts/18'
+  - $ref: '#/texts/19'
+  - $ref: '#/groups/6'
+  content_layer: body
+  label: list
+  name: group
+  parent:
+    $ref: '#/body'
+  self_ref: '#/groups/5'
+- children:
+  - $ref: '#/texts/20'
+  - $ref: '#/groups/7'
+  content_layer: body
+  label: list
+  name: group
+  parent:
+    $ref: '#/groups/5'
+  self_ref: '#/groups/6'
+- children:
+  - $ref: '#/texts/21'
+  - $ref: '#/texts/22'
+  - $ref: '#/texts/23'
+  content_layer: body
+  label: inline
+  name: group
+  parent:
+    $ref: '#/groups/6'
+  self_ref: '#/groups/7'
 key_value_items: []
 name: Untitled 1
 pages: {}
@@ -426,4 +477,123 @@ texts:
   prov: []
   self_ref: '#/texts/14'
   text: This is the caption of figure 2.
+- children: []
+  content_layer: body
+  enumerated: false
+  label: list_item
+  marker: '-'
+  orig: subitem of list
+  parent:
+    $ref: '#/groups/4'
+  prov: []
+  self_ref: '#/texts/15'
+  text: subitem of list
+- children: []
+  content_layer: body
+  enumerated: false
+  label: list_item
+  marker: '-'
+  orig: item 1 of list
+  parent:
+    $ref: '#/groups/3'
+  prov: []
+  self_ref: '#/texts/16'
+  text: item 1 of list
+- children: []
+  content_layer: body
+  enumerated: false
+  label: list_item
+  marker: '-'
+  orig: item 2 of list
+  parent:
+    $ref: '#/groups/3'
+  prov: []
+  self_ref: '#/texts/17'
+  text: item 2 of list
+- children: []
+  content_layer: body
+  enumerated: false
+  label: list_item
+  marker: '-'
+  orig: item 1 of neighboring list
+  parent:
+    $ref: '#/groups/5'
+  prov: []
+  self_ref: '#/texts/18'
+  text: item 1 of neighboring list
+- children: []
+  content_layer: body
+  enumerated: false
+  label: list_item
+  marker: '-'
+  orig: item 2 of neighboring list
+  parent:
+    $ref: '#/groups/5'
+  prov: []
+  self_ref: '#/texts/19'
+  text: item 2 of neighboring list
+- children: []
+  content_layer: body
+  enumerated: false
+  label: list_item
+  marker: '-'
+  orig: item 1 of sub list
+  parent:
+    $ref: '#/groups/6'
+  prov: []
+  self_ref: '#/texts/20'
+  text: item 1 of sub list
+- children: []
+  content_layer: body
+  label: paragraph
+  orig: 'Here a code snippet:'
+  parent:
+    $ref: '#/groups/7'
+  prov: []
+  self_ref: '#/texts/21'
+  text: 'Here a code snippet:'
+- captions: []
+  children: []
+  code_language: unknown
+  content_layer: body
+  footnotes: []
+  label: code
+  orig: print("Hello world")
+  parent:
+    $ref: '#/groups/7'
+  prov: []
+  references: []
+  self_ref: '#/texts/22'
+  text: print("Hello world")
+- children: []
+  content_layer: body
+  label: paragraph
+  orig: (to be displayed inline)
+  parent:
+    $ref: '#/groups/7'
+  prov: []
+  self_ref: '#/texts/23'
+  text: (to be displayed inline)
+- children: []
+  content_layer: body
+  label: paragraph
+  orig: 'And a code block:'
+  parent:
+    $ref: '#/body'
+  prov: []
+  self_ref: '#/texts/24'
+  text: 'And a code block:'
+- captions: []
+  children: []
+  code_language: unknown
+  content_layer: body
+  footnotes: []
+  label: code
+  orig: print("Hello world")
+  parent:
+    $ref: '#/body'
+  prov: []
+  references: []
+  self_ref: '#/texts/25'
+  text: print("Hello world")
 version: 1.2.0

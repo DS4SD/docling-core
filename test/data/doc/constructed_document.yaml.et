@@ -20,3 +20,19 @@
  19: picture
  20: caption
  21: picture
+ 22: list with name=group
+  23: list with name=group
+   24: list_item
+  25: list_item
+  26: list_item
+ 27: list with name=group
+  28: list_item
+  29: list_item
+  30: list with name=group
+   31: list_item
+   32: inline with name=group
+    33: paragraph
+    34: code
+    35: paragraph
+ 36: paragraph
+ 37: code
