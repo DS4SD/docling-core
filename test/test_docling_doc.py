@@ -572,6 +572,13 @@ def _construct_doc() -> DoclingDocument:
         text="list item 3.c",
     )
 
+    mylist_level_3 = doc.add_group(parent=mylist_level_2, label=GroupLabel.ORDERED_LIST)
+
+    doc.add_list_item(
+        parent=mylist_level_3,
+        text="list item 3.c.i",
+    )
+
     doc.add_list_item(
         parent=mylist_level_1,
         text="list item 4",

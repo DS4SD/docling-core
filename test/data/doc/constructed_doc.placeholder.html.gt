@@ -82,6 +82,9 @@
 <li>list item 3.a</li>
 <li>list item 3.b</li>
 <li>list item 3.c</li>
+<ol>
+<li>list item 3.c.i</li>
+</ol>
 </ol>
 <li>list item 4</li>
 </ul>

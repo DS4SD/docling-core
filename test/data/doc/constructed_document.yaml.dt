@@ -11,6 +11,8 @@ Affiliation 2</text>
 <ordered_list><list_item>list item 3.a</list_item>
 <list_item>list item 3.b</list_item>
 <list_item>list item 3.c</list_item>
+<ordered_list><list_item>list item 3.c.i</list_item>
+</ordered_list>
 </ordered_list>
 <list_item>list item 4</list_item>
 </unordered_list>

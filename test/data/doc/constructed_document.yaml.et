@@ -13,35 +13,37 @@
     12: list_item
     13: list_item
     14: list_item
-   15: list_item
- 16: caption
- 17: table
+    15: ordered_list with name=group
+     16: list_item
+   17: list_item
  18: caption
- 19: picture
+ 19: table
  20: caption
  21: picture
- 22: list with name=group
-  23: list with name=group
-   24: list_item
-  25: list_item
-  26: list_item
- 27: list with name=group
+ 22: caption
+ 23: picture
+ 24: list with name=group
+  25: list with name=group
+   26: list_item
+  27: list_item
   28: list_item
-  29: list_item
-  30: list with name=group
-   31: list_item
-   32: inline with name=group
-    33: paragraph
-    34: code
+ 29: list with name=group
+  30: list_item
+  31: list_item
+  32: list with name=group
+   33: list_item
+   34: inline with name=group
     35: paragraph
-   36: inline with name=group
+    36: code
     37: paragraph
-    38: formula
+   38: inline with name=group
     39: paragraph
- 40: paragraph
- 41: code
+    40: formula
+    41: paragraph
  42: paragraph
- 43: formula
- 44: key_value_region
- 45: form
- 46: paragraph
+ 43: code
+ 44: paragraph
+ 45: formula
+ 46: key_value_region
+ 47: form
+ 48: paragraph
