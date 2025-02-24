@@ -13,6 +13,7 @@ from pydantic import AnyUrl, ValidationError
 from docling_core.types.doc.base import BoundingBox, CoordOrigin, ImageRefMode, Size
 from docling_core.types.doc.document import (  # BoundingBox,
     CURRENT_VERSION,
+    DEFAULT_EXPORT_LABELS,
     CodeItem,
     ContentLayer,
     DocItem,
@@ -473,7 +474,13 @@ def _test_export_methods(doc: DoclingDocument, filename: str):
     _verify_regression_test(et_pred, filename=filename, ext="et")
 
     # Export stuff
-    md_pred = doc.export_to_markdown()
+    labels = DEFAULT_EXPORT_LABELS.union(
+        {
+            DocItemLabel.KEY_VALUE_REGION,
+            DocItemLabel.FORM,
+        }
+    )
+    md_pred = doc.export_to_markdown(labels=labels)
     _verify_regression_test(md_pred, filename=filename, ext="md")
 
     # Test sHTML export ...
@@ -687,19 +694,66 @@ def _construct_doc() -> DoclingDocument:
     g2_subgroup = doc.add_group(label=GroupLabel.LIST, parent=g2)
     doc.add_list_item(text="item 1 of sub list", parent=g2_subgroup)
 
-    inline_gr = doc.add_group(label=GroupLabel.INLINE, parent=g2_subgroup)
+    inline1 = doc.add_group(label=GroupLabel.INLINE, parent=g2_subgroup)
     doc.add_text(
         label=DocItemLabel.PARAGRAPH,
         text="Here a code snippet:",
-        parent=inline_gr,
+        parent=inline1,
     )
-    doc.add_code(text='print("Hello world")', parent=inline_gr)
+    doc.add_code(text='print("Hello world")', parent=inline1)
     doc.add_text(
-        label=DocItemLabel.PARAGRAPH, text="(to be displayed inline)", parent=inline_gr
+        label=DocItemLabel.PARAGRAPH, text="(to be displayed inline)", parent=inline1
     )
 
-    doc.add_text(label=DocItemLabel.PARAGRAPH, text="And a code block:", parent=None)
+    inline2 = doc.add_group(label=GroupLabel.INLINE, parent=g2_subgroup)
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH,
+        text="Here a formula:",
+        parent=inline2,
+    )
+    doc.add_text(label=DocItemLabel.FORMULA, text="E=mc^2", parent=inline2)
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH, text="(to be displayed inline)", parent=inline2
+    )
+
+    doc.add_text(label=DocItemLabel.PARAGRAPH, text="Here a code block:", parent=None)
     doc.add_code(text='print("Hello world")', parent=None)
+
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH, text="Here a formula block:", parent=None
+    )
+    doc.add_text(label=DocItemLabel.FORMULA, text="E=mc^2", parent=None)
+
+    graph = GraphData(
+        cells=[
+            GraphCell(
+                label=GraphCellLabel.KEY,
+                cell_id=0,
+                text="number",
+                orig="#",
+            ),
+            GraphCell(
+                label=GraphCellLabel.VALUE,
+                cell_id=1,
+                text="1",
+                orig="1",
+            ),
+        ],
+        links=[
+            GraphLink(
+                label=GraphLinkLabel.TO_VALUE,
+                source_cell_id=0,
+                target_cell_id=1,
+            ),
+            GraphLink(label=GraphLinkLabel.TO_KEY, source_cell_id=1, target_cell_id=0),
+        ],
+    )
+
+    doc.add_key_values(graph=graph)
+
+    doc.add_form(graph=graph)
+
+    doc.add_text(label=DocItemLabel.PARAGRAPH, text="The end.", parent=None)
 
     return doc
 

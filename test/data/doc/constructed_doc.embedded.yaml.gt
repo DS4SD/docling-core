@@ -10,13 +10,45 @@ body:
   - $ref: '#/pictures/1'
   - $ref: '#/groups/3'
   - $ref: '#/groups/5'
-  - $ref: '#/texts/24'
-  - $ref: '#/texts/25'
+  - $ref: '#/texts/27'
+  - $ref: '#/texts/28'
+  - $ref: '#/texts/29'
+  - $ref: '#/texts/30'
+  - $ref: '#/key_value_items/0'
+  - $ref: '#/form_items/0'
+  - $ref: '#/texts/31'
   content_layer: body
   label: unspecified
   name: _root_
   self_ref: '#/body'
-form_items: []
+form_items:
+- captions: []
+  children: []
+  content_layer: body
+  footnotes: []
+  graph:
+    cells:
+    - cell_id: 0
+      label: key
+      orig: '#'
+      text: number
+    - cell_id: 1
+      label: value
+      orig: '1'
+      text: '1'
+    links:
+    - label: to_value
+      source_cell_id: 0
+      target_cell_id: 1
+    - label: to_key
+      source_cell_id: 1
+      target_cell_id: 0
+  label: form
+  parent:
+    $ref: '#/body'
+  prov: []
+  references: []
+  self_ref: '#/form_items/0'
 furniture:
   children: []
   content_layer: furniture
@@ -87,6 +119,7 @@ groups:
 - children:
   - $ref: '#/texts/20'
   - $ref: '#/groups/7'
+  - $ref: '#/groups/8'
   content_layer: body
   label: list
   name: group
@@ -103,7 +136,44 @@ groups:
   parent:
     $ref: '#/groups/6'
   self_ref: '#/groups/7'
-key_value_items: []
+- children:
+  - $ref: '#/texts/24'
+  - $ref: '#/texts/25'
+  - $ref: '#/texts/26'
+  content_layer: body
+  label: inline
+  name: group
+  parent:
+    $ref: '#/groups/6'
+  self_ref: '#/groups/8'
+key_value_items:
+- captions: []
+  children: []
+  content_layer: body
+  footnotes: []
+  graph:
+    cells:
+    - cell_id: 0
+      label: key
+      orig: '#'
+      text: number
+    - cell_id: 1
+      label: value
+      orig: '1'
+      text: '1'
+    links:
+    - label: to_value
+      source_cell_id: 0
+      target_cell_id: 1
+    - label: to_key
+      source_cell_id: 1
+      target_cell_id: 0
+  label: key_value_region
+  parent:
+    $ref: '#/body'
+  prov: []
+  references: []
+  self_ref: '#/key_value_items/0'
 name: Untitled 1
 pages: {}
 pictures:
@@ -577,12 +647,39 @@ texts:
 - children: []
   content_layer: body
   label: paragraph
-  orig: 'And a code block:'
+  orig: 'Here a formula:'
+  parent:
+    $ref: '#/groups/8'
+  prov: []
+  self_ref: '#/texts/24'
+  text: 'Here a formula:'
+- children: []
+  content_layer: body
+  label: formula
+  orig: E=mc^2
+  parent:
+    $ref: '#/groups/8'
+  prov: []
+  self_ref: '#/texts/25'
+  text: E=mc^2
+- children: []
+  content_layer: body
+  label: paragraph
+  orig: (to be displayed inline)
+  parent:
+    $ref: '#/groups/8'
+  prov: []
+  self_ref: '#/texts/26'
+  text: (to be displayed inline)
+- children: []
+  content_layer: body
+  label: paragraph
+  orig: 'Here a code block:'
   parent:
     $ref: '#/body'
   prov: []
-  self_ref: '#/texts/24'
-  text: 'And a code block:'
+  self_ref: '#/texts/27'
+  text: 'Here a code block:'
 - captions: []
   children: []
   code_language: unknown
@@ -594,6 +691,33 @@ texts:
     $ref: '#/body'
   prov: []
   references: []
-  self_ref: '#/texts/25'
+  self_ref: '#/texts/28'
   text: print("Hello world")
+- children: []
+  content_layer: body
+  label: paragraph
+  orig: 'Here a formula block:'
+  parent:
+    $ref: '#/body'
+  prov: []
+  self_ref: '#/texts/29'
+  text: 'Here a formula block:'
+- children: []
+  content_layer: body
+  label: formula
+  orig: E=mc^2
+  parent:
+    $ref: '#/body'
+  prov: []
+  self_ref: '#/texts/30'
+  text: E=mc^2
+- children: []
+  content_layer: body
+  label: paragraph
+  orig: The end.
+  parent:
+    $ref: '#/body'
+  prov: []
+  self_ref: '#/texts/31'
+  text: The end.
 version: 1.2.0

@@ -104,7 +104,13 @@
 <pre><code>print("Hello world")</code></pre>
 <p>(to be displayed inline)</p>
 </ul>
+<p>Here a formula:</p>
+<div><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>E</mi><mo>&#x0003D;</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="TeX">E=mc^2</annotation></math></div>
+<p>(to be displayed inline)</p>
 </ul>
-<p>And a code block:</p>
+<p>Here a code block:</p>
 <pre><code>print("Hello world")</code></pre>
+<p>Here a formula block:</p>
+<div><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>E</mi><mo>&#x0003D;</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="TeX">E=mc^2</annotation></math></div>
+<p>The end.</p>
 </html>

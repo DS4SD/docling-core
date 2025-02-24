@@ -43,10 +43,25 @@
         "$ref": "#/groups/5"
       },
       {
-        "$ref": "#/texts/24"
+        "$ref": "#/texts/27"
       },
       {
-        "$ref": "#/texts/25"
+        "$ref": "#/texts/28"
+      },
+      {
+        "$ref": "#/texts/29"
+      },
+      {
+        "$ref": "#/texts/30"
+      },
+      {
+        "$ref": "#/key_value_items/0"
+      },
+      {
+        "$ref": "#/form_items/0"
+      },
+      {
+        "$ref": "#/texts/31"
       }
     ],
     "content_layer": "body",
@@ -185,6 +200,9 @@
         },
         {
           "$ref": "#/groups/7"
+        },
+        {
+          "$ref": "#/groups/8"
         }
       ],
       "content_layer": "body",
@@ -205,6 +223,26 @@
         },
         {
           "$ref": "#/texts/23"
+        }
+      ],
+      "content_layer": "body",
+      "name": "group",
+      "label": "inline"
+    },
+    {
+      "self_ref": "#/groups/8",
+      "parent": {
+        "$ref": "#/groups/6"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/24"
+        },
+        {
+          "$ref": "#/texts/25"
+        },
+        {
+          "$ref": "#/texts/26"
         }
       ],
       "content_layer": "body",
@@ -542,17 +580,53 @@
     {
       "self_ref": "#/texts/24",
       "parent": {
+        "$ref": "#/groups/8"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "paragraph",
+      "prov": [],
+      "orig": "Here a formula:",
+      "text": "Here a formula:"
+    },
+    {
+      "self_ref": "#/texts/25",
+      "parent": {
+        "$ref": "#/groups/8"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "formula",
+      "prov": [],
+      "orig": "E=mc^2",
+      "text": "E=mc^2"
+    },
+    {
+      "self_ref": "#/texts/26",
+      "parent": {
+        "$ref": "#/groups/8"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "paragraph",
+      "prov": [],
+      "orig": "(to be displayed inline)",
+      "text": "(to be displayed inline)"
+    },
+    {
+      "self_ref": "#/texts/27",
+      "parent": {
         "$ref": "#/body"
       },
       "children": [],
       "content_layer": "body",
       "label": "paragraph",
       "prov": [],
-      "orig": "And a code block:",
-      "text": "And a code block:"
+      "orig": "Here a code block:",
+      "text": "Here a code block:"
     },
     {
-      "self_ref": "#/texts/25",
+      "self_ref": "#/texts/28",
       "parent": {
         "$ref": "#/body"
       },
@@ -566,6 +640,42 @@
       "references": [],
       "footnotes": [],
       "code_language": "unknown"
+    },
+    {
+      "self_ref": "#/texts/29",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "paragraph",
+      "prov": [],
+      "orig": "Here a formula block:",
+      "text": "Here a formula block:"
+    },
+    {
+      "self_ref": "#/texts/30",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "formula",
+      "prov": [],
+      "orig": "E=mc^2",
+      "text": "E=mc^2"
+    },
+    {
+      "self_ref": "#/texts/31",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "paragraph",
+      "prov": [],
+      "orig": "The end.",
+      "text": "The end."
     }
   ],
   "pictures": [
@@ -840,7 +950,91 @@
       }
     }
   ],
-  "key_value_items": [],
-  "form_items": [],
+  "key_value_items": [
+    {
+      "self_ref": "#/key_value_items/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "key_value_region",
+      "prov": [],
+      "captions": [],
+      "references": [],
+      "footnotes": [],
+      "graph": {
+        "cells": [
+          {
+            "label": "key",
+            "cell_id": 0,
+            "text": "number",
+            "orig": "#"
+          },
+          {
+            "label": "value",
+            "cell_id": 1,
+            "text": "1",
+            "orig": "1"
+          }
+        ],
+        "links": [
+          {
+            "label": "to_value",
+            "source_cell_id": 0,
+            "target_cell_id": 1
+          },
+          {
+            "label": "to_key",
+            "source_cell_id": 1,
+            "target_cell_id": 0
+          }
+        ]
+      }
+    }
+  ],
+  "form_items": [
+    {
+      "self_ref": "#/form_items/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "form",
+      "prov": [],
+      "captions": [],
+      "references": [],
+      "footnotes": [],
+      "graph": {
+        "cells": [
+          {
+            "label": "key",
+            "cell_id": 0,
+            "text": "number",
+            "orig": "#"
+          },
+          {
+            "label": "value",
+            "cell_id": 1,
+            "text": "1",
+            "orig": "1"
+          }
+        ],
+        "links": [
+          {
+            "label": "to_value",
+            "source_cell_id": 0,
+            "target_cell_id": 1
+          },
+          {
+            "label": "to_key",
+            "source_cell_id": 1,
+            "target_cell_id": 0
+          }
+        ]
+      }
+    }
+  ],
   "pages": {}
 }

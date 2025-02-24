@@ -29,7 +29,13 @@ Affiliation 2</text>
 <code<_unknown_>print("Hello world")</code
 <paragraph>(to be displayed inline)</paragraph>
 </unordered_list>
+<paragraph>Here a formula:</paragraph>
+<formula>E=mc^2</formula>
+<paragraph>(to be displayed inline)</paragraph>
 </unordered_list>
-<paragraph>And a code block:</paragraph>
+<paragraph>Here a code block:</paragraph>
 <code<_unknown_>print("Hello world")</code
+<paragraph>Here a formula block:</paragraph>
+<formula>E=mc^2</formula>
+<paragraph>The end.</paragraph>
 </doctag>

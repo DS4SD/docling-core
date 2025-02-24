@@ -41,9 +41,20 @@ This is the caption of figure 2.
 - item 2 of neighboring list
     - item 1 of sub list
     - Here a code snippet: `print("Hello world")` (to be displayed inline)
+    - Here a formula: $E=mc^2$ (to be displayed inline)
 
-And a code block:
+Here a code block:
 
 ```
 print("Hello world")
 ```
+
+Here a formula block:
+
+$$E=mc^2$$
+
+<!-- missing-key-value-item -->
+
+<!-- missing-form-item -->
+
+The end.

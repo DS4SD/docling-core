@@ -1397,6 +1397,10 @@ class KeyValueItem(FloatingItem):
 
     graph: GraphData
 
+    def _export_to_markdown(self) -> str:
+        # TODO add actual implementation
+        return "<!-- missing-key-value-item -->"
+
 
 class FormItem(FloatingItem):
     """FormItem."""
@@ -1404,6 +1408,10 @@ class FormItem(FloatingItem):
     label: typing.Literal[DocItemLabel.FORM] = DocItemLabel.FORM
 
     graph: GraphData
+
+    def _export_to_markdown(self) -> str:
+        # TODO add actual implementation
+        return "<!-- missing-form-item -->"
 
 
 ContentItem = Annotated[
@@ -2537,14 +2545,14 @@ class DoclingDocument(BaseModel):
                 text = f"{marker} {item.text}"
                 _ingest_text(text.strip())
 
-            elif isinstance(item, CodeItem) and item.label in labels:
+            elif isinstance(item, CodeItem):
                 text = f"`{item.text}`" if is_inline_scope else f"```\n{item.text}\n```"
                 _ingest_text(text, do_escape_underscores=False, do_escape_html=False)
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
                 if item.text != "":
                     _ingest_text(
-                        f"$${item.text}$$",
+                        f"${item.text}$" if is_inline_scope else f"$${item.text}$$",
                         do_escape_underscores=False,
                         do_escape_html=False,
                     )
@@ -2555,7 +2563,7 @@ class DoclingDocument(BaseModel):
                         do_escape_html=False,
                     )
 
-            elif isinstance(item, TextItem) and item.label in labels:
+            elif isinstance(item, TextItem):
                 if len(item.text) and text_width > 0:
                     text = item.text
                     wrapped_text = textwrap.fill(text, width=text_width)
@@ -2580,7 +2588,11 @@ class DoclingDocument(BaseModel):
 
                 _ingest_text(line, do_escape_html=False, do_escape_underscores=False)
 
-            elif isinstance(item, DocItem) and item.label in labels:
+            elif isinstance(item, (KeyValueItem, FormItem)):
+                text = item._export_to_markdown()
+                _ingest_text(text, do_escape_html=False, do_escape_underscores=False)
+
+            elif isinstance(item, DocItem):
                 text = "<!-- missing-text -->"
                 _ingest_text(text, do_escape_html=False, do_escape_underscores=False)
 
