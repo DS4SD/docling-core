@@ -9,12 +9,12 @@
    8: list_item
    9: list_item
    10: list_item
-   11: ordered_list with name=group
-    12: list_item
-    13: list_item
-    14: list_item
-    15: ordered_list with name=group
-     16: list_item
+    11: ordered_list with name=group
+     12: list_item
+     13: list_item
+     14: list_item
+      15: ordered_list with name=group
+       16: list_item
    17: list_item
  18: caption
  19: table
@@ -30,16 +30,16 @@
  29: list with name=group
   30: list_item
   31: list_item
-  32: list with name=group
-   33: list_item
-   34: inline with name=group
-    35: paragraph
-    36: code
-    37: paragraph
-   38: inline with name=group
-    39: paragraph
-    40: formula
-    41: paragraph
+   32: list with name=group
+    33: list_item
+    34: inline with name=group
+     35: paragraph
+     36: code
+     37: paragraph
+    38: inline with name=group
+     39: paragraph
+     40: formula
+     41: paragraph
  42: paragraph
  43: code
  44: paragraph

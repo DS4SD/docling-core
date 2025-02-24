@@ -70,7 +70,6 @@ groups:
   - $ref: '#/texts/5'
   - $ref: '#/texts/6'
   - $ref: '#/texts/7'
-  - $ref: '#/groups/2'
   - $ref: '#/texts/12'
   content_layer: body
   label: list
@@ -82,12 +81,11 @@ groups:
   - $ref: '#/texts/8'
   - $ref: '#/texts/9'
   - $ref: '#/texts/10'
-  - $ref: '#/groups/3'
   content_layer: body
   label: ordered_list
   name: group
   parent:
-    $ref: '#/groups/1'
+    $ref: '#/texts/7'
   self_ref: '#/groups/2'
 - children:
   - $ref: '#/texts/11'
@@ -95,7 +93,7 @@ groups:
   label: ordered_list
   name: group
   parent:
-    $ref: '#/groups/2'
+    $ref: '#/texts/10'
   self_ref: '#/groups/3'
 - children:
   - $ref: '#/groups/5'
@@ -118,7 +116,6 @@ groups:
 - children:
   - $ref: '#/texts/19'
   - $ref: '#/texts/20'
-  - $ref: '#/groups/7'
   content_layer: body
   label: list
   name: group
@@ -133,7 +130,7 @@ groups:
   label: list
   name: group
   parent:
-    $ref: '#/groups/6'
+    $ref: '#/texts/20'
   self_ref: '#/groups/7'
 - children:
   - $ref: '#/texts/22'
@@ -474,7 +471,8 @@ texts:
   prov: []
   self_ref: '#/texts/6'
   text: list item 2
-- children: []
+- children:
+  - $ref: '#/groups/2'
   content_layer: body
   enumerated: false
   label: list_item
@@ -507,7 +505,8 @@ texts:
   prov: []
   self_ref: '#/texts/9'
   text: list item 3.b
-- children: []
+- children:
+  - $ref: '#/groups/3'
   content_layer: body
   enumerated: false
   label: list_item
@@ -611,7 +610,8 @@ texts:
   prov: []
   self_ref: '#/texts/19'
   text: item 1 of neighboring list
-- children: []
+- children:
+  - $ref: '#/groups/7'
   content_layer: body
   enumerated: false
   label: list_item

@@ -555,24 +555,24 @@ def _construct_doc() -> DoclingDocument:
         text="list item 1",
     )
     doc.add_list_item(parent=mylist_level_1, text="list item 2")
-    doc.add_list_item(
+    li3 = doc.add_list_item(
         parent=mylist_level_1,
         text="list item 3",
     )
 
-    mylist_level_2 = doc.add_group(parent=mylist_level_1, label=GroupLabel.ORDERED_LIST)
+    mylist_level_2 = doc.add_group(parent=li3, label=GroupLabel.ORDERED_LIST)
 
     doc.add_list_item(
         parent=mylist_level_2,
         text="list item 3.a",
     )
     doc.add_list_item(parent=mylist_level_2, text="list item 3.b")
-    doc.add_list_item(
+    li3c = doc.add_list_item(
         parent=mylist_level_2,
         text="list item 3.c",
     )
 
-    mylist_level_3 = doc.add_group(parent=mylist_level_2, label=GroupLabel.ORDERED_LIST)
+    mylist_level_3 = doc.add_group(parent=li3c, label=GroupLabel.ORDERED_LIST)
 
     doc.add_list_item(
         parent=mylist_level_3,
@@ -696,9 +696,9 @@ def _construct_doc() -> DoclingDocument:
 
     g2 = doc.add_group(label=GroupLabel.LIST, parent=None)
     doc.add_list_item(text="item 1 of neighboring list", parent=g2)
-    doc.add_list_item(text="item 2 of neighboring list", parent=g2)
+    nli2 = doc.add_list_item(text="item 2 of neighboring list", parent=g2)
 
-    g2_subgroup = doc.add_group(label=GroupLabel.LIST, parent=g2)
+    g2_subgroup = doc.add_group(label=GroupLabel.LIST, parent=nli2)
     doc.add_list_item(text="item 1 of sub list", parent=g2_subgroup)
 
     inline1 = doc.add_group(label=GroupLabel.INLINE, parent=g2_subgroup)
