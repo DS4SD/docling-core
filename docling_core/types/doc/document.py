@@ -2548,6 +2548,21 @@ class DoclingDocument(BaseModel):
             if text:
                 components.append(text)
 
+        def _serialize_list_component(
+            comp: str,
+            indent_str: str,
+            group: Union[UnorderedList, OrderedList],
+            i: int,
+        ) -> str:
+            if comp and comp[0] == " ":
+                # avoid additional marker on already evaled sublists
+                return comp
+            else:
+                marker = (
+                    f"{group.start + i}." if isinstance(group, OrderedList) else "-"
+                )
+                return f"{indent_str}{marker} {comp}"
+
         for ix, (item, level) in enumerate(
             self.iterate_items(
                 node,
@@ -2588,19 +2603,13 @@ class DoclingDocument(BaseModel):
                 indent_str = list_level * indent * " "
                 text = "\n".join(
                     [
-                        # avoid additional marker on already evaled sublists
-                        (
-                            c
-                            if c and c[0] == " "
-                            else f"{indent_str}{
-                                f'{item.start + i}.'
-                                # item.eval_marker(i)
-                                if isinstance(item, OrderedList)
-                                else '-'
-                                # else item.marker.value
-                            } {c}"
+                        _serialize_list_component(
+                            comp=comp,
+                            indent_str=indent_str,
+                            group=item,
+                            i=i,
                         )
-                        for i, c in enumerate(comps)
+                        for i, comp in enumerate(comps)
                     ]
                 )
                 _ingest_text(text=text)
