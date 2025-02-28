@@ -3,23 +3,23 @@ body:
   - $ref: '#/groups/0'
   - $ref: '#/texts/1'
   - $ref: '#/groups/1'
-  - $ref: '#/texts/14'
-  - $ref: '#/tables/0'
   - $ref: '#/texts/15'
-  - $ref: '#/pictures/0'
+  - $ref: '#/tables/0'
   - $ref: '#/texts/16'
+  - $ref: '#/pictures/0'
+  - $ref: '#/texts/17'
   - $ref: '#/pictures/1'
   - $ref: '#/groups/5'
   - $ref: '#/groups/6'
   - $ref: '#/groups/7'
   - $ref: '#/groups/8'
-  - $ref: '#/texts/29'
   - $ref: '#/texts/30'
   - $ref: '#/texts/31'
   - $ref: '#/texts/32'
+  - $ref: '#/texts/33'
   - $ref: '#/key_value_items/0'
   - $ref: '#/form_items/0'
-  - $ref: '#/texts/33'
+  - $ref: '#/texts/34'
   content_layer: body
   label: unspecified
   name: _root_
@@ -81,7 +81,7 @@ groups:
   - $ref: '#/texts/6'
   - $ref: '#/texts/7'
   - $ref: '#/texts/8'
-  - $ref: '#/texts/13'
+  - $ref: '#/texts/14'
   content_layer: body
   label: list
   name: group
@@ -101,6 +101,7 @@ groups:
   start: 1
 - children:
   - $ref: '#/texts/12'
+  - $ref: '#/texts/13'
   content_layer: body
   label: ordered_list
   name: group
@@ -109,7 +110,7 @@ groups:
   self_ref: '#/groups/4'
   start: 42
 - children:
-  - $ref: '#/texts/17'
+  - $ref: '#/texts/18'
   content_layer: body
   label: list
   name: group
@@ -124,8 +125,8 @@ groups:
     $ref: '#/body'
   self_ref: '#/groups/6'
 - children:
-  - $ref: '#/texts/18'
   - $ref: '#/texts/19'
+  - $ref: '#/texts/20'
   content_layer: body
   label: list
   name: group
@@ -133,8 +134,8 @@ groups:
     $ref: '#/body'
   self_ref: '#/groups/7'
 - children:
-  - $ref: '#/texts/20'
   - $ref: '#/texts/21'
+  - $ref: '#/texts/22'
   content_layer: body
   label: list
   name: group
@@ -142,19 +143,19 @@ groups:
     $ref: '#/body'
   self_ref: '#/groups/8'
 - children:
-  - $ref: '#/texts/22'
+  - $ref: '#/texts/23'
   - $ref: '#/groups/10'
   - $ref: '#/groups/11'
   content_layer: body
   label: list
   name: group
   parent:
-    $ref: '#/texts/21'
+    $ref: '#/texts/22'
   self_ref: '#/groups/9'
 - children:
-  - $ref: '#/texts/23'
   - $ref: '#/texts/24'
   - $ref: '#/texts/25'
+  - $ref: '#/texts/26'
   content_layer: body
   label: inline
   name: group
@@ -162,9 +163,9 @@ groups:
     $ref: '#/groups/9'
   self_ref: '#/groups/10'
 - children:
-  - $ref: '#/texts/26'
   - $ref: '#/texts/27'
   - $ref: '#/texts/28'
+  - $ref: '#/texts/29'
   content_layer: body
   label: inline
   name: group
@@ -204,7 +205,7 @@ pages: {}
 pictures:
 - annotations: []
   captions:
-  - $ref: '#/texts/15'
+  - $ref: '#/texts/16'
   children: []
   content_layer: body
   footnotes: []
@@ -216,7 +217,7 @@ pictures:
   self_ref: '#/pictures/0'
 - annotations: []
   captions:
-  - $ref: '#/texts/16'
+  - $ref: '#/texts/17'
   children: []
   content_layer: body
   footnotes: []
@@ -236,7 +237,7 @@ pictures:
 schema_name: DoclingDocument
 tables:
 - captions:
-  - $ref: '#/texts/14'
+  - $ref: '#/texts/15'
   children: []
   content_layer: body
   data:
@@ -563,11 +564,22 @@ texts:
   enumerated: false
   label: list_item
   marker: '-'
+  orig: list item 3.c.ii
+  parent:
+    $ref: '#/groups/4'
+  prov: []
+  self_ref: '#/texts/13'
+  text: list item 3.c.ii
+- children: []
+  content_layer: body
+  enumerated: false
+  label: list_item
+  marker: '-'
   orig: list item 4
   parent:
     $ref: '#/groups/2'
   prov: []
-  self_ref: '#/texts/13'
+  self_ref: '#/texts/14'
   text: list item 4
 - children: []
   content_layer: body
@@ -576,7 +588,7 @@ texts:
   parent:
     $ref: '#/body'
   prov: []
-  self_ref: '#/texts/14'
+  self_ref: '#/texts/15'
   text: This is the caption of table 1.
 - children: []
   content_layer: body
@@ -585,7 +597,7 @@ texts:
   parent:
     $ref: '#/body'
   prov: []
-  self_ref: '#/texts/15'
+  self_ref: '#/texts/16'
   text: This is the caption of figure 1.
 - children: []
   content_layer: body
@@ -594,7 +606,7 @@ texts:
   parent:
     $ref: '#/body'
   prov: []
-  self_ref: '#/texts/16'
+  self_ref: '#/texts/17'
   text: This is the caption of figure 2.
 - children: []
   content_layer: body
@@ -605,7 +617,7 @@ texts:
   parent:
     $ref: '#/groups/5'
   prov: []
-  self_ref: '#/texts/17'
+  self_ref: '#/texts/18'
   text: item 1 of list
 - children: []
   content_layer: body
@@ -616,7 +628,7 @@ texts:
   parent:
     $ref: '#/groups/7'
   prov: []
-  self_ref: '#/texts/18'
+  self_ref: '#/texts/19'
   text: item 1 of list after empty list
 - children: []
   content_layer: body
@@ -627,7 +639,7 @@ texts:
   parent:
     $ref: '#/groups/7'
   prov: []
-  self_ref: '#/texts/19'
+  self_ref: '#/texts/20'
   text: item 2 of list after empty list
 - children: []
   content_layer: body
@@ -638,7 +650,7 @@ texts:
   parent:
     $ref: '#/groups/8'
   prov: []
-  self_ref: '#/texts/20'
+  self_ref: '#/texts/21'
   text: item 1 of neighboring list
 - children:
   - $ref: '#/groups/9'
@@ -650,7 +662,7 @@ texts:
   parent:
     $ref: '#/groups/8'
   prov: []
-  self_ref: '#/texts/21'
+  self_ref: '#/texts/22'
   text: item 2 of neighboring list
 - children: []
   content_layer: body
@@ -661,7 +673,7 @@ texts:
   parent:
     $ref: '#/groups/9'
   prov: []
-  self_ref: '#/texts/22'
+  self_ref: '#/texts/23'
   text: item 1 of sub list
 - children: []
   content_layer: body
@@ -670,7 +682,7 @@ texts:
   parent:
     $ref: '#/groups/10'
   prov: []
-  self_ref: '#/texts/23'
+  self_ref: '#/texts/24'
   text: 'Here a code snippet:'
 - captions: []
   children: []
@@ -683,7 +695,7 @@ texts:
     $ref: '#/groups/10'
   prov: []
   references: []
-  self_ref: '#/texts/24'
+  self_ref: '#/texts/25'
   text: print("Hello world")
 - children: []
   content_layer: body
@@ -692,7 +704,7 @@ texts:
   parent:
     $ref: '#/groups/10'
   prov: []
-  self_ref: '#/texts/25'
+  self_ref: '#/texts/26'
   text: (to be displayed inline)
 - children: []
   content_layer: body
@@ -701,7 +713,7 @@ texts:
   parent:
     $ref: '#/groups/11'
   prov: []
-  self_ref: '#/texts/26'
+  self_ref: '#/texts/27'
   text: 'Here a formula:'
 - children: []
   content_layer: body
@@ -710,7 +722,7 @@ texts:
   parent:
     $ref: '#/groups/11'
   prov: []
-  self_ref: '#/texts/27'
+  self_ref: '#/texts/28'
   text: E=mc^2
 - children: []
   content_layer: body
@@ -719,7 +731,7 @@ texts:
   parent:
     $ref: '#/groups/11'
   prov: []
-  self_ref: '#/texts/28'
+  self_ref: '#/texts/29'
   text: (to be displayed inline)
 - children: []
   content_layer: body
@@ -728,7 +740,7 @@ texts:
   parent:
     $ref: '#/body'
   prov: []
-  self_ref: '#/texts/29'
+  self_ref: '#/texts/30'
   text: 'Here a code block:'
 - captions: []
   children: []
@@ -741,7 +753,7 @@ texts:
     $ref: '#/body'
   prov: []
   references: []
-  self_ref: '#/texts/30'
+  self_ref: '#/texts/31'
   text: print("Hello world")
 - children: []
   content_layer: body
@@ -750,7 +762,7 @@ texts:
   parent:
     $ref: '#/body'
   prov: []
-  self_ref: '#/texts/31'
+  self_ref: '#/texts/32'
   text: 'Here a formula block:'
 - children: []
   content_layer: body
@@ -759,7 +771,7 @@ texts:
   parent:
     $ref: '#/body'
   prov: []
-  self_ref: '#/texts/32'
+  self_ref: '#/texts/33'
   text: E=mc^2
 - children: []
   content_layer: body
@@ -768,6 +780,6 @@ texts:
   parent:
     $ref: '#/body'
   prov: []
-  self_ref: '#/texts/33'
+  self_ref: '#/texts/34'
   text: The end.
 version: 1.3.0

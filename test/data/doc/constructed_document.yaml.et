@@ -17,36 +17,37 @@
      16: list_item
       17: ordered_list with name=group
        18: list_item
-   19: list_item
- 20: caption
- 21: table
- 22: caption
- 23: picture
- 24: caption
- 25: picture
- 26: list with name=group
-  27: list_item
- 28: list with name=group
+       19: list_item
+   20: list_item
+ 21: caption
+ 22: table
+ 23: caption
+ 24: picture
+ 25: caption
+ 26: picture
+ 27: list with name=group
+  28: list_item
  29: list with name=group
-  30: list_item
+ 30: list with name=group
   31: list_item
- 32: list with name=group
-  33: list_item
+  32: list_item
+ 33: list with name=group
   34: list_item
-   35: list with name=group
-    36: list_item
-    37: inline with name=group
-     38: paragraph
-     39: code
-     40: paragraph
-    41: inline with name=group
-     42: paragraph
-     43: formula
-     44: paragraph
- 45: paragraph
- 46: code
- 47: paragraph
- 48: formula
- 49: key_value_region
- 50: form
- 51: paragraph
+  35: list_item
+   36: list with name=group
+    37: list_item
+    38: inline with name=group
+     39: paragraph
+     40: code
+     41: paragraph
+    42: inline with name=group
+     43: paragraph
+     44: formula
+     45: paragraph
+ 46: paragraph
+ 47: code
+ 48: paragraph
+ 49: formula
+ 50: key_value_region
+ 51: form
+ 52: paragraph

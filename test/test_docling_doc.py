@@ -583,6 +583,11 @@ def _construct_doc() -> DoclingDocument:
     )
 
     doc.add_list_item(
+        parent=mylist_level_3,
+        text="list item 3.c.ii",
+    )
+
+    doc.add_list_item(
         parent=mylist_level_1,
         text="list item 4",
     )
@@ -705,7 +710,7 @@ def _construct_doc() -> DoclingDocument:
     doc.add_list_item(text="item 1 of neighboring list", parent=g2)
     nli2 = doc.add_list_item(text="item 2 of neighboring list", parent=g2)
 
-    g2_subgroup = doc.add_unordered_list(parent=nli2)
+    g2_subgroup = doc.add_group(label=GroupLabel.LIST, parent=nli2)
     doc.add_list_item(text="item 1 of sub list", parent=g2_subgroup)
 
     inline1 = doc.add_group(label=GroupLabel.INLINE, parent=g2_subgroup)

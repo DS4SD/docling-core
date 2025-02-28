@@ -19,6 +19,7 @@ This paper introduces the biggest invention ever made. ...
     2. list item 3.b
     3. list item 3.c
         42. list item 3.c.i
+        43. list item 3.c.ii
 - list item 4
 
 This is the caption of table 1.
