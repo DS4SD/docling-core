@@ -575,11 +575,16 @@ def _construct_doc() -> DoclingDocument:
         text="list item 3.c",
     )
 
-    mylist_level_3 = doc.add_group(parent=li3c, label=GroupLabel.ORDERED_LIST)
+    mylist_level_3 = doc.add_ordered_list(parent=li3c, start=42)
 
     doc.add_list_item(
         parent=mylist_level_3,
         text="list item 3.c.i",
+    )
+
+    doc.add_list_item(
+        parent=mylist_level_3,
+        text="list item 3.c.ii",
     )
 
     doc.add_list_item(

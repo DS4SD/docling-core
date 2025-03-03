@@ -61,7 +61,7 @@ _logger = logging.getLogger(__name__)
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
-CURRENT_VERSION: Final = "1.2.0"
+CURRENT_VERSION: Final = "1.3.0"
 
 DEFAULT_EXPORT_LABELS = {
     DocItemLabel.TITLE,
@@ -566,6 +566,45 @@ class GroupItem(NodeItem):  # Container type, can't be a leaf node
     label: GroupLabel = GroupLabel.UNSPECIFIED
 
 
+class UnorderedList(GroupItem):
+    """UnorderedList."""
+
+    # class ULMarker(str, Enum):
+    #     """Marker."""
+
+    #     DASH = "-"
+    #     ASTERISK = "*"
+
+    label: typing.Literal[GroupLabel.LIST] = GroupLabel.LIST  # type: ignore[assignment]
+    # marker: ULMarker = ULMarker.DASH
+
+
+class OrderedList(GroupItem):
+    """OrderedList."""
+
+    # class OLMarker(str, Enum):
+    #     """ListSymbol."""
+
+    #     ARABIC_NUMBER = "arabic_number"
+    #     # LATIN_NUMBER = "latin_number"
+    #     # LATIN_LETTER = "latin_letter"
+
+    label: typing.Literal[GroupLabel.ORDERED_LIST] = (
+        GroupLabel.ORDERED_LIST  # type: ignore[assignment]
+    )
+    start: int = 1
+    # marker: OLMarker = OLMarker.ARABIC_NUMBER
+
+    # def eval_marker(self, idx: int) -> str:
+    #     """get_num_marker."""
+    #     # if self.marker == self.OLMarker.ARABIC_NUMBER:
+    #     #     return f"{self.start + idx}."
+    #     # # elif ...
+    #     # else:
+    #     #     raise ValueError(f"Unknown marker: {self.marker}")
+    #     return f"{self.start + idx}."
+
+
 class DocItem(
     NodeItem
 ):  # Base type for any element that carries content, can be a leaf node
@@ -740,7 +779,9 @@ class ListItem(TextItem):
         DocItemLabel.LIST_ITEM  # type: ignore[assignment]
     )
     enumerated: bool = False
-    marker: str = "-"  # The bullet or number symbol that prefixes this list item
+    marker: Annotated[str, Field(deprecated=True)] = (
+        "-"  # The bullet or number symbol that prefixes this list item
+    )
 
 
 class FloatingItem(DocItem):
@@ -1530,7 +1571,7 @@ class DoclingDocument(BaseModel):
     )  # List[RefItem] = []
     body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
 
-    groups: List[GroupItem] = []
+    groups: List[Union[OrderedList, UnorderedList, GroupItem]] = []
     texts: List[Union[SectionHeaderItem, ListItem, TextItem, CodeItem]] = []
     pictures: List[PictureItem] = []
     tables: List[TableItem] = []
@@ -1555,6 +1596,54 @@ class DoclingDocument(BaseModel):
                     item["content_layer"] = "furniture"
         return data
 
+    # TODO: refactor add*list and add_group methods below
+    def add_ordered_list(
+        self,
+        name: Optional[str] = None,
+        parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
+        # marker: Optional[OrderedList.OLMarker] = None,
+        start: Optional[int] = None,
+    ) -> GroupItem:
+        """add_ordered_list."""
+        _parent = parent or self.body
+        cref = f"#/groups/{len(self.groups)}"
+        group = OrderedList(self_ref=cref, parent=_parent.get_ref())
+        # if marker is not None:
+        #     group.marker = marker
+        if start is not None:
+            group.start = start
+        if name is not None:
+            group.name = name
+        if content_layer:
+            group.content_layer = content_layer
+
+        self.groups.append(group)
+        _parent.children.append(RefItem(cref=cref))
+        return group
+
+    def add_unordered_list(
+        self,
+        name: Optional[str] = None,
+        parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
+        # marker: Optional[UnorderedList.ULMarker] = None,
+    ) -> GroupItem:
+        """add_unordered_list."""
+        _parent = parent or self.body
+        cref = f"#/groups/{len(self.groups)}"
+        group = UnorderedList(self_ref=cref, parent=_parent.get_ref())
+        # if marker is not None:
+        #     group.marker = marker
+        if name is not None:
+            group.name = name
+        if content_layer:
+            group.content_layer = content_layer
+
+        self.groups.append(group)
+        _parent.children.append(RefItem(cref=cref))
+        return group
+
     def add_group(
         self,
         label: Optional[GroupLabel] = None,
@@ -1569,6 +1658,19 @@ class DoclingDocument(BaseModel):
         :param parent: Optional[NodeItem]:  (Default value = None)
 
         """
+        if label == GroupLabel.LIST:
+            return self.add_unordered_list(
+                name=name,
+                parent=parent,
+                content_layer=content_layer,
+            )
+        elif label == GroupLabel.ORDERED_LIST:
+            return self.add_ordered_list(
+                name=name,
+                parent=parent,
+                content_layer=content_layer,
+            )
+
         if not parent:
             parent = self.body
 
@@ -2446,6 +2548,21 @@ class DoclingDocument(BaseModel):
             if text:
                 components.append(text)
 
+        def _serialize_list_component(
+            comp: str,
+            indent_str: str,
+            group: Union[UnorderedList, OrderedList],
+            i: int,
+        ) -> str:
+            if comp and comp[0] == " ":
+                # avoid additional marker on already evaled sublists
+                return comp
+            else:
+                marker = (
+                    f"{group.start + i}." if isinstance(group, OrderedList) else "-"
+                )
+                return f"{indent_str}{marker} {comp}"
+
         for ix, (item, level) in enumerate(
             self.iterate_items(
                 node,
@@ -2465,44 +2582,39 @@ class DoclingDocument(BaseModel):
             elif (isinstance(item, DocItem)) and (item.label not in labels):
                 continue  # skip any label that is not whitelisted
 
+            elif isinstance(item, (UnorderedList, OrderedList)):
+                comps = self._get_markdown_components(
+                    node=item,
+                    from_element=from_element,
+                    to_element=to_element,
+                    labels=labels,
+                    strict_text=strict_text,
+                    escaping_underscores=escaping_underscores,
+                    image_placeholder=image_placeholder,
+                    image_mode=image_mode,
+                    indent=indent,
+                    text_width=text_width,
+                    page_no=page_no,
+                    included_content_layers=included_content_layers,
+                    list_level=list_level + 1,
+                    is_inline_scope=is_inline_scope,
+                    visited=visited,
+                )
+                indent_str = list_level * indent * " "
+                text = "\n".join(
+                    [
+                        _serialize_list_component(
+                            comp=comp,
+                            indent_str=indent_str,
+                            group=item,
+                            i=i,
+                        )
+                        for i, comp in enumerate(comps)
+                    ]
+                )
+                _ingest_text(text=text)
             elif isinstance(item, GroupItem):
-                if item.label in [
-                    GroupLabel.LIST,
-                    GroupLabel.ORDERED_LIST,
-                ]:
-                    comps = self._get_markdown_components(
-                        node=item,
-                        from_element=from_element,
-                        to_element=to_element,
-                        labels=labels,
-                        strict_text=strict_text,
-                        escaping_underscores=escaping_underscores,
-                        image_placeholder=image_placeholder,
-                        image_mode=image_mode,
-                        indent=indent,
-                        text_width=text_width,
-                        page_no=page_no,
-                        included_content_layers=included_content_layers,
-                        list_level=list_level + 1,
-                        is_inline_scope=is_inline_scope,
-                        visited=visited,
-                    )
-                    # NOTE: assumes unordered (flag & marker currently in ListItem)
-                    indent_str = list_level * indent * " "
-                    is_ol = item.label == GroupLabel.ORDERED_LIST
-                    text = "\n".join(
-                        [
-                            # avoid additional marker on already evaled sublists
-                            (
-                                c
-                                if c and c[0] == " "
-                                else f"{indent_str}{f'{i + 1}.' if is_ol else '-'} {c}"
-                            )
-                            for i, c in enumerate(comps)
-                        ]
-                    )
-                    _ingest_text(text=text)
-                elif item.label == GroupLabel.INLINE:
+                if item.label == GroupLabel.INLINE:
                     comps = self._get_markdown_components(
                         node=item,
                         from_element=from_element,
