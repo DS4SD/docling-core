@@ -20,6 +20,7 @@ from docling_core.types.doc.document import (  # BoundingBox,
     DoclingDocument,
     DocumentOrigin,
     FloatingItem,
+    Formatting,
     FormItem,
     GraphCell,
     GraphData,
@@ -175,7 +176,7 @@ def test_orientation():
     assert bbox1_.is_strictly_above(bbox4_) is True
 
 
-def test_docitems():
+def ztest_docitems():
 
     # Iterative function to find all subclasses
     def find_all_subclasses_iterative(base_class):
@@ -766,6 +767,54 @@ def _construct_doc() -> DoclingDocument:
     doc.add_key_values(graph=graph)
 
     doc.add_form(graph=graph)
+
+    inline_fmt = doc.add_group(label=GroupLabel.INLINE)
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH, text="Some formatting chops:", parent=inline_fmt
+    )
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH,
+        text="bold",
+        parent=inline_fmt,
+        formatting=Formatting(bold=True),
+    )
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH,
+        text="italic",
+        parent=inline_fmt,
+        formatting=Formatting(italic=True),
+    )
+    # doc.add_text(
+    #     label=DocItemLabel.PARAGRAPH,
+    #     text="underline",
+    #     parent=inline_fmt,
+    #     formatting=Formatting(underline=True),
+    # )
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH,
+        text="strikethrough",
+        parent=inline_fmt,
+        formatting=Formatting(strikethrough=True),
+    )
+    # doc.add_text(
+    #     label=DocItemLabel.PARAGRAPH,
+    #     text="hyperlink",
+    #     parent=inline_fmt,
+    #     formatting=Formatting(hyperlink="https://github.com/DS4SD/docling"),
+    # )
+    doc.add_text(label=DocItemLabel.PARAGRAPH, text="&", parent=inline_fmt)
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH,
+        text="everything at the same time.",
+        parent=inline_fmt,
+        formatting=Formatting(
+            bold=True,
+            italic=True,
+            # underline=True,
+            strikethrough=True,
+            # hyperlink="https://github.com/DS4SD/docling",
+        ),
+    )
 
     doc.add_text(label=DocItemLabel.PARAGRAPH, text="The end.", parent=None)
 

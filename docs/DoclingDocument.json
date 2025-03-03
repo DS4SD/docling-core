@@ -216,6 +216,17 @@
           "title": "Text",
           "type": "string"
         },
+        "formatting": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Formatting"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "captions": {
           "default": [],
           "items": {
@@ -476,6 +487,28 @@
         "graph"
       ],
       "title": "FormItem",
+      "type": "object"
+    },
+    "Formatting": {
+      "description": "Formatting.",
+      "properties": {
+        "bold": {
+          "default": false,
+          "title": "Bold",
+          "type": "boolean"
+        },
+        "italic": {
+          "default": false,
+          "title": "Italic",
+          "type": "boolean"
+        },
+        "strikethrough": {
+          "default": false,
+          "title": "Strikethrough",
+          "type": "boolean"
+        }
+      },
+      "title": "Formatting",
       "type": "object"
     },
     "GraphCell": {
@@ -844,6 +877,17 @@
         "text": {
           "title": "Text",
           "type": "string"
+        },
+        "formatting": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Formatting"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "enumerated": {
           "default": false,
@@ -1458,6 +1502,17 @@
           "title": "Text",
           "type": "string"
         },
+        "formatting": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Formatting"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "level": {
           "default": 1,
           "maximum": 100,
@@ -1745,6 +1800,17 @@
         "text": {
           "title": "Text",
           "type": "string"
+        },
+        "formatting": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Formatting"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -1766,7 +1832,7 @@
       "type": "string"
     },
     "version": {
-      "default": "1.2.0",
+      "default": "1.3.0",
       "pattern": "^(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
       "title": "Version",
       "type": "string"
