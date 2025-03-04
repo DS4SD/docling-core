@@ -631,9 +631,8 @@ class Formatting(BaseModel):
 
     bold: bool = False
     italic: bool = False
-    # underline: bool = False
+    underline: bool = False
     strikethrough: bool = False
-    # hyperlink: Optional[Union[AnyUrl, Path]] = None
 
 
 class TextItem(DocItem):
@@ -657,6 +656,7 @@ class TextItem(DocItem):
     text: str  # sanitized representation
 
     formatting: Optional[Formatting] = None
+    hyperlink: Optional[Union[AnyUrl, Path]] = None
 
     def export_to_document_tokens(
         self,
@@ -1610,6 +1610,7 @@ class DoclingDocument(BaseModel):
         parent: Optional[NodeItem] = None,
         content_layer: Optional[ContentLayer] = None,
         formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
     ):
         """add_list_item.
 
@@ -1638,6 +1639,7 @@ class DoclingDocument(BaseModel):
             enumerated=enumerated,
             marker=marker,
             formatting=formatting,
+            hyperlink=hyperlink,
         )
         if prov:
             list_item.prov.append(prov)
@@ -1658,6 +1660,7 @@ class DoclingDocument(BaseModel):
         parent: Optional[NodeItem] = None,
         content_layer: Optional[ContentLayer] = None,
         formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
     ):
         """add_text.
 
@@ -1678,6 +1681,7 @@ class DoclingDocument(BaseModel):
                 parent=parent,
                 content_layer=content_layer,
                 formatting=formatting,
+                hyperlink=hyperlink,
             )
 
         elif label in [DocItemLabel.LIST_ITEM]:
@@ -1688,6 +1692,7 @@ class DoclingDocument(BaseModel):
                 parent=parent,
                 content_layer=content_layer,
                 formatting=formatting,
+                hyperlink=hyperlink,
             )
 
         elif label in [DocItemLabel.SECTION_HEADER]:
@@ -1698,6 +1703,7 @@ class DoclingDocument(BaseModel):
                 parent=parent,
                 content_layer=content_layer,
                 formatting=formatting,
+                hyperlink=hyperlink,
             )
 
         elif label in [DocItemLabel.CODE]:
@@ -1708,6 +1714,7 @@ class DoclingDocument(BaseModel):
                 parent=parent,
                 content_layer=content_layer,
                 formatting=formatting,
+                hyperlink=hyperlink,
             )
 
         else:
@@ -1727,6 +1734,7 @@ class DoclingDocument(BaseModel):
                 self_ref=cref,
                 parent=parent.get_ref(),
                 formatting=formatting,
+                hyperlink=hyperlink,
             )
             if prov:
                 text_item.prov.append(prov)
@@ -1829,6 +1837,7 @@ class DoclingDocument(BaseModel):
         parent: Optional[NodeItem] = None,
         content_layer: Optional[ContentLayer] = None,
         formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
     ):
         """add_title.
 
@@ -1852,6 +1861,7 @@ class DoclingDocument(BaseModel):
             self_ref=cref,
             parent=parent.get_ref(),
             formatting=formatting,
+            hyperlink=hyperlink,
         )
         if prov:
             text_item.prov.append(prov)
@@ -1873,6 +1883,7 @@ class DoclingDocument(BaseModel):
         parent: Optional[NodeItem] = None,
         content_layer: Optional[ContentLayer] = None,
         formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
     ):
         """add_code.
 
@@ -1898,6 +1909,7 @@ class DoclingDocument(BaseModel):
             self_ref=cref,
             parent=parent.get_ref(),
             formatting=formatting,
+            hyperlink=hyperlink,
         )
         if code_language:
             code_item.code_language = code_language
@@ -1922,6 +1934,7 @@ class DoclingDocument(BaseModel):
         parent: Optional[NodeItem] = None,
         content_layer: Optional[ContentLayer] = None,
         formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
     ):
         """add_heading.
 
@@ -1947,6 +1960,7 @@ class DoclingDocument(BaseModel):
             self_ref=cref,
             parent=parent.get_ref(),
             formatting=formatting,
+            hyperlink=hyperlink,
         )
         if prov:
             section_header_item.prov.append(prov)
@@ -2470,6 +2484,7 @@ class DoclingDocument(BaseModel):
             do_escape_html=True,
             do_escape_underscores=True,
             formatting: Optional[Formatting] = None,
+            hyperlink: Optional[Union[AnyUrl, Path]] = None,
         ):
             if do_escape_underscores and escaping_underscores:
                 text = _escape_underscores(text)
@@ -2493,8 +2508,8 @@ class DoclingDocument(BaseModel):
             #         text = f"<ins>{text}</ins>"
             #     if formatting.strikethrough:
             #         text = f"<del>{text}</del>"
-            #     if formatting.hyperlink:
-            #         text = f"<a href={formatting.hyperlink}>{text}</a>"
+            if hyperlink:
+                text = f"[{text}]({str(hyperlink)})"
             if text:
                 components.append(text)
 
@@ -2589,7 +2604,9 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
                 marker = "" if strict_text else "#"
                 text = f"{marker} {item.text}"
-                _ingest_text(text.strip(), formatting=item.formatting)
+                _ingest_text(
+                    text.strip(), formatting=item.formatting, hyperlink=item.hyperlink
+                )
 
             elif (
                 isinstance(item, TextItem)
@@ -2601,7 +2618,9 @@ class DoclingDocument(BaseModel):
                     if len(marker) < 2:
                         marker = "##"
                 text = f"{marker} {item.text}"
-                _ingest_text(text.strip(), formatting=item.formatting)
+                _ingest_text(
+                    text.strip(), formatting=item.formatting, hyperlink=item.hyperlink
+                )
 
             elif isinstance(item, CodeItem):
                 text = f"`{item.text}`" if is_inline_scope else f"```\n{item.text}\n```"
@@ -2610,6 +2629,7 @@ class DoclingDocument(BaseModel):
                     do_escape_underscores=False,
                     do_escape_html=False,
                     formatting=item.formatting,
+                    hyperlink=item.hyperlink,
                 )
 
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
@@ -2619,6 +2639,7 @@ class DoclingDocument(BaseModel):
                         do_escape_underscores=False,
                         do_escape_html=False,
                         formatting=item.formatting,
+                        hyperlink=item.hyperlink,
                     )
                 elif item.orig != "":
                     _ingest_text(
@@ -2626,15 +2647,22 @@ class DoclingDocument(BaseModel):
                         do_escape_underscores=False,
                         do_escape_html=False,
                         formatting=item.formatting,
+                        hyperlink=item.hyperlink,
                     )
 
             elif isinstance(item, TextItem):
                 if len(item.text) and text_width > 0:
                     text = item.text
                     wrapped_text = textwrap.fill(text, width=text_width)
-                    _ingest_text(wrapped_text, formatting=item.formatting)
+                    _ingest_text(
+                        wrapped_text,
+                        formatting=item.formatting,
+                        hyperlink=item.hyperlink,
+                    )
                 elif len(item.text):
-                    _ingest_text(item.text, formatting=item.formatting)
+                    _ingest_text(
+                        item.text, formatting=item.formatting, hyperlink=item.hyperlink
+                    )
 
             elif isinstance(item, TableItem) and not strict_text:
                 if caption_text := item.caption_text(self):

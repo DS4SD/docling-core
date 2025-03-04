@@ -57,6 +57,6 @@ Here a formula block:
 
 $$E=mc^2$$
 
-Some formatting chops: **bold** *italic* ~~strikethrough~~ &amp; ~~***everything at the same time.***~~
+Some formatting chops: **bold** *italic* underline ~~strikethrough~~ [hyperlink](.) &amp; [~~***everything at the same time.***~~](https://github.com/DS4SD/docling)
 
 The end.

@@ -45,7 +45,9 @@ Affiliation 2</text>
 <paragraph>Some formatting chops:</paragraph>
 <paragraph>bold</paragraph>
 <paragraph>italic</paragraph>
+<paragraph>underline</paragraph>
 <paragraph>strikethrough</paragraph>
+<paragraph>hyperlink</paragraph>
 <paragraph>&</paragraph>
 <paragraph>everything at the same time.</paragraph>
 <paragraph>The end.</paragraph>

@@ -784,24 +784,24 @@ def _construct_doc() -> DoclingDocument:
         parent=inline_fmt,
         formatting=Formatting(italic=True),
     )
-    # doc.add_text(
-    #     label=DocItemLabel.PARAGRAPH,
-    #     text="underline",
-    #     parent=inline_fmt,
-    #     formatting=Formatting(underline=True),
-    # )
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH,
+        text="underline",
+        parent=inline_fmt,
+        formatting=Formatting(underline=True),
+    )
     doc.add_text(
         label=DocItemLabel.PARAGRAPH,
         text="strikethrough",
         parent=inline_fmt,
         formatting=Formatting(strikethrough=True),
     )
-    # doc.add_text(
-    #     label=DocItemLabel.PARAGRAPH,
-    #     text="hyperlink",
-    #     parent=inline_fmt,
-    #     formatting=Formatting(hyperlink="https://github.com/DS4SD/docling"),
-    # )
+    doc.add_text(
+        label=DocItemLabel.PARAGRAPH,
+        text="hyperlink",
+        parent=inline_fmt,
+        hyperlink=Path("."),
+    )
     doc.add_text(label=DocItemLabel.PARAGRAPH, text="&", parent=inline_fmt)
     doc.add_text(
         label=DocItemLabel.PARAGRAPH,
@@ -810,10 +810,10 @@ def _construct_doc() -> DoclingDocument:
         formatting=Formatting(
             bold=True,
             italic=True,
-            # underline=True,
+            underline=True,
             strikethrough=True,
-            # hyperlink="https://github.com/DS4SD/docling",
         ),
+        hyperlink=AnyUrl("https://github.com/DS4SD/docling"),
     )
 
     doc.add_text(label=DocItemLabel.PARAGRAPH, text="The end.", parent=None)

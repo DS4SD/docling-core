@@ -123,7 +123,9 @@
 <p>Some formatting chops:</p>
 <p>bold</p>
 <p>italic</p>
+<p>underline</p>
 <p>strikethrough</p>
+<p>hyperlink</p>
 <p>&amp;</p>
 <p>everything at the same time.</p>
 <p>The end.</p>

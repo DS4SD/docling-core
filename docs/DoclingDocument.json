@@ -227,6 +227,24 @@
           ],
           "default": null
         },
+        "hyperlink": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hyperlink"
+        },
         "captions": {
           "default": [],
           "items": {
@@ -500,6 +518,11 @@
         "italic": {
           "default": false,
           "title": "Italic",
+          "type": "boolean"
+        },
+        "underline": {
+          "default": false,
+          "title": "Underline",
           "type": "boolean"
         },
         "strikethrough": {
@@ -888,6 +911,24 @@
             }
           ],
           "default": null
+        },
+        "hyperlink": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hyperlink"
         },
         "enumerated": {
           "default": false,
@@ -1513,6 +1554,24 @@
           ],
           "default": null
         },
+        "hyperlink": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hyperlink"
+        },
         "level": {
           "default": 1,
           "maximum": 100,
@@ -1811,6 +1870,24 @@
             }
           ],
           "default": null
+        },
+        "hyperlink": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hyperlink"
         }
       },
       "required": [

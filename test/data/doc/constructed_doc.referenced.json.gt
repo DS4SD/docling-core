@@ -73,7 +73,7 @@
         "$ref": "#/groups/12"
       },
       {
-        "$ref": "#/texts/39"
+        "$ref": "#/texts/41"
       }
     ],
     "content_layer": "body",
@@ -313,6 +313,12 @@
         },
         {
           "$ref": "#/texts/38"
+        },
+        {
+          "$ref": "#/texts/39"
+        },
+        {
+          "$ref": "#/texts/40"
         }
       ],
       "content_layer": "body",
@@ -801,6 +807,7 @@
       "formatting": {
         "bold": true,
         "italic": false,
+        "underline": false,
         "strikethrough": false
       }
     },
@@ -818,6 +825,7 @@
       "formatting": {
         "bold": false,
         "italic": true,
+        "underline": false,
         "strikethrough": false
       }
     },
@@ -830,12 +838,13 @@
       "content_layer": "body",
       "label": "paragraph",
       "prov": [],
-      "orig": "strikethrough",
-      "text": "strikethrough",
+      "orig": "underline",
+      "text": "underline",
       "formatting": {
         "bold": false,
         "italic": false,
-        "strikethrough": true
+        "underline": true,
+        "strikethrough": false
       }
     },
     {
@@ -847,11 +856,42 @@
       "content_layer": "body",
       "label": "paragraph",
       "prov": [],
+      "orig": "strikethrough",
+      "text": "strikethrough",
+      "formatting": {
+        "bold": false,
+        "italic": false,
+        "underline": false,
+        "strikethrough": true
+      }
+    },
+    {
+      "self_ref": "#/texts/38",
+      "parent": {
+        "$ref": "#/groups/12"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "paragraph",
+      "prov": [],
+      "orig": "hyperlink",
+      "text": "hyperlink",
+      "hyperlink": "."
+    },
+    {
+      "self_ref": "#/texts/39",
+      "parent": {
+        "$ref": "#/groups/12"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "paragraph",
+      "prov": [],
       "orig": "&",
       "text": "&"
     },
     {
-      "self_ref": "#/texts/38",
+      "self_ref": "#/texts/40",
       "parent": {
         "$ref": "#/groups/12"
       },
@@ -864,11 +904,13 @@
       "formatting": {
         "bold": true,
         "italic": true,
+        "underline": true,
         "strikethrough": true
-      }
+      },
+      "hyperlink": "https://github.com/DS4SD/docling"
     },
     {
-      "self_ref": "#/texts/39",
+      "self_ref": "#/texts/41",
       "parent": {
         "$ref": "#/body"
       },
