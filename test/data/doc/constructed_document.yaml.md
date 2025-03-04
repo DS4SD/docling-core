@@ -61,6 +61,6 @@ $$E=mc^2$$
 
 <!-- missing-form-item -->
 
-Some formatting chops: **bold** *italic* ~~strikethrough~~ &amp;amp; ~~***everything at the same time.***~~
+Some formatting chops: **bold** *italic* ~~strikethrough~~ &amp; ~~***everything at the same time.***~~
 
 The end.
