@@ -534,6 +534,98 @@
       "title": "Formatting",
       "type": "object"
     },
+    "FormulaItem": {
+      "additionalProperties": false,
+      "description": "FormulaItem.",
+      "properties": {
+        "self_ref": {
+          "pattern": "^#(?:/([\\w-]+)(?:/(\\d+))?)?$",
+          "title": "Self Ref",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefItem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "children": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RefItem"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
+        "label": {
+          "const": "formula",
+          "default": "formula",
+          "title": "Label",
+          "type": "string"
+        },
+        "prov": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProvenanceItem"
+          },
+          "title": "Prov",
+          "type": "array"
+        },
+        "orig": {
+          "title": "Orig",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "formatting": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Formatting"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "hyperlink": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hyperlink"
+        }
+      },
+      "required": [
+        "self_ref",
+        "orig",
+        "text"
+      ],
+      "title": "FormulaItem",
+      "type": "object"
+    },
     "GraphCell": {
       "description": "GraphCell.",
       "properties": {
@@ -755,6 +847,56 @@
       "title": "ImageRef",
       "type": "object"
     },
+    "InlineGroup": {
+      "additionalProperties": false,
+      "description": "InlineGroup.",
+      "properties": {
+        "self_ref": {
+          "pattern": "^#(?:/([\\w-]+)(?:/(\\d+))?)?$",
+          "title": "Self Ref",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefItem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "children": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RefItem"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
+        "name": {
+          "default": "group",
+          "title": "Name",
+          "type": "string"
+        },
+        "label": {
+          "const": "inline",
+          "default": "inline",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "self_ref"
+      ],
+      "title": "InlineGroup",
+      "type": "object"
+    },
     "KeyValueItem": {
       "additionalProperties": false,
       "description": "KeyValueItem.",
@@ -947,6 +1089,56 @@
         "text"
       ],
       "title": "ListItem",
+      "type": "object"
+    },
+    "OrderedList": {
+      "additionalProperties": false,
+      "description": "OrderedList.",
+      "properties": {
+        "self_ref": {
+          "pattern": "^#(?:/([\\w-]+)(?:/(\\d+))?)?$",
+          "title": "Self Ref",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefItem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "children": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RefItem"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
+        "name": {
+          "default": "group",
+          "title": "Name",
+          "type": "string"
+        },
+        "label": {
+          "const": "ordered_list",
+          "default": "ordered_list",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "self_ref"
+      ],
+      "title": "OrderedList",
       "type": "object"
     },
     "PageItem": {
@@ -1833,13 +2025,11 @@
             "checkbox_selected",
             "checkbox_unselected",
             "footnote",
-            "formula",
             "page_footer",
             "page_header",
             "paragraph",
             "reference",
-            "text",
-            "title"
+            "text"
           ],
           "title": "Label",
           "type": "string"
@@ -1898,6 +2088,148 @@
       ],
       "title": "TextItem",
       "type": "object"
+    },
+    "TitleItem": {
+      "additionalProperties": false,
+      "description": "TitleItem.",
+      "properties": {
+        "self_ref": {
+          "pattern": "^#(?:/([\\w-]+)(?:/(\\d+))?)?$",
+          "title": "Self Ref",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefItem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "children": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RefItem"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
+        "label": {
+          "const": "title",
+          "default": "title",
+          "title": "Label",
+          "type": "string"
+        },
+        "prov": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProvenanceItem"
+          },
+          "title": "Prov",
+          "type": "array"
+        },
+        "orig": {
+          "title": "Orig",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "formatting": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Formatting"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "hyperlink": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hyperlink"
+        }
+      },
+      "required": [
+        "self_ref",
+        "orig",
+        "text"
+      ],
+      "title": "TitleItem",
+      "type": "object"
+    },
+    "UnorderedList": {
+      "additionalProperties": false,
+      "description": "UnorderedList.",
+      "properties": {
+        "self_ref": {
+          "pattern": "^#(?:/([\\w-]+)(?:/(\\d+))?)?$",
+          "title": "Self Ref",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefItem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "children": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RefItem"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "content_layer": {
+          "$ref": "#/$defs/ContentLayer",
+          "default": "body"
+        },
+        "name": {
+          "default": "group",
+          "title": "Name",
+          "type": "string"
+        },
+        "label": {
+          "const": "list",
+          "default": "list",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "self_ref"
+      ],
+      "title": "UnorderedList",
+      "type": "object"
     }
   },
   "description": "DoclingDocument.",
@@ -1955,7 +2287,20 @@
     "groups": {
       "default": [],
       "items": {
-        "$ref": "#/$defs/GroupItem"
+        "anyOf": [
+          {
+            "$ref": "#/$defs/OrderedList"
+          },
+          {
+            "$ref": "#/$defs/UnorderedList"
+          },
+          {
+            "$ref": "#/$defs/InlineGroup"
+          },
+          {
+            "$ref": "#/$defs/GroupItem"
+          }
+        ]
       },
       "title": "Groups",
       "type": "array"
@@ -1964,6 +2309,9 @@
       "default": [],
       "items": {
         "anyOf": [
+          {
+            "$ref": "#/$defs/TitleItem"
+          },
           {
             "$ref": "#/$defs/SectionHeaderItem"
           },
@@ -1975,6 +2323,9 @@
           },
           {
             "$ref": "#/$defs/CodeItem"
+          },
+          {
+            "$ref": "#/$defs/FormulaItem"
           }
         ]
       },
