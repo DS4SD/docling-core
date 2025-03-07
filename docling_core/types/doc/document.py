@@ -61,7 +61,7 @@ _logger = logging.getLogger(__name__)
 
 Uint64 = typing.Annotated[int, Field(ge=0, le=(2**64 - 1))]
 LevelNumber = typing.Annotated[int, Field(ge=1, le=100)]
-CURRENT_VERSION: Final = "1.2.0"
+CURRENT_VERSION: Final = "1.3.0"
 
 DEFAULT_EXPORT_LABELS = {
     DocItemLabel.TITLE,
@@ -563,7 +563,28 @@ class GroupItem(NodeItem):  # Container type, can't be a leaf node
         "group"  # Name of the group, e.g. "Introduction Chapter",
         # "Slide 5", "Navigation menu list", ...
     )
+    # TODO narrow down possible values (i.e. excluding those used for children)
     label: GroupLabel = GroupLabel.UNSPECIFIED
+
+
+class UnorderedList(GroupItem):
+    """UnorderedList."""
+
+    label: typing.Literal[GroupLabel.LIST] = GroupLabel.LIST  # type: ignore[assignment]
+
+
+class OrderedList(GroupItem):
+    """OrderedList."""
+
+    label: typing.Literal[GroupLabel.ORDERED_LIST] = (
+        GroupLabel.ORDERED_LIST  # type: ignore[assignment]
+    )
+
+
+class InlineGroup(GroupItem):
+    """InlineGroup."""
+
+    label: typing.Literal[GroupLabel.INLINE] = GroupLabel.INLINE
 
 
 class DocItem(
@@ -626,6 +647,15 @@ class DocItem(
         return page_image.crop(crop_bbox.as_tuple())
 
 
+class Formatting(BaseModel):
+    """Formatting."""
+
+    bold: bool = False
+    italic: bool = False
+    underline: bool = False
+    strikethrough: bool = False
+
+
 class TextItem(DocItem):
     """TextItem."""
 
@@ -634,17 +664,18 @@ class TextItem(DocItem):
         DocItemLabel.CHECKBOX_SELECTED,
         DocItemLabel.CHECKBOX_UNSELECTED,
         DocItemLabel.FOOTNOTE,
-        DocItemLabel.FORMULA,
         DocItemLabel.PAGE_FOOTER,
         DocItemLabel.PAGE_HEADER,
         DocItemLabel.PARAGRAPH,
         DocItemLabel.REFERENCE,
         DocItemLabel.TEXT,
-        DocItemLabel.TITLE,
     ]
 
     orig: str  # untreated representation
     text: str  # sanitized representation
+
+    formatting: Optional[Formatting] = None
+    hyperlink: Optional[Union[AnyUrl, Path]] = None
 
     def export_to_document_tokens(
         self,
@@ -681,6 +712,14 @@ class TextItem(DocItem):
         body += f"</{self.label.value}>\n"
 
         return body
+
+
+class TitleItem(TextItem):
+    """TitleItem."""
+
+    label: typing.Literal[DocItemLabel.TITLE] = (
+        DocItemLabel.TITLE  # type: ignore[assignment]
+    )
 
 
 class SectionHeaderItem(TextItem):
@@ -816,6 +855,14 @@ class CodeItem(FloatingItem, TextItem):
         body += f"</{self.label.value}>\n"
 
         return body
+
+
+class FormulaItem(TextItem):
+    """FormulaItem."""
+
+    label: typing.Literal[DocItemLabel.FORMULA] = (
+        DocItemLabel.FORMULA  # type: ignore[assignment]
+    )
 
 
 class PictureItem(FloatingItem):
@@ -1417,9 +1464,11 @@ class FormItem(FloatingItem):
 ContentItem = Annotated[
     Union[
         TextItem,
+        TitleItem,
         SectionHeaderItem,
         ListItem,
         CodeItem,
+        FormulaItem,
         PictureItem,
         TableItem,
         KeyValueItem,
@@ -1530,8 +1579,10 @@ class DoclingDocument(BaseModel):
     )  # List[RefItem] = []
     body: GroupItem = GroupItem(name="_root_", self_ref="#/body")  # List[RefItem] = []
 
-    groups: List[GroupItem] = []
-    texts: List[Union[SectionHeaderItem, ListItem, TextItem, CodeItem]] = []
+    groups: List[Union[OrderedList, UnorderedList, InlineGroup, GroupItem]] = []
+    texts: List[
+        Union[TitleItem, SectionHeaderItem, ListItem, TextItem, CodeItem, FormulaItem]
+    ] = []
     pictures: List[PictureItem] = []
     tables: List[TableItem] = []
     key_value_items: List[KeyValueItem] = []
@@ -1555,6 +1606,68 @@ class DoclingDocument(BaseModel):
                     item["content_layer"] = "furniture"
         return data
 
+    ###################################
+    # TODO: refactor add* methods below
+    ###################################
+
+    def add_ordered_list(
+        self,
+        name: Optional[str] = None,
+        parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
+    ) -> GroupItem:
+        """add_ordered_list."""
+        _parent = parent or self.body
+        cref = f"#/groups/{len(self.groups)}"
+        group = OrderedList(self_ref=cref, parent=_parent.get_ref())
+        if name is not None:
+            group.name = name
+        if content_layer:
+            group.content_layer = content_layer
+
+        self.groups.append(group)
+        _parent.children.append(RefItem(cref=cref))
+        return group
+
+    def add_unordered_list(
+        self,
+        name: Optional[str] = None,
+        parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
+    ) -> GroupItem:
+        """add_unordered_list."""
+        _parent = parent or self.body
+        cref = f"#/groups/{len(self.groups)}"
+        group = UnorderedList(self_ref=cref, parent=_parent.get_ref())
+        if name is not None:
+            group.name = name
+        if content_layer:
+            group.content_layer = content_layer
+
+        self.groups.append(group)
+        _parent.children.append(RefItem(cref=cref))
+        return group
+
+    def add_inline_group(
+        self,
+        name: Optional[str] = None,
+        parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
+        # marker: Optional[UnorderedList.ULMarker] = None,
+    ) -> GroupItem:
+        """add_inline_group."""
+        _parent = parent or self.body
+        cref = f"#/groups/{len(self.groups)}"
+        group = InlineGroup(self_ref=cref, parent=_parent.get_ref())
+        if name is not None:
+            group.name = name
+        if content_layer:
+            group.content_layer = content_layer
+
+        self.groups.append(group)
+        _parent.children.append(RefItem(cref=cref))
+        return group
+
     def add_group(
         self,
         label: Optional[GroupLabel] = None,
@@ -1569,6 +1682,25 @@ class DoclingDocument(BaseModel):
         :param parent: Optional[NodeItem]:  (Default value = None)
 
         """
+        if label == GroupLabel.LIST:
+            return self.add_unordered_list(
+                name=name,
+                parent=parent,
+                content_layer=content_layer,
+            )
+        elif label == GroupLabel.ORDERED_LIST:
+            return self.add_ordered_list(
+                name=name,
+                parent=parent,
+                content_layer=content_layer,
+            )
+        elif label == GroupLabel.INLINE:
+            return self.add_inline_group(
+                name=name,
+                parent=parent,
+                content_layer=content_layer,
+            )
+
         if not parent:
             parent = self.body
 
@@ -1597,6 +1729,8 @@ class DoclingDocument(BaseModel):
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
         content_layer: Optional[ContentLayer] = None,
+        formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
     ):
         """add_list_item.
 
@@ -1624,6 +1758,8 @@ class DoclingDocument(BaseModel):
             parent=parent.get_ref(),
             enumerated=enumerated,
             marker=marker,
+            formatting=formatting,
+            hyperlink=hyperlink,
         )
         if prov:
             list_item.prov.append(prov)
@@ -1643,6 +1779,8 @@ class DoclingDocument(BaseModel):
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
         content_layer: Optional[ContentLayer] = None,
+        formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
     ):
         """add_text.
 
@@ -1662,6 +1800,8 @@ class DoclingDocument(BaseModel):
                 prov=prov,
                 parent=parent,
                 content_layer=content_layer,
+                formatting=formatting,
+                hyperlink=hyperlink,
             )
 
         elif label in [DocItemLabel.LIST_ITEM]:
@@ -1671,15 +1811,31 @@ class DoclingDocument(BaseModel):
                 prov=prov,
                 parent=parent,
                 content_layer=content_layer,
+                formatting=formatting,
+                hyperlink=hyperlink,
+            )
+
+        elif label in [DocItemLabel.TITLE]:
+            return self.add_title(
+                text=text,
+                orig=orig,
+                prov=prov,
+                parent=parent,
+                content_layer=content_layer,
+                formatting=formatting,
+                hyperlink=hyperlink,
             )
 
         elif label in [DocItemLabel.SECTION_HEADER]:
             return self.add_heading(
                 text=text,
                 orig=orig,
+                # NOTE: we do not / cannot pass the level here, lossy path..
                 prov=prov,
                 parent=parent,
                 content_layer=content_layer,
+                formatting=formatting,
+                hyperlink=hyperlink,
             )
 
         elif label in [DocItemLabel.CODE]:
@@ -1689,6 +1845,18 @@ class DoclingDocument(BaseModel):
                 prov=prov,
                 parent=parent,
                 content_layer=content_layer,
+                formatting=formatting,
+                hyperlink=hyperlink,
+            )
+        elif label in [DocItemLabel.FORMULA]:
+            return self.add_formula(
+                text=text,
+                orig=orig,
+                prov=prov,
+                parent=parent,
+                content_layer=content_layer,
+                formatting=formatting,
+                hyperlink=hyperlink,
             )
 
         else:
@@ -1707,6 +1875,8 @@ class DoclingDocument(BaseModel):
                 orig=orig,
                 self_ref=cref,
                 parent=parent.get_ref(),
+                formatting=formatting,
+                hyperlink=hyperlink,
             )
             if prov:
                 text_item.prov.append(prov)
@@ -1808,11 +1978,14 @@ class DoclingDocument(BaseModel):
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
         content_layer: Optional[ContentLayer] = None,
+        formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
     ):
         """add_title.
 
         :param text: str:
         :param orig: Optional[str]:  (Default value = None)
+        :param level: LevelNumber:  (Default value = 1)
         :param prov: Optional[ProvenanceItem]:  (Default value = None)
         :param parent: Optional[NodeItem]:  (Default value = None)
         """
@@ -1824,22 +1997,23 @@ class DoclingDocument(BaseModel):
 
         text_index = len(self.texts)
         cref = f"#/texts/{text_index}"
-        text_item = TextItem(
-            label=DocItemLabel.TITLE,
+        item = TitleItem(
             text=text,
             orig=orig,
             self_ref=cref,
             parent=parent.get_ref(),
+            formatting=formatting,
+            hyperlink=hyperlink,
         )
         if prov:
-            text_item.prov.append(prov)
+            item.prov.append(prov)
         if content_layer:
-            text_item.content_layer = content_layer
+            item.content_layer = content_layer
 
-        self.texts.append(text_item)
+        self.texts.append(item)
         parent.children.append(RefItem(cref=cref))
 
-        return text_item
+        return item
 
     def add_code(
         self,
@@ -1850,6 +2024,8 @@ class DoclingDocument(BaseModel):
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
         content_layer: Optional[ContentLayer] = None,
+        formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
     ):
         """add_code.
 
@@ -1874,6 +2050,8 @@ class DoclingDocument(BaseModel):
             orig=orig,
             self_ref=cref,
             parent=parent.get_ref(),
+            formatting=formatting,
+            hyperlink=hyperlink,
         )
         if code_language:
             code_item.code_language = code_language
@@ -1889,6 +2067,50 @@ class DoclingDocument(BaseModel):
 
         return code_item
 
+    def add_formula(
+        self,
+        text: str,
+        orig: Optional[str] = None,
+        prov: Optional[ProvenanceItem] = None,
+        parent: Optional[NodeItem] = None,
+        content_layer: Optional[ContentLayer] = None,
+        formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
+    ):
+        """add_formula.
+
+        :param text: str:
+        :param orig: Optional[str]:  (Default value = None)
+        :param level: LevelNumber:  (Default value = 1)
+        :param prov: Optional[ProvenanceItem]:  (Default value = None)
+        :param parent: Optional[NodeItem]:  (Default value = None)
+        """
+        if not parent:
+            parent = self.body
+
+        if not orig:
+            orig = text
+
+        text_index = len(self.texts)
+        cref = f"#/texts/{text_index}"
+        section_header_item = FormulaItem(
+            text=text,
+            orig=orig,
+            self_ref=cref,
+            parent=parent.get_ref(),
+            formatting=formatting,
+            hyperlink=hyperlink,
+        )
+        if prov:
+            section_header_item.prov.append(prov)
+        if content_layer:
+            section_header_item.content_layer = content_layer
+
+        self.texts.append(section_header_item)
+        parent.children.append(RefItem(cref=cref))
+
+        return section_header_item
+
     def add_heading(
         self,
         text: str,
@@ -1897,6 +2119,8 @@ class DoclingDocument(BaseModel):
         prov: Optional[ProvenanceItem] = None,
         parent: Optional[NodeItem] = None,
         content_layer: Optional[ContentLayer] = None,
+        formatting: Optional[Formatting] = None,
+        hyperlink: Optional[Union[AnyUrl, Path]] = None,
     ):
         """add_heading.
 
@@ -1921,6 +2145,8 @@ class DoclingDocument(BaseModel):
             orig=orig,
             self_ref=cref,
             parent=parent.get_ref(),
+            formatting=formatting,
+            hyperlink=hyperlink,
         )
         if prov:
             section_header_item.prov.append(prov)
@@ -2438,11 +2664,38 @@ class DoclingDocument(BaseModel):
 
             return "".join(parts)
 
-        def _ingest_text(text: str, do_escape_html=True, do_escape_underscores=True):
+        def _ingest_text(
+            text: str,
+            *,
+            do_escape_html=True,
+            do_escape_underscores=True,
+            formatting: Optional[Formatting] = None,
+            hyperlink: Optional[Union[AnyUrl, Path]] = None,
+        ):
             if do_escape_underscores and escaping_underscores:
                 text = _escape_underscores(text)
             if do_escape_html:
                 text = html.escape(text, quote=False)
+            if formatting:
+                if formatting.bold:
+                    text = f"**{text}**"
+                if formatting.italic:
+                    text = f"*{text}*"
+                if formatting.strikethrough:
+                    text = f"~~{text}~~"
+
+            # NOTE: sticking to pure Markdown export for now
+            # if formatting:
+            #     if formatting.bold:
+            #         text = f"<b>{text}</b>"
+            #     if formatting.italic:
+            #         text = f"<i>{text}</i>"
+            #     if formatting.underline:
+            #         text = f"<ins>{text}</ins>"
+            #     if formatting.strikethrough:
+            #         text = f"<del>{text}</del>"
+            if hyperlink:
+                text = f"[{text}]({str(hyperlink)})"
             if text:
                 components.append(text)
 
@@ -2537,7 +2790,9 @@ class DoclingDocument(BaseModel):
             elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
                 marker = "" if strict_text else "#"
                 text = f"{marker} {item.text}"
-                _ingest_text(text.strip())
+                _ingest_text(
+                    text.strip(), formatting=item.formatting, hyperlink=item.hyperlink
+                )
 
             elif (
                 isinstance(item, TextItem)
@@ -2549,33 +2804,51 @@ class DoclingDocument(BaseModel):
                     if len(marker) < 2:
                         marker = "##"
                 text = f"{marker} {item.text}"
-                _ingest_text(text.strip())
+                _ingest_text(
+                    text.strip(), formatting=item.formatting, hyperlink=item.hyperlink
+                )
 
             elif isinstance(item, CodeItem):
                 text = f"`{item.text}`" if is_inline_scope else f"```\n{item.text}\n```"
-                _ingest_text(text, do_escape_underscores=False, do_escape_html=False)
+                _ingest_text(
+                    text,
+                    do_escape_underscores=False,
+                    do_escape_html=False,
+                    formatting=item.formatting,
+                    hyperlink=item.hyperlink,
+                )
 
-            elif isinstance(item, TextItem) and item.label in [DocItemLabel.FORMULA]:
+            elif isinstance(item, FormulaItem):
                 if item.text != "":
                     _ingest_text(
                         f"${item.text}$" if is_inline_scope else f"$${item.text}$$",
                         do_escape_underscores=False,
                         do_escape_html=False,
+                        formatting=item.formatting,
+                        hyperlink=item.hyperlink,
                     )
                 elif item.orig != "":
                     _ingest_text(
                         "<!-- formula-not-decoded -->",
                         do_escape_underscores=False,
                         do_escape_html=False,
+                        formatting=item.formatting,
+                        hyperlink=item.hyperlink,
                     )
 
             elif isinstance(item, TextItem):
                 if len(item.text) and text_width > 0:
                     text = item.text
                     wrapped_text = textwrap.fill(text, width=text_width)
-                    _ingest_text(wrapped_text)
+                    _ingest_text(
+                        wrapped_text,
+                        formatting=item.formatting,
+                        hyperlink=item.hyperlink,
+                    )
                 elif len(item.text):
-                    _ingest_text(item.text)
+                    _ingest_text(
+                        item.text, formatting=item.formatting, hyperlink=item.hyperlink
+                    )
 
             elif isinstance(item, TableItem) and not strict_text:
                 if caption_text := item.caption_text(self):
