@@ -19,7 +19,10 @@ from docling_core.transforms.serializer import (
     BaseTableSerializer,
     BaseTextSerializer,
 )
-from docling_core.transforms.serializer.base import BaseInlineSerializer
+from docling_core.transforms.serializer.base import (
+    BaseInlineSerializer,
+    SerializationResult,
+)
 from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.document import (
     CodeItem,
@@ -50,7 +53,7 @@ class MarkdownTextSerializer(BaseTextSerializer):
         doc: DoclingDocument,
         is_inline_scope: bool = False,
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         """Serializes the passed item."""
         do_escape_html = True
         if isinstance(item, TitleItem):
@@ -71,7 +74,7 @@ class MarkdownTextSerializer(BaseTextSerializer):
             formatting=item.formatting,
             hyperlink=item.hyperlink,
         )
-        return res
+        return SerializationResult(text=res)
 
 
 class MarkdownTableSerializer(BaseTableSerializer):
@@ -85,7 +88,7 @@ class MarkdownTableSerializer(BaseTableSerializer):
         doc_serializer: BaseDocSerializer,
         doc: DoclingDocument,
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         """Serializes the passed item."""
         rows = [
             [
@@ -99,17 +102,17 @@ class MarkdownTableSerializer(BaseTableSerializer):
 
         if len(rows) > 1 and len(rows[0]) > 0:
             try:
-                text = tabulate(rows[1:], headers=rows[0], tablefmt="github")
+                text_res = tabulate(rows[1:], headers=rows[0], tablefmt="github")
             except ValueError:
-                text = tabulate(
+                text_res = tabulate(
                     rows[1:],
                     headers=rows[0],
                     tablefmt="github",
                     disable_numparse=True,
                 )
         else:
-            text = ""
-        return text
+            text_res = ""
+        return SerializationResult(text=text_res)
 
 
 class MarkdownPictureSerializer(BasePictureSerializer):
@@ -124,28 +127,30 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         doc: DoclingDocument,
         image_mode: ImageRefMode,
         **kwargs,
-    ):
+    ) -> SerializationResult:
         """Serializes the passed item."""
-        parts: list[str] = []
+        texts: list[str] = []
 
-        cap_txt = self._serialize_captions(
+        cap_res = self._serialize_captions(
             item=item,
             doc_serializer=doc_serializer,
             doc=doc,
             separator="\n",
         )
-        if cap_txt:
-            parts.append(cap_txt)
+        if cap_res.text:
+            texts.append(cap_res.text)
 
-        img_txt = self._serialize_image_part(
+        img_res = self._serialize_image_part(
             item=item,
             doc=doc,
             image_mode=image_mode,
         )
-        if img_txt:
-            parts.append(img_txt)
-        res = "\n\n".join(parts)
-        return res
+        if img_res.text:
+            texts.append(img_res.text)
+
+        text_res = "\n\n".join(texts)
+
+        return SerializationResult(text=text_res)
 
     def _serialize_image_part(
         self,
@@ -153,7 +158,7 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         doc: DoclingDocument,
         image_mode: ImageRefMode,
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         default_response = "<!-- image -->"
         error_response = (
             "<!-- 🖼️❌ Image not available. "
@@ -161,7 +166,7 @@ class MarkdownPictureSerializer(BasePictureSerializer):
             " -->"
         )
         if image_mode == ImageRefMode.PLACEHOLDER:
-            res = default_response
+            text_res = default_response
         elif image_mode == ImageRefMode.EMBEDDED:
             # short-cut: we already have the image in base64
             if (
@@ -170,7 +175,7 @@ class MarkdownPictureSerializer(BasePictureSerializer):
                 and item.image.uri.scheme == "data"
             ):
                 text = f"![Image]({item.image.uri})"
-                res = text
+                text_res = text
             else:
                 # get the item.image._pil or crop it out of the page-image
                 img = item.get_image(doc=doc)
@@ -179,19 +184,20 @@ class MarkdownPictureSerializer(BasePictureSerializer):
                     imgb64 = item._image_to_base64(img)
                     text = f"![Image](data:image/png;base64,{imgb64})"
 
-                    res = text
+                    text_res = text
                 else:
-                    res = error_response
+                    text_res = error_response
         elif image_mode == ImageRefMode.REFERENCED:
             if not isinstance(item.image, ImageRef) or (
                 isinstance(item.image.uri, AnyUrl) and item.image.uri.scheme == "data"
             ):
-                res = default_response
+                text_res = default_response
             else:
-                res = f"![Image]({str(item.image.uri)})"
+                text_res = f"![Image]({str(item.image.uri)})"
         else:
-            res = default_response
-        return res
+            text_res = default_response
+
+        return SerializationResult(text=text_res)
 
 
 class MarkdownListSerializer(BaseListSerializer):
@@ -206,10 +212,11 @@ class MarkdownListSerializer(BaseListSerializer):
         doc: DoclingDocument,
         list_level: int,
         is_inline_scope: bool,
-        visited: set[str],  # refs of visited items
+        visited: Optional[set[str]] = None,  # refs of visited items
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         """Serializes the passed item."""
+        my_visited = visited or set()
         parts = doc_serializer.get_parts(
             node=item,
             # from_element=from_element,
@@ -224,18 +231,18 @@ class MarkdownListSerializer(BaseListSerializer):
             # included_content_layers=included_content_layers,
             list_level=list_level + 1,
             is_inline_scope=is_inline_scope,
-            visited=visited,
+            visited=my_visited,
         )
         intent_len = 4
         indent_str = list_level * intent_len * " "
         is_ol = isinstance(item, OrderedList)
-        text = "\n".join(
+        text_res = "\n".join(
             [
                 # avoid additional marker on already evaled sublists
                 (
-                    c
-                    if c and c[0] == " "
-                    else f"{indent_str}{f'{i + 1}.' if is_ol else '-'} {c}"
+                    c.text
+                    if c.text and c.text[0] == " "
+                    else f"{indent_str}{f'{i + 1}.' if is_ol else '-'} {c.text}"
                 )
                 for i, c in enumerate(parts)
             ]
@@ -246,7 +253,7 @@ class MarkdownListSerializer(BaseListSerializer):
         #     formatting=None,
         #     hyperlink=None,
         # )
-        return text
+        return SerializationResult(text=text_res)
 
 
 class MarkdownInlineSerializer(BaseInlineSerializer):
@@ -260,11 +267,11 @@ class MarkdownInlineSerializer(BaseInlineSerializer):
         doc_serializer: "BaseDocSerializer",
         doc: DoclingDocument,
         list_level: int,
-        is_inline_scope: bool,
-        visited: set[str],  # refs of visited items
+        visited: Optional[set[str]] = None,  # refs of visited items
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         """Serializes the passed item."""
+        my_visited = visited or set()
         parts = doc_serializer.get_parts(
             node=item,
             # from_element=from_element,
@@ -279,16 +286,16 @@ class MarkdownInlineSerializer(BaseInlineSerializer):
             # included_content_layers=included_content_layers,
             list_level=list_level,
             is_inline_scope=True,
-            visited=visited,
+            visited=my_visited,
         )
-        text = " ".join(parts)
+        text_res = " ".join([p.text for p in parts])
         # text = self._post_process(
         #     text=text,
         #     do_escape_html=False,  # already escaped as needed
         #     formatting=None,
         #     hyperlink=None,
         # )
-        return text
+        return SerializationResult(text=text_res)
 
 
 class MarkdownDocSerializer(BaseDocSerializer):
@@ -301,22 +308,22 @@ class MarkdownDocSerializer(BaseDocSerializer):
     inline_serializer: BaseInlineSerializer = MarkdownInlineSerializer()
 
     @override
-    def serialize_bold(self, text):
+    def serialize_bold(self, text: str):
         """Apply Markdown-specific bold serialization."""
         return f"**{text}**"
 
     @override
-    def serialize_italic(self, text):
+    def serialize_italic(self, text: str):
         """Apply Markdown-specific italic serialization."""
         return f"*{text}*"
 
     @override
-    def serialize_strikethrough(self, text):
+    def serialize_strikethrough(self, text: str):
         """Apply Markdown-specific strikethrough serialization."""
         return f"~~{text}~~"
 
     @override
-    def serialize_hyperlink(self, text, hyperlink):
+    def serialize_hyperlink(self, text: str, hyperlink: Union[AnyUrl, Path]):
         """Apply Markdown-specific hyperlink serialization."""
         return f"[{text}]({str(hyperlink)})"
 
@@ -344,7 +351,8 @@ class MarkdownDocSerializer(BaseDocSerializer):
         return res
 
     @override
-    def serialize(self, **kwargs) -> str:
+    def serialize(self, **kwargs) -> SerializationResult:
         """Run the serialization."""
         parts = self.get_parts()
-        return "\n\n".join(parts)
+        text_res = "\n\n".join([p.text for p in parts])
+        return SerializationResult(text=text_res)

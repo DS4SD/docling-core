@@ -29,6 +29,18 @@ from docling_core.types.doc.document import (
 from docling_core.types.doc.labels import DocItemLabel
 
 
+class SerializationResult(BaseModel):
+    """SerializationResult."""
+
+    text: str
+
+
+# class GroundedSerializationResult(BaseModel):
+#     """GroundedSerializationResult."""
+
+#     doc_items: List[DocItem]
+
+
 class BaseTextSerializer(ABC):
     """Base class for text item serializers."""
 
@@ -40,7 +52,7 @@ class BaseTextSerializer(ABC):
         doc_serializer: "BaseDocSerializer",
         doc: DoclingDocument,
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         """Serializes the passed item."""
         ...
 
@@ -56,7 +68,7 @@ class BaseTableSerializer(ABC):
         doc_serializer: "BaseDocSerializer",
         doc: DoclingDocument,
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         """Serializes the passed item."""
         ...
 
@@ -73,7 +85,7 @@ class BasePictureSerializer(ABC):
         doc: DoclingDocument,
         image_mode: ImageRefMode,
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         """Serializes the passed item."""
         ...
 
@@ -85,11 +97,15 @@ class BasePictureSerializer(ABC):
         doc: DoclingDocument,
         separator: Optional[str] = None,
         **kwargs,
-    ) -> str:
-        parts: list[str] = [cap.resolve(doc).text for cap in item.captions]
-        res = (separator or "\n").join(parts)
-        res = doc_serializer.post_process(text=res)
-        return res
+    ) -> SerializationResult:
+        text_parts: list[str] = [
+            it.text
+            for cap in item.captions
+            if isinstance(it := cap.resolve(doc), TextItem)
+        ]
+        text_res = (separator or "\n").join(text_parts)
+        text_res = doc_serializer.post_process(text=text_res)
+        return SerializationResult(text=text_res)
 
     # helper function
     def _serialize_content(
@@ -100,7 +116,7 @@ class BasePictureSerializer(ABC):
         separator: Optional[str] = None,
         visited: Optional[set[str]] = None,
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         parts = doc_serializer.get_parts(  # FIXME
             node=item,
             traverse_pictures=True,
@@ -108,9 +124,9 @@ class BasePictureSerializer(ABC):
             # is_inline_scope=is_inline_scope,
             visited=visited,
         )
-        res = (separator or " ").join(parts)
+        text_res = (separator or " ").join([p.text for p in parts])
         # NOTE: we do no postprocessing since already done as needed
-        return res
+        return SerializationResult(text=text_res)
 
     # helper function
     def _serialize_annotations(
@@ -120,8 +136,8 @@ class BasePictureSerializer(ABC):
         doc: DoclingDocument,
         separator: Optional[str] = None,
         **kwargs,
-    ) -> str:
-        ann_parts: list[str] = []
+    ) -> SerializationResult:
+        text_parts: list[str] = []
         for annotation in item.annotations:
             if isinstance(annotation, PictureClassificationData):
                 predicted_class = (
@@ -130,15 +146,15 @@ class BasePictureSerializer(ABC):
                     else None
                 )
                 if predicted_class is not None:
-                    ann_parts.append(f"Picture type: {predicted_class}")
+                    text_parts.append(f"Picture type: {predicted_class}")
             elif isinstance(annotation, PictureMoleculeData):
-                ann_parts.append(f"SMILES: {annotation.smi}")
+                text_parts.append(f"SMILES: {annotation.smi}")
             elif isinstance(annotation, PictureDescriptionData):
-                ann_parts.append(f"Description: {annotation.text}")
+                text_parts.append(f"Description: {annotation.text}")
 
-        ann_txt = (separator or "\n").join(ann_parts)
-        ann_txt = doc_serializer.post_process(text=ann_txt)
-        return ann_txt
+        text_res = (separator or "\n").join(text_parts)
+        text_res = doc_serializer.post_process(text=text_res)
+        return SerializationResult(text=text_res)
 
 
 class BaseListSerializer(ABC):
@@ -153,9 +169,9 @@ class BaseListSerializer(ABC):
         doc: DoclingDocument,
         list_level: int,
         is_inline_scope: bool,
-        visited: set[str],  # refs of visited items
+        visited: Optional[set[str]] = None,  # refs of visited items
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         """Serializes the passed item."""
         ...
 
@@ -171,10 +187,9 @@ class BaseInlineSerializer(ABC):
         doc_serializer: "BaseDocSerializer",
         doc: DoclingDocument,
         list_level: int,
-        is_inline_scope: bool,
-        visited: set[str],  # refs of visited items
+        visited: Optional[set[str]] = None,  # refs of visited items
         **kwargs,
-    ) -> str:
+    ) -> SerializationResult:
         """Serializes the passed item."""
         ...
 
@@ -200,7 +215,7 @@ class BaseDocSerializer(BaseModel, ABC):
         arbitrary_types_allowed = True
 
     @abstractmethod
-    def serialize(self, **kwargs) -> str:
+    def serialize(self, **kwargs) -> SerializationResult:
         """Run the serialization."""
         ...
 
@@ -242,14 +257,14 @@ class BaseDocSerializer(BaseModel, ABC):
         list_level: int = 0,
         is_inline_scope: bool = False,
         visited: Optional[set[str]] = None,  # refs of visited items
-    ) -> list[str]:
+    ) -> list[SerializationResult]:
         """Get the components to be combined for serializing this node."""
         my_visited: set[str] = visited if visited is not None else set()
-        parts: list[str] = []
+        parts: list[SerializationResult] = []
 
         label_blocklist = {
             DocItemLabel.CAPTION,
-            # TODO more?
+            # TODO more? Perhaps push down to iterate_items?
         }
         for ix, (item, _) in enumerate(
             self.doc.iterate_items(
@@ -268,7 +283,7 @@ class BaseDocSerializer(BaseModel, ABC):
             # groups
             ########
             if isinstance(item, (UnorderedList, OrderedList)):
-                txt = self.list_serializer.serialize(
+                part = self.list_serializer.serialize(
                     item=item,
                     doc_serializer=self,
                     doc=self.doc,
@@ -277,12 +292,11 @@ class BaseDocSerializer(BaseModel, ABC):
                     visited=my_visited,
                 )
             elif isinstance(item, InlineGroup):
-                txt = self.inline_serializer.serialize(
+                part = self.inline_serializer.serialize(
                     item=item,
                     doc_serializer=self,
                     doc=self.doc,
                     list_level=list_level,
-                    is_inline_scope=is_inline_scope,
                     visited=my_visited,
                 )
             ###########
@@ -291,20 +305,20 @@ class BaseDocSerializer(BaseModel, ABC):
             elif isinstance(item, DocItem) and item.label in label_blocklist:
                 continue
             elif isinstance(item, TextItem):
-                txt = self.text_serializer.serialize(
+                part = self.text_serializer.serialize(
                     item=item,
                     doc_serializer=self,
                     doc=self.doc,
                     is_inline_scope=is_inline_scope,
                 )
             elif isinstance(item, TableItem):
-                txt = self.table_serializer.serialize(
+                part = self.table_serializer.serialize(
                     item=item,
                     doc_serializer=self,
                     doc=self.doc,
                 )
             elif isinstance(item, PictureItem):
-                txt = self.picture_serializer.serialize(
+                part = self.picture_serializer.serialize(
                     item=item,
                     doc_serializer=self,
                     doc=self.doc,
@@ -315,8 +329,8 @@ class BaseDocSerializer(BaseModel, ABC):
             else:
                 continue  # ignore other items
 
-            if txt:
-                parts.append(txt)
+            if part.text:
+                parts.append(part)
         return parts
 
     def post_process(
