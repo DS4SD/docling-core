@@ -14,8 +14,11 @@ from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.document import (
     DocItem,
     DoclingDocument,
+    FloatingItem,
     Formatting,
+    FormItem,
     InlineGroup,
+    KeyValueItem,
     NodeItem,
     OrderedList,
     PictureClassificationData,
@@ -90,24 +93,6 @@ class BasePictureSerializer(ABC):
         ...
 
     # helper function
-    def _serialize_captions(
-        self,
-        item: PictureItem,
-        doc_serializer: "BaseDocSerializer",
-        doc: DoclingDocument,
-        separator: Optional[str] = None,
-        **kwargs,
-    ) -> SerializationResult:
-        text_parts: list[str] = [
-            it.text
-            for cap in item.captions
-            if isinstance(it := cap.resolve(doc), TextItem)
-        ]
-        text_res = (separator or "\n").join(text_parts)
-        text_res = doc_serializer.post_process(text=text_res)
-        return SerializationResult(text=text_res)
-
-    # helper function
     def _serialize_content(
         self,
         item: PictureItem,
@@ -157,6 +142,38 @@ class BasePictureSerializer(ABC):
         return SerializationResult(text=text_res)
 
 
+class BaseKeyValueSerializer(ABC):
+    """Base class for key value item serializers."""
+
+    @abstractmethod
+    def serialize(
+        self,
+        *,
+        item: KeyValueItem,
+        doc_serializer: "BaseDocSerializer",
+        doc: DoclingDocument,
+        **kwargs,
+    ) -> SerializationResult:
+        """Serializes the passed item."""
+        ...
+
+
+class BaseFormSerializer(ABC):
+    """Base class for form item serializers."""
+
+    @abstractmethod
+    def serialize(
+        self,
+        *,
+        item: FormItem,
+        doc_serializer: "BaseDocSerializer",
+        doc: DoclingDocument,
+        **kwargs,
+    ) -> SerializationResult:
+        """Serializes the passed item."""
+        ...
+
+
 class BaseListSerializer(ABC):
     """Base class for list serializers."""
 
@@ -202,11 +219,14 @@ class BaseDocSerializer(BaseModel, ABC):
     text_serializer: BaseTextSerializer
     table_serializer: BaseTableSerializer
     picture_serializer: BasePictureSerializer
+    key_value_serializer: BaseKeyValueSerializer
+    form_serializer: BaseFormSerializer
+
     list_serializer: BaseListSerializer
     inline_serializer: BaseInlineSerializer
 
-    include_formatting: bool = False  # added here since applied on text globally
-    include_hyperlinks: bool = False  # added here since applied on text globally
+    include_formatting: bool = True  # added here since applied on text globally
+    include_hyperlinks: bool = True  # added here since applied on text globally
     image_mode: ImageRefMode = ImageRefMode.EMBEDDED
 
     class Config:
@@ -264,6 +284,7 @@ class BaseDocSerializer(BaseModel, ABC):
 
         label_blocklist = {
             DocItemLabel.CAPTION,
+            DocItemLabel.FOOTNOTE,
             # TODO more? Perhaps push down to iterate_items?
         }
         for ix, (item, _) in enumerate(
@@ -325,6 +346,18 @@ class BaseDocSerializer(BaseModel, ABC):
                     visited=my_visited,
                     image_mode=self.image_mode,
                 )
+            elif isinstance(item, KeyValueItem):
+                part = self.key_value_serializer.serialize(
+                    item=item,
+                    doc_serializer=self,
+                    doc=self.doc,
+                )
+            elif isinstance(item, FormItem):
+                part = self.form_serializer.serialize(
+                    item=item,
+                    doc_serializer=self,
+                    doc=self.doc,
+                )
                 # ...
             else:
                 continue  # ignore other items
@@ -355,3 +388,22 @@ class BaseDocSerializer(BaseModel, ABC):
         if self.include_hyperlinks and hyperlink:
             res = self.serialize_hyperlink(text=res, hyperlink=hyperlink)
         return res
+
+    # helper function
+    def serialize_captions(
+        self,
+        item: FloatingItem,
+        # doc_serializer: "BaseDocSerializer",
+        # doc: DoclingDocument,
+        separator: Optional[str] = None,
+        **kwargs,
+    ) -> SerializationResult:
+        """Serialize the item's captions."""
+        text_parts: list[str] = [
+            it.text
+            for cap in item.captions
+            if isinstance(it := cap.resolve(self.doc), TextItem)
+        ]
+        text_res = (separator or "\n").join(text_parts)
+        text_res = self.post_process(text=text_res)
+        return SerializationResult(text=text_res)

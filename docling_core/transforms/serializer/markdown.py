@@ -20,7 +20,9 @@ from docling_core.transforms.serializer import (
     BaseTextSerializer,
 )
 from docling_core.transforms.serializer.base import (
+    BaseFormSerializer,
     BaseInlineSerializer,
+    BaseKeyValueSerializer,
     SerializationResult,
 )
 from docling_core.types.doc.base import ImageRefMode
@@ -28,9 +30,11 @@ from docling_core.types.doc.document import (
     CodeItem,
     DoclingDocument,
     Formatting,
+    FormItem,
     FormulaItem,
     ImageRef,
     InlineGroup,
+    KeyValueItem,
     OrderedList,
     PictureItem,
     SectionHeaderItem,
@@ -90,6 +94,11 @@ class MarkdownTableSerializer(BaseTableSerializer):
         **kwargs,
     ) -> SerializationResult:
         """Serializes the passed item."""
+        text_parts: list[str] = []
+
+        if caption_txt := doc_serializer.serialize_captions(item=item).text:
+            text_parts.append(caption_txt)
+
         rows = [
             [
                 # make sure that md tables are not broken
@@ -99,19 +108,23 @@ class MarkdownTableSerializer(BaseTableSerializer):
             ]
             for row in item.data.grid
         ]
-
         if len(rows) > 1 and len(rows[0]) > 0:
             try:
-                text_res = tabulate(rows[1:], headers=rows[0], tablefmt="github")
+                table_text = tabulate(rows[1:], headers=rows[0], tablefmt="github")
             except ValueError:
-                text_res = tabulate(
+                table_text = tabulate(
                     rows[1:],
                     headers=rows[0],
                     tablefmt="github",
                     disable_numparse=True,
                 )
         else:
-            text_res = ""
+            table_text = ""
+        if table_text:
+            text_parts.append(table_text)
+
+        text_res = "\n\n".join(text_parts)
+
         return SerializationResult(text=text_res)
 
 
@@ -131,10 +144,8 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         """Serializes the passed item."""
         texts: list[str] = []
 
-        cap_res = self._serialize_captions(
+        cap_res = doc_serializer.serialize_captions(
             item=item,
-            doc_serializer=doc_serializer,
-            doc=doc,
             separator="\n",
         )
         if cap_res.text:
@@ -197,6 +208,42 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         else:
             text_res = default_response
 
+        return SerializationResult(text=text_res)
+
+
+class MarkdownKeyValueSerializer(BaseKeyValueSerializer):
+    """Markdown-specific key-value item serializer."""
+
+    @override
+    def serialize(
+        self,
+        *,
+        item: KeyValueItem,
+        doc_serializer: "BaseDocSerializer",
+        doc: DoclingDocument,
+        **kwargs,
+    ) -> SerializationResult:
+        """Serializes the passed item."""
+        # TODO add actual implementation
+        text_res = "<!-- missing-key-value-item -->"
+        return SerializationResult(text=text_res)
+
+
+class MarkdownFormSerializer(BaseFormSerializer):
+    """Markdown-specific form item serializer."""
+
+    @override
+    def serialize(
+        self,
+        *,
+        item: FormItem,
+        doc_serializer: "BaseDocSerializer",
+        doc: DoclingDocument,
+        **kwargs,
+    ) -> SerializationResult:
+        """Serializes the passed item."""
+        # TODO add actual implementation
+        text_res = "<!-- missing-form-item -->"
         return SerializationResult(text=text_res)
 
 
@@ -304,6 +351,8 @@ class MarkdownDocSerializer(BaseDocSerializer):
     text_serializer: BaseTextSerializer = MarkdownTextSerializer()
     table_serializer: BaseTableSerializer = MarkdownTableSerializer()
     picture_serializer: BasePictureSerializer = MarkdownPictureSerializer()
+    key_value_serializer: BaseKeyValueSerializer = MarkdownKeyValueSerializer()
+    form_serializer: BaseFormSerializer = MarkdownFormSerializer()
     list_serializer: BaseListSerializer = MarkdownListSerializer()
     inline_serializer: BaseInlineSerializer = MarkdownInlineSerializer()
 

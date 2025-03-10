@@ -432,7 +432,8 @@ def test_construct_bad_doc():
     doc = _construct_bad_doc()
     assert doc.validate_tree(doc.body) == False
 
-    _test_export_methods(doc, filename=filename)
+    with pytest.raises(ValueError):
+        _test_export_methods(doc, filename=filename)
     with pytest.raises(ValueError):
         _test_serialize_and_reload(doc)
 

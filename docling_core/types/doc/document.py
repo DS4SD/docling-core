@@ -10,7 +10,6 @@ import mimetypes
 import os
 import re
 import sys
-import textwrap
 import typing
 import warnings
 from enum import Enum
@@ -908,49 +907,65 @@ class PictureItem(FloatingItem):
         image_placeholder: str = "<!-- image -->",
     ) -> str:
         """Export picture to Markdown format."""
-        default_response = image_placeholder
-        error_response = (
-            "<!-- 🖼️❌ Image not available. "
-            "Please use `PdfPipelineOptions(generate_picture_images=True)`"
-            " -->"
+        from docling_core.transforms.serializer.markdown import MarkdownDocSerializer
+
+        serializer = MarkdownDocSerializer(
+            doc=self,
+            image_mode=image_mode,
         )
+        ser_res = serializer.picture_serializer.serialize(
+            item=self,
+            doc_serializer=serializer,
+            doc=doc,
+            image_mode=image_mode,
+            # TODO: decide on rest of params (drop / deprecate / propagate)
+        )
+        return ser_res.text
 
-        if image_mode == ImageRefMode.PLACEHOLDER:
-            return default_response
+        # """Export picture to Markdown format."""
+        # default_response = image_placeholder
+        # error_response = (
+        #     "<!-- 🖼️❌ Image not available. "
+        #     "Please use `PdfPipelineOptions(generate_picture_images=True)`"
+        #     " -->"
+        # )
 
-        elif image_mode == ImageRefMode.EMBEDDED:
+        # if image_mode == ImageRefMode.PLACEHOLDER:
+        #     return default_response
 
-            # short-cut: we already have the image in base64
-            if (
-                isinstance(self.image, ImageRef)
-                and isinstance(self.image.uri, AnyUrl)
-                and self.image.uri.scheme == "data"
-            ):
-                text = f"![Image]({self.image.uri})"
-                return text
+        # elif image_mode == ImageRefMode.EMBEDDED:
 
-            # get the self.image._pil or crop it out of the page-image
-            img = self.get_image(doc)
+        #     # short-cut: we already have the image in base64
+        #     if (
+        #         isinstance(self.image, ImageRef)
+        #         and isinstance(self.image.uri, AnyUrl)
+        #         and self.image.uri.scheme == "data"
+        #     ):
+        #         text = f"![Image]({self.image.uri})"
+        #         return text
 
-            if img is not None:
-                imgb64 = self._image_to_base64(img)
-                text = f"![Image](data:image/png;base64,{imgb64})"
+        #     # get the self.image._pil or crop it out of the page-image
+        #     img = self.get_image(doc)
 
-                return text
-            else:
-                return error_response
+        #     if img is not None:
+        #         imgb64 = self._image_to_base64(img)
+        #         text = f"![Image](data:image/png;base64,{imgb64})"
 
-        elif image_mode == ImageRefMode.REFERENCED:
-            if not isinstance(self.image, ImageRef) or (
-                isinstance(self.image.uri, AnyUrl) and self.image.uri.scheme == "data"
-            ):
-                return default_response
+        #         return text
+        #     else:
+        #         return error_response
 
-            text = f"![Image]({quote(str(self.image.uri))})"
-            return text
+        # elif image_mode == ImageRefMode.REFERENCED:
+        #     if not isinstance(self.image, ImageRef) or (
+        #         isinstance(self.image.uri, AnyUrl) and self.image.uri.scheme == "data"
+        #     ):
+        #         return default_response
 
-        else:
-            return default_response
+        #     text = f"![Image]({quote(str(self.image.uri))})"
+        #     return text
+
+        # else:
+        #     return default_response
 
     def export_to_html(
         self,
@@ -1125,33 +1140,54 @@ class TableItem(FloatingItem):
 
         return df
 
-    def export_to_markdown(self) -> str:
+    def export_to_markdown(self, doc: Optional["DoclingDocument"] = None) -> str:
         """Export the table as markdown."""
-        table = []
-        for row in self.data.grid:
-            tmp = []
-            for col in row:
+        if doc is not None:
+            from docling_core.transforms.serializer.markdown import (
+                MarkdownDocSerializer,
+            )
 
-                # make sure that md tables are not broken
-                # due to newline chars in the text
-                text = col.text
-                text = text.replace("\n", " ")
-                tmp.append(text)
+            serializer = MarkdownDocSerializer(
+                doc=doc,
+            )
+            ser_res = serializer.table_serializer.serialize(
+                item=self,
+                doc_serializer=serializer,
+                doc=doc,
+            )
+            return ser_res.text
+        else:
+            warnings.warn(
+                "Usage of TableItem.export_to_markdown() without `doc` argument is "
+                "deprecated."
+            )
 
-            table.append(tmp)
+            table = []
+            for row in self.data.grid:
+                tmp = []
+                for col in row:
 
-        md_table = ""
-        if len(table) > 1 and len(table[0]) > 0:
-            try:
-                md_table = tabulate(table[1:], headers=table[0], tablefmt="github")
-            except ValueError:
-                md_table = tabulate(
-                    table[1:],
-                    headers=table[0],
-                    tablefmt="github",
-                    disable_numparse=True,
-                )
-        return md_table
+                    # make sure that md tables are not broken
+                    # due to newline chars in the text
+                    text = col.text
+                    text = text.replace("\n", " ")
+                    tmp.append(text)
+
+                table.append(tmp)
+
+            res = ""
+            if len(table) > 1 and len(table[0]) > 0:
+                try:
+                    res = tabulate(table[1:], headers=table[0], tablefmt="github")
+                except ValueError:
+                    res = tabulate(
+                        table[1:],
+                        headers=table[0],
+                        tablefmt="github",
+                        disable_numparse=True,
+                    )
+
+        return res
 
     def export_to_html(
         self,
@@ -2592,290 +2628,305 @@ class DoclingDocument(BaseModel):
         :returns: The exported Markdown representation.
         :rtype: str
         """
-        comps = self._get_markdown_components(
-            node=self.body,
-            from_element=from_element,
-            to_element=to_element,
-            labels=labels,
-            strict_text=strict_text,
-            escaping_underscores=escaping_underscores,
-            image_placeholder=image_placeholder,
+        from docling_core.transforms.serializer.markdown import MarkdownDocSerializer
+
+        serializer = MarkdownDocSerializer(
+            doc=self,
             image_mode=image_mode,
-            indent=indent,
-            text_width=text_width,
-            page_no=page_no,
-            included_content_layers=included_content_layers,
-            list_level=0,
-            is_inline_scope=False,
-            visited=set(),
+            # TODO: decide on rest of params (drop / deprecate / propagate)
         )
-        return delim.join(comps)
+        ser_res = serializer.serialize()
+        return ser_res.text
 
-    def _get_markdown_components(  # noqa: C901
-        self,
-        node: NodeItem,
-        from_element: int,
-        to_element: int,
-        labels: set[DocItemLabel],
-        strict_text: bool,
-        escaping_underscores: bool,
-        image_placeholder: str,
-        image_mode: ImageRefMode,
-        indent: int,
-        text_width: int,
-        page_no: Optional[int],
-        included_content_layers: set[ContentLayer],
-        list_level: int,
-        is_inline_scope: bool,
-        visited: set[str],  # refs of visited items
-    ) -> list[str]:
-        components: list[str] = []  # components to concatenate
+    # comps = self._get_markdown_components(
+    #     node=self.body,
+    #     from_element=from_element,
+    #     to_element=to_element,
+    #     labels=labels,
+    #     strict_text=strict_text,
+    #     escaping_underscores=escaping_underscores,
+    #     image_placeholder=image_placeholder,
+    #     image_mode=image_mode,
+    #     indent=indent,
+    #     text_width=text_width,
+    #     page_no=page_no,
+    #     included_content_layers=included_content_layers,
+    #     list_level=0,
+    #     is_inline_scope=False,
+    #     visited=set(),
+    # )
+    # return delim.join(comps)
 
-        # Our export markdown doesn't contain any emphasis styling:
-        # Bold, Italic, or Bold-Italic
-        # Hence, any underscore that we print into Markdown is coming from document text
-        # That means we need to escape it, to properly reflect content in the markdown
-        # However, we need to preserve underscores in image URLs
-        # to maintain their validity
-        # For example: ![image](path/to_image.png) should remain unchanged
-        def _escape_underscores(text):
-            """Escape underscores but leave them intact in the URL.."""
-            # Firstly, identify all the URL patterns.
-            url_pattern = r"!\[.*?\]\((.*?)\)"
-            # Matches both inline ($...$) and block ($$...$$) LaTeX equations:
-            latex_pattern = r"\$\$?(?:\\.|[^$\\])*\$\$?"
-            combined_pattern = f"({url_pattern})|({latex_pattern})"
+    # def _get_markdown_components(  # noqa: C901
+    #     self,
+    #     node: NodeItem,
+    #     from_element: int,
+    #     to_element: int,
+    #     labels: set[DocItemLabel],
+    #     strict_text: bool,
+    #     escaping_underscores: bool,
+    #     image_placeholder: str,
+    #     image_mode: ImageRefMode,
+    #     indent: int,
+    #     text_width: int,
+    #     page_no: Optional[int],
+    #     included_content_layers: set[ContentLayer],
+    #     list_level: int,
+    #     is_inline_scope: bool,
+    #     visited: set[str],  # refs of visited items
+    # ) -> list[str]:
+    #     components: list[str] = []  # components to concatenate
 
-            parts = []
-            last_end = 0
+    #     # Our export markdown doesn't contain any emphasis styling:
+    #     # Bold, Italic, or Bold-Italic
+    #     # Hence, any underscore that we print into Markdown is coming from document
+    # text
+    #     # That means we need to escape it, to properly reflect content in the markdown
+    #     # However, we need to preserve underscores in image URLs
+    #     # to maintain their validity
+    #     # For example: ![image](path/to_image.png) should remain unchanged
+    #     def _escape_underscores(text):
+    #         """Escape underscores but leave them intact in the URL.."""
+    #         # Firstly, identify all the URL patterns.
+    #         url_pattern = r"!\[.*?\]\((.*?)\)"
+    #         # Matches both inline ($...$) and block ($$...$$) LaTeX equations:
+    #         latex_pattern = r"\$\$?(?:\\.|[^$\\])*\$\$?"
+    #         combined_pattern = f"({url_pattern})|({latex_pattern})"
 
-            for match in re.finditer(combined_pattern, text):
-                # Text to add before the URL (needs to be escaped)
-                before_url = text[last_end : match.start()]
-                parts.append(re.sub(r"(?<!\\)_", r"\_", before_url))
+    #         parts = []
+    #         last_end = 0
 
-                # Add the full URL part (do not escape)
-                parts.append(match.group(0))
-                last_end = match.end()
+    #         for match in re.finditer(combined_pattern, text):
+    #             # Text to add before the URL (needs to be escaped)
+    #             before_url = text[last_end : match.start()]
+    #             parts.append(re.sub(r"(?<!\\)_", r"\_", before_url))
 
-            # Add the final part of the text (which needs to be escaped)
-            if last_end < len(text):
-                parts.append(re.sub(r"(?<!\\)_", r"\_", text[last_end:]))
+    #             # Add the full URL part (do not escape)
+    #             parts.append(match.group(0))
+    #             last_end = match.end()
 
-            return "".join(parts)
+    #         # Add the final part of the text (which needs to be escaped)
+    #         if last_end < len(text):
+    #             parts.append(re.sub(r"(?<!\\)_", r"\_", text[last_end:]))
 
-        def _ingest_text(
-            text: str,
-            *,
-            do_escape_html=True,
-            do_escape_underscores=True,
-            formatting: Optional[Formatting] = None,
-            hyperlink: Optional[Union[AnyUrl, Path]] = None,
-        ):
-            if do_escape_underscores and escaping_underscores:
-                text = _escape_underscores(text)
-            if do_escape_html:
-                text = html.escape(text, quote=False)
-            if formatting:
-                if formatting.bold:
-                    text = f"**{text}**"
-                if formatting.italic:
-                    text = f"*{text}*"
-                if formatting.strikethrough:
-                    text = f"~~{text}~~"
+    #         return "".join(parts)
 
-            # NOTE: sticking to pure Markdown export for now
-            # if formatting:
-            #     if formatting.bold:
-            #         text = f"<b>{text}</b>"
-            #     if formatting.italic:
-            #         text = f"<i>{text}</i>"
-            #     if formatting.underline:
-            #         text = f"<ins>{text}</ins>"
-            #     if formatting.strikethrough:
-            #         text = f"<del>{text}</del>"
-            if hyperlink:
-                text = f"[{text}]({str(hyperlink)})"
-            if text:
-                components.append(text)
+    #     def _ingest_text(
+    #         text: str,
+    #         *,
+    #         do_escape_html=True,
+    #         do_escape_underscores=True,
+    #         formatting: Optional[Formatting] = None,
+    #         hyperlink: Optional[Union[AnyUrl, Path]] = None,
+    #     ):
+    #         if do_escape_underscores and escaping_underscores:
+    #             text = _escape_underscores(text)
+    #         if do_escape_html:
+    #             text = html.escape(text, quote=False)
+    #         if formatting:
+    #             if formatting.bold:
+    #                 text = f"**{text}**"
+    #             if formatting.italic:
+    #                 text = f"*{text}*"
+    #             if formatting.strikethrough:
+    #                 text = f"~~{text}~~"
 
-        for ix, (item, level) in enumerate(
-            self.iterate_items(
-                node,
-                with_groups=True,
-                page_no=page_no,
-                included_content_layers=included_content_layers,
-            )
-        ):
-            if item.self_ref in visited:
-                continue
-            else:
-                visited.add(item.self_ref)
+    #         # NOTE: sticking to pure Markdown export for now
+    #         # if formatting:
+    #         #     if formatting.bold:
+    #         #         text = f"<b>{text}</b>"
+    #         #     if formatting.italic:
+    #         #         text = f"<i>{text}</i>"
+    #         #     if formatting.underline:
+    #         #         text = f"<ins>{text}</ins>"
+    #         #     if formatting.strikethrough:
+    #         #         text = f"<del>{text}</del>"
+    #         if hyperlink:
+    #             text = f"[{text}]({str(hyperlink)})"
+    #         if text:
+    #             components.append(text)
 
-            if ix < from_element or to_element <= ix:
-                continue  # skip as many items as you want
+    #     for ix, (item, level) in enumerate(
+    #         self.iterate_items(
+    #             node,
+    #             with_groups=True,
+    #             page_no=page_no,
+    #             included_content_layers=included_content_layers,
+    #         )
+    #     ):
+    #         if item.self_ref in visited:
+    #             continue
+    #         else:
+    #             visited.add(item.self_ref)
 
-            elif (isinstance(item, DocItem)) and (item.label not in labels):
-                continue  # skip any label that is not whitelisted
+    #         if ix < from_element or to_element <= ix:
+    #             continue  # skip as many items as you want
 
-            elif isinstance(item, GroupItem):
-                if item.label in [
-                    GroupLabel.LIST,
-                    GroupLabel.ORDERED_LIST,
-                ]:
-                    comps = self._get_markdown_components(
-                        node=item,
-                        from_element=from_element,
-                        to_element=to_element,
-                        labels=labels,
-                        strict_text=strict_text,
-                        escaping_underscores=escaping_underscores,
-                        image_placeholder=image_placeholder,
-                        image_mode=image_mode,
-                        indent=indent,
-                        text_width=text_width,
-                        page_no=page_no,
-                        included_content_layers=included_content_layers,
-                        list_level=list_level + 1,
-                        is_inline_scope=is_inline_scope,
-                        visited=visited,
-                    )
-                    indent_str = list_level * indent * " "
-                    is_ol = item.label == GroupLabel.ORDERED_LIST
-                    text = "\n".join(
-                        [
-                            # avoid additional marker on already evaled sublists
-                            (
-                                c
-                                if c and c[0] == " "
-                                else f"{indent_str}{f'{i + 1}.' if is_ol else '-'} {c}"
-                            )
-                            for i, c in enumerate(comps)
-                        ]
-                    )
-                    _ingest_text(
-                        text=text,
-                        # special chars have already been escaped as needed
-                        do_escape_html=False,
-                        do_escape_underscores=False,
-                    )
-                elif item.label == GroupLabel.INLINE:
-                    comps = self._get_markdown_components(
-                        node=item,
-                        from_element=from_element,
-                        to_element=to_element,
-                        labels=labels,
-                        strict_text=strict_text,
-                        escaping_underscores=escaping_underscores,
-                        image_placeholder=image_placeholder,
-                        image_mode=image_mode,
-                        indent=indent,
-                        text_width=text_width,
-                        page_no=page_no,
-                        included_content_layers=included_content_layers,
-                        list_level=list_level,
-                        is_inline_scope=True,
-                        visited=visited,
-                    )
-                    text = " ".join(comps)
-                    _ingest_text(
-                        text=text,
-                        # special chars have already been escaped as needed
-                        do_escape_html=False,
-                        do_escape_underscores=False,
-                    )
-                else:
-                    continue
+    #         elif (isinstance(item, DocItem)) and (item.label not in labels):
+    #             continue  # skip any label that is not whitelisted
 
-            elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
-                marker = "" if strict_text else "#"
-                text = f"{marker} {item.text}"
-                _ingest_text(
-                    text.strip(), formatting=item.formatting, hyperlink=item.hyperlink
-                )
+    #         elif isinstance(item, GroupItem):
+    #             if item.label in [
+    #                 GroupLabel.LIST,
+    #                 GroupLabel.ORDERED_LIST,
+    #             ]:
+    #                 comps = self._get_markdown_components(
+    #                     node=item,
+    #                     from_element=from_element,
+    #                     to_element=to_element,
+    #                     labels=labels,
+    #                     strict_text=strict_text,
+    #                     escaping_underscores=escaping_underscores,
+    #                     image_placeholder=image_placeholder,
+    #                     image_mode=image_mode,
+    #                     indent=indent,
+    #                     text_width=text_width,
+    #                     page_no=page_no,
+    #                     included_content_layers=included_content_layers,
+    #                     list_level=list_level + 1,
+    #                     is_inline_scope=is_inline_scope,
+    #                     visited=visited,
+    #                 )
+    #                 ind_str = list_level * indent * " "
+    #                 is_ol = item.label == GroupLabel.ORDERED_LIST
+    #                 text = "\n".join(
+    #                     [
+    #                         # avoid additional marker on already evaled sublists
+    #                         (
+    #                             c
+    #                             if c and c[0] == " "
+    #                             else f"{ind_str}{f'{i + 1}.' if is_ol else '-'} {c}"
+    #                         )
+    #                         for i, c in enumerate(comps)
+    #                     ]
+    #                 )
+    #                 _ingest_text(
+    #                     text=text,
+    #                     # special chars have already been escaped as needed
+    #                     do_escape_html=False,
+    #                     do_escape_underscores=False,
+    #                 )
+    #             elif item.label == GroupLabel.INLINE:
+    #                 comps = self._get_markdown_components(
+    #                     node=item,
+    #                     from_element=from_element,
+    #                     to_element=to_element,
+    #                     labels=labels,
+    #                     strict_text=strict_text,
+    #                     escaping_underscores=escaping_underscores,
+    #                     image_placeholder=image_placeholder,
+    #                     image_mode=image_mode,
+    #                     indent=indent,
+    #                     text_width=text_width,
+    #                     page_no=page_no,
+    #                     included_content_layers=included_content_layers,
+    #                     list_level=list_level,
+    #                     is_inline_scope=True,
+    #                     visited=visited,
+    #                 )
+    #                 text = " ".join(comps)
+    #                 _ingest_text(
+    #                     text=text,
+    #                     # special chars have already been escaped as needed
+    #                     do_escape_html=False,
+    #                     do_escape_underscores=False,
+    #                 )
+    #             else:
+    #                 continue
 
-            elif (
-                isinstance(item, TextItem)
-                and item.label in [DocItemLabel.SECTION_HEADER]
-            ) or isinstance(item, SectionHeaderItem):
-                marker = ""
-                if not strict_text:
-                    marker = "#" * level
-                    if len(marker) < 2:
-                        marker = "##"
-                text = f"{marker} {item.text}"
-                _ingest_text(
-                    text.strip(), formatting=item.formatting, hyperlink=item.hyperlink
-                )
+    #         elif isinstance(item, TextItem) and item.label in [DocItemLabel.TITLE]:
+    #             marker = "" if strict_text else "#"
+    #             text = f"{marker} {item.text}"
+    #             _ingest_text(
+    #                 text.strip(), formatting=item.formatting, hyperlink=item.hyperlink
+    #             )
 
-            elif isinstance(item, CodeItem):
-                text = f"`{item.text}`" if is_inline_scope else f"```\n{item.text}\n```"
-                _ingest_text(
-                    text,
-                    do_escape_underscores=False,
-                    do_escape_html=False,
-                    formatting=item.formatting,
-                    hyperlink=item.hyperlink,
-                )
+    #         elif (
+    #             isinstance(item, TextItem)
+    #             and item.label in [DocItemLabel.SECTION_HEADER]
+    #         ) or isinstance(item, SectionHeaderItem):
+    #             marker = ""
+    #             if not strict_text:
+    #                 marker = "#" * level
+    #                 if len(marker) < 2:
+    #                     marker = "##"
+    #             text = f"{marker} {item.text}"
+    #             _ingest_text(
+    #                 text.strip(), formatting=item.formatting, hyperlink=item.hyperlink
+    #             )
 
-            elif isinstance(item, FormulaItem):
-                if item.text != "":
-                    _ingest_text(
-                        f"${item.text}$" if is_inline_scope else f"$${item.text}$$",
-                        do_escape_underscores=False,
-                        do_escape_html=False,
-                        formatting=item.formatting,
-                        hyperlink=item.hyperlink,
-                    )
-                elif item.orig != "":
-                    _ingest_text(
-                        "<!-- formula-not-decoded -->",
-                        do_escape_underscores=False,
-                        do_escape_html=False,
-                        formatting=item.formatting,
-                        hyperlink=item.hyperlink,
-                    )
+    #         elif isinstance(item, CodeItem):
+    #             text = (
+    #                 f"`{item.text}`" if is_inline_scope else f"```\n{item.text}\n```"
+    #             )
+    #             _ingest_text(
+    #                 text,
+    #                 do_escape_underscores=False,
+    #                 do_escape_html=False,
+    #                 formatting=item.formatting,
+    #                 hyperlink=item.hyperlink,
+    #             )
 
-            elif isinstance(item, TextItem):
-                if len(item.text) and text_width > 0:
-                    text = item.text
-                    wrapped_text = textwrap.fill(text, width=text_width)
-                    _ingest_text(
-                        wrapped_text,
-                        formatting=item.formatting,
-                        hyperlink=item.hyperlink,
-                    )
-                elif len(item.text):
-                    _ingest_text(
-                        item.text, formatting=item.formatting, hyperlink=item.hyperlink
-                    )
+    #         elif isinstance(item, FormulaItem):
+    #             if item.text != "":
+    #                 _ingest_text(
+    #                     f"${item.text}$" if is_inline_scope else f"$${item.text}$$",
+    #                     do_escape_underscores=False,
+    #                     do_escape_html=False,
+    #                     formatting=item.formatting,
+    #                     hyperlink=item.hyperlink,
+    #                 )
+    #             elif item.orig != "":
+    #                 _ingest_text(
+    #                     "<!-- formula-not-decoded -->",
+    #                     do_escape_underscores=False,
+    #                     do_escape_html=False,
+    #                     formatting=item.formatting,
+    #                     hyperlink=item.hyperlink,
+    #                 )
 
-            elif isinstance(item, TableItem) and not strict_text:
-                if caption_text := item.caption_text(self):
-                    _ingest_text(caption_text)
-                md_table = item.export_to_markdown()
-                _ingest_text(md_table)
+    #         elif isinstance(item, TextItem):
+    #             if len(item.text) and text_width > 0:
+    #                 text = item.text
+    #                 wrapped_text = textwrap.fill(text, width=text_width)
+    #                 _ingest_text(
+    #                     wrapped_text,
+    #                     formatting=item.formatting,
+    #                     hyperlink=item.hyperlink,
+    #                 )
+    #             elif len(item.text):
+    #                 _ingest_text(
+    #                     item.text,
+    #                     formatting=item.formatting,
+    #                     hyperlink=item.hyperlink,
+    #                 )
 
-            elif isinstance(item, PictureItem) and not strict_text:
-                _ingest_text(item.caption_text(self))
+    #         elif isinstance(item, TableItem) and not strict_text:
+    #             if caption_text := item.caption_text(self):
+    #                 _ingest_text(caption_text)
+    #             md_table = item.export_to_markdown()
+    #             _ingest_text(md_table)
 
-                line = item.export_to_markdown(
-                    doc=self,
-                    image_placeholder=image_placeholder,
-                    image_mode=image_mode,
-                )
+    #         elif isinstance(item, PictureItem) and not strict_text:
+    #             _ingest_text(item.caption_text(self))
 
-                _ingest_text(line, do_escape_html=False, do_escape_underscores=False)
+    #             line = item.export_to_markdown(
+    #                 doc=self,
+    #                 image_placeholder=image_placeholder,
+    #                 image_mode=image_mode,
+    #             )
 
-            elif isinstance(item, (KeyValueItem, FormItem)):
-                text = item._export_to_markdown()
-                _ingest_text(text, do_escape_html=False, do_escape_underscores=False)
+    #             _ingest_text(line, do_escape_html=False, do_escape_underscores=False)
 
-            elif isinstance(item, DocItem):
-                text = "<!-- missing-text -->"
-                _ingest_text(text, do_escape_html=False, do_escape_underscores=False)
+    #         elif isinstance(item, (KeyValueItem, FormItem)):
+    #             text = item._export_to_markdown()
+    #             _ingest_text(text, do_escape_html=False, do_escape_underscores=False)
 
-        return components
+    #         elif isinstance(item, DocItem):
+    #             text = "<!-- missing-text -->"
+    #             _ingest_text(text, do_escape_html=False, do_escape_underscores=False)
+
+    #     return components
 
     def export_to_text(  # noqa: C901
         self,
