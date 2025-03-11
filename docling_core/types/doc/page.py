@@ -152,6 +152,21 @@ class BoundingRectangle(BaseModel):
             coord_origin=self.coord_origin,
         )
 
+    @classmethod
+    def from_bounding_box(cls, bbox: BoundingBox) -> "BoundingRectangle":
+        """Convert a BoundingBox into a BoundingRectangle."""
+        return cls(
+            r_x0=bbox.l,
+            r_y0=bbox.b,
+            r_x2=bbox.r,
+            r_y2=bbox.t,
+            r_x1=bbox.r,
+            r_y1=bbox.b,
+            r_x3=bbox.l,
+            r_y3=bbox.t,
+            coord_origin=bbox.coord_origin,
+        )
+
     def to_polygon(self) -> List[Tuple[float, float]]:
         """Convert to a list of point coordinates forming a polygon."""
         return [
