@@ -13,7 +13,6 @@ from pydantic import AnyUrl, ValidationError
 from docling_core.types.doc.base import BoundingBox, CoordOrigin, ImageRefMode, Size
 from docling_core.types.doc.document import (  # BoundingBox,
     CURRENT_VERSION,
-    DEFAULT_EXPORT_LABELS,
     CodeItem,
     ContentLayer,
     DocItem,
@@ -476,13 +475,7 @@ def _test_export_methods(doc: DoclingDocument, filename: str):
     _verify_regression_test(et_pred, filename=filename, ext="et")
 
     # Export stuff
-    labels = DEFAULT_EXPORT_LABELS.union(
-        {
-            DocItemLabel.KEY_VALUE_REGION,
-            DocItemLabel.FORM,
-        }
-    )
-    md_pred = doc.export_to_markdown(labels=labels)
+    md_pred = doc.export_to_markdown()
     _verify_regression_test(md_pred, filename=filename, ext="md")
 
     # Test sHTML export ...

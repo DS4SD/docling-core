@@ -5,10 +5,11 @@
 
 """Define classes for Markdown serialization."""
 import html
+import textwrap
 from pathlib import Path
 from typing import Optional, Union
 
-from pydantic import AnyUrl
+from pydantic import AnyUrl, BaseModel, PositiveInt
 from tabulate import tabulate
 from typing_extensions import override
 
@@ -20,6 +21,7 @@ from docling_core.transforms.serializer import (
     BaseTextSerializer,
 )
 from docling_core.transforms.serializer.base import (
+    BaseFallbackSerializer,
     BaseFormSerializer,
     BaseInlineSerializer,
     BaseKeyValueSerializer,
@@ -28,6 +30,7 @@ from docling_core.transforms.serializer.base import (
 from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.document import (
     CodeItem,
+    DocItem,
     DoclingDocument,
     Formatting,
     FormItem,
@@ -35,6 +38,7 @@ from docling_core.types.doc.document import (
     ImageRef,
     InlineGroup,
     KeyValueItem,
+    NodeItem,
     OrderedList,
     PictureItem,
     SectionHeaderItem,
@@ -45,8 +49,10 @@ from docling_core.types.doc.document import (
 )
 
 
-class MarkdownTextSerializer(BaseTextSerializer):
+class MarkdownTextSerializer(BaseModel, BaseTextSerializer):
     """Markdown-specific text item serializer."""
+
+    wrap_width: Optional[PositiveInt] = None
 
     @override
     def serialize(
@@ -68,8 +74,15 @@ class MarkdownTextSerializer(BaseTextSerializer):
             res = f"`{item.text}`" if is_inline_scope else f"```\n{item.text}\n```"
             do_escape_html = False
         elif isinstance(item, FormulaItem):
-            res = f"${item.text}$" if is_inline_scope else f"$${item.text}$$"
-            do_escape_html = False  # TODO: review
+            if item.text:
+                res = f"${item.text}$" if is_inline_scope else f"$${item.text}$$"
+            elif item.orig:
+                res = "<!-- formula-not-decoded -->"
+            else:
+                res = ""
+            do_escape_html = False
+        elif self.wrap_width:
+            res = textwrap.fill(item.text, width=self.wrap_width)
         else:
             res = item.text
         res = doc_serializer.post_process(
@@ -96,32 +109,35 @@ class MarkdownTableSerializer(BaseTableSerializer):
         """Serializes the passed item."""
         text_parts: list[str] = []
 
-        if caption_txt := doc_serializer.serialize_captions(item=item).text:
+        if caption_txt := doc_serializer.serialize_captions(
+            item=item,
+        ).text:
             text_parts.append(caption_txt)
 
-        rows = [
-            [
-                # make sure that md tables are not broken
-                # due to newline chars in the text
-                col.text.replace("\n", " ")
-                for col in row
+        if item.self_ref not in doc_serializer.excluded:
+            rows = [
+                [
+                    # make sure that md tables are not broken
+                    # due to newline chars in the text
+                    col.text.replace("\n", " ")
+                    for col in row
+                ]
+                for row in item.data.grid
             ]
-            for row in item.data.grid
-        ]
-        if len(rows) > 1 and len(rows[0]) > 0:
-            try:
-                table_text = tabulate(rows[1:], headers=rows[0], tablefmt="github")
-            except ValueError:
-                table_text = tabulate(
-                    rows[1:],
-                    headers=rows[0],
-                    tablefmt="github",
-                    disable_numparse=True,
-                )
-        else:
-            table_text = ""
-        if table_text:
-            text_parts.append(table_text)
+            if len(rows) > 1 and len(rows[0]) > 0:
+                try:
+                    table_text = tabulate(rows[1:], headers=rows[0], tablefmt="github")
+                except ValueError:
+                    table_text = tabulate(
+                        rows[1:],
+                        headers=rows[0],
+                        tablefmt="github",
+                        disable_numparse=True,
+                    )
+            else:
+                table_text = ""
+            if table_text:
+                text_parts.append(table_text)
 
         text_res = "\n\n".join(text_parts)
 
@@ -138,6 +154,7 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         item: PictureItem,
         doc_serializer: BaseDocSerializer,
         doc: DoclingDocument,
+        image_placeholder: str,
         image_mode: ImageRefMode,
         **kwargs,
     ) -> SerializationResult:
@@ -151,13 +168,15 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         if cap_res.text:
             texts.append(cap_res.text)
 
-        img_res = self._serialize_image_part(
-            item=item,
-            doc=doc,
-            image_mode=image_mode,
-        )
-        if img_res.text:
-            texts.append(img_res.text)
+        if item.self_ref not in doc_serializer.excluded:
+            img_res = self._serialize_image_part(
+                item=item,
+                doc=doc,
+                image_placeholder=image_placeholder,
+                image_mode=image_mode,
+            )
+            if img_res.text:
+                texts.append(img_res.text)
 
         text_res = "\n\n".join(texts)
 
@@ -167,17 +186,17 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         self,
         item: PictureItem,
         doc: DoclingDocument,
+        image_placeholder: str,
         image_mode: ImageRefMode,
         **kwargs,
     ) -> SerializationResult:
-        default_response = "<!-- image -->"
         error_response = (
             "<!-- 🖼️❌ Image not available. "
             "Please use `PdfPipelineOptions(generate_picture_images=True)`"
             " -->"
         )
         if image_mode == ImageRefMode.PLACEHOLDER:
-            text_res = default_response
+            text_res = image_placeholder
         elif image_mode == ImageRefMode.EMBEDDED:
             # short-cut: we already have the image in base64
             if (
@@ -202,11 +221,11 @@ class MarkdownPictureSerializer(BasePictureSerializer):
             if not isinstance(item.image, ImageRef) or (
                 isinstance(item.image.uri, AnyUrl) and item.image.uri.scheme == "data"
             ):
-                text_res = default_response
+                text_res = image_placeholder
             else:
                 text_res = f"![Image]({str(item.image.uri)})"
         else:
-            text_res = default_response
+            text_res = image_placeholder
 
         return SerializationResult(text=text_res)
 
@@ -225,7 +244,11 @@ class MarkdownKeyValueSerializer(BaseKeyValueSerializer):
     ) -> SerializationResult:
         """Serializes the passed item."""
         # TODO add actual implementation
-        text_res = "<!-- missing-key-value-item -->"
+        text_res = (
+            "<!-- missing-key-value-item -->"
+            if item.self_ref not in doc_serializer.excluded
+            else ""
+        )
         return SerializationResult(text=text_res)
 
 
@@ -243,12 +266,18 @@ class MarkdownFormSerializer(BaseFormSerializer):
     ) -> SerializationResult:
         """Serializes the passed item."""
         # TODO add actual implementation
-        text_res = "<!-- missing-form-item -->"
+        text_res = (
+            "<!-- missing-form-item -->"
+            if item.self_ref not in doc_serializer.excluded
+            else ""
+        )
         return SerializationResult(text=text_res)
 
 
-class MarkdownListSerializer(BaseListSerializer):
+class MarkdownListSerializer(BaseModel, BaseListSerializer):
     """Markdown-specific list serializer."""
+
+    indent: int = 4
 
     @override
     def serialize(
@@ -280,8 +309,7 @@ class MarkdownListSerializer(BaseListSerializer):
             is_inline_scope=is_inline_scope,
             visited=my_visited,
         )
-        intent_len = 4
-        indent_str = list_level * intent_len * " "
+        indent_str = list_level * self.indent * " "
         is_ol = isinstance(item, OrderedList)
         text_res = "\n".join(
             [
@@ -335,7 +363,7 @@ class MarkdownInlineSerializer(BaseInlineSerializer):
             is_inline_scope=True,
             visited=my_visited,
         )
-        text_res = " ".join([p.text for p in parts])
+        text_res = " ".join([p.text for p in parts if p.text])
         # text = self._post_process(
         #     text=text,
         #     do_escape_html=False,  # already escaped as needed
@@ -345,16 +373,59 @@ class MarkdownInlineSerializer(BaseInlineSerializer):
         return SerializationResult(text=text_res)
 
 
+class MarkdownFallbackSerializer(BaseFallbackSerializer):
+    """Markdown-specific fallback serializer."""
+
+    @override
+    def serialize(
+        self,
+        *,
+        item: NodeItem,
+        doc_serializer: "BaseDocSerializer",
+        doc: DoclingDocument,
+        **kwargs,
+    ) -> SerializationResult:
+        """Serializes the passed item."""
+        if isinstance(item, DocItem):
+            text_res = "<!-- missing-text -->"
+        else:
+            text_res = ""  # TODO go with explicit None return type?
+        return SerializationResult(text=text_res)
+
+
 class MarkdownDocSerializer(BaseDocSerializer):
     """Markdown-specific document serializer."""
 
+    # text_serializer: BaseTextSerializer = None  # type: ignore[assignment]
     text_serializer: BaseTextSerializer = MarkdownTextSerializer()
     table_serializer: BaseTableSerializer = MarkdownTableSerializer()
     picture_serializer: BasePictureSerializer = MarkdownPictureSerializer()
     key_value_serializer: BaseKeyValueSerializer = MarkdownKeyValueSerializer()
     form_serializer: BaseFormSerializer = MarkdownFormSerializer()
+    fallback_serializer: BaseFallbackSerializer = MarkdownFallbackSerializer()
+
+    # list_serializer: BaseListSerializer = None  # type: ignore[assignment]
     list_serializer: BaseListSerializer = MarkdownListSerializer()
     inline_serializer: BaseInlineSerializer = MarkdownInlineSerializer()
+
+    # # format-specific
+    # indent: Optional[int] = None
+    # wrap_width: Optional[PositiveInt] = None
+
+    # @model_validator(mode="before")
+    # @classmethod
+    # def _create(cls, data):
+    #     if data.get(key := "text_serializer") is None:
+    #         kwargs = {}
+    #         if (wrap_width := data.get("wrap_width")) is not None:
+    #             kwargs["wrap_width"] = wrap_width
+    #         data[key] = MarkdownTextSerializer(**kwargs)
+    #     if data.get(key := "list_serializer") is None:
+    #         kwargs = {}
+    #         if (indent := data.get("indent")) is not None:
+    #             kwargs["indent"] = indent
+    #         data[key] = MarkdownListSerializer(**kwargs)
+    #     return data
 
     @override
     def serialize_bold(self, text: str):
@@ -403,5 +474,5 @@ class MarkdownDocSerializer(BaseDocSerializer):
     def serialize(self, **kwargs) -> SerializationResult:
         """Run the serialization."""
         parts = self.get_parts()
-        text_res = "\n\n".join([p.text for p in parts])
+        text_res = "\n\n".join([p.text for p in parts if p.text])
         return SerializationResult(text=text_res)
