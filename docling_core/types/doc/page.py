@@ -295,6 +295,8 @@ class PdfTextCell(TextCell):
             data["text_direction"] = (
                 "left_to_right" if data["left_to_right"] else "right_to_left"
             )
+        if "id" in data:
+            data["index"] = data["id"]
         return data
 
 
