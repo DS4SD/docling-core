@@ -523,6 +523,19 @@ class ImageRef(BaseModel):
         )
 
 
+class DocTagsPage(BaseModel):
+    """DocTagsPage."""
+
+    tokens: str
+    image: Optional[ImageRef] = None
+
+
+class DocTagsDocument(BaseModel):
+    """DocTagsDocument."""
+
+    pages: List[DocTagsPage] = []
+
+
 class ProvenanceItem(BaseModel):
     """ProvenanceItem."""
 
