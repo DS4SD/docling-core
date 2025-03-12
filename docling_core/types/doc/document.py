@@ -38,7 +38,7 @@ from pydantic import (
     model_validator,
 )
 from tabulate import tabulate
-from typing_extensions import Annotated, Self
+from typing_extensions import Annotated, Self, deprecated
 
 from docling_core.search.package import VERSION_PATTERN
 from docling_core.types.base import _JSON_POINTER_REGEX
@@ -526,14 +526,41 @@ class ImageRef(BaseModel):
 class DocTagsPage(BaseModel):
     """DocTagsPage."""
 
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     tokens: str
-    image: Optional[ImageRef] = None
+    image: Optional[PILImage.Image] = None
 
 
 class DocTagsDocument(BaseModel):
     """DocTagsDocument."""
 
     pages: List[DocTagsPage] = []
+
+    @classmethod
+    def from_doctags_and_image_pairs(
+        cls, doctags: List[Union[Path, str]], images: List[Union[Path, PILImage.Image]]
+    ):
+        """from_doctags_and_image_pairs."""
+        doctags_doc = cls()
+
+        pages = []
+        for dt, img in zip(doctags, images):
+            if isinstance(dt, Path):
+                with dt.open("r") as fp:
+                    dt = fp.read()
+            elif isinstance(dt, str):
+                pass
+
+            if isinstance(img, Path):
+                img = PILImage.open(img)
+            elif isinstance(dt, PILImage.Image):
+                pass
+
+            page = DocTagsPage(tokens=dt, image=img)
+            pages.append(page)
+
+        return doctags_doc
 
 
 class ProvenanceItem(BaseModel):
@@ -2964,10 +2991,11 @@ class DoclingDocument(BaseModel):
 
         return html_text
 
-    def load_from_document_tokens(  # noqa: C901
+    def load_from_doctags(  # noqa: C901
         self,
-        pages_doctags: List[str],
-        pages_images: List[PILImage.Image],
+        # pages_doctags: List[str],
+        # pages_images: List[PILImage.Image],
+        doctag_document: DocTagsDocument,
     ) -> "DoclingDocument":
         r"""Load Docling document from lists of DocTags and Images."""
         # Maps the recognized tag to a Docling label.
@@ -3161,14 +3189,19 @@ class DoclingDocument(BaseModel):
             )
 
         # doc = DoclingDocument(name="Document")
-        for pg_idx, page_doctags in enumerate(pages_doctags):
-            image = pages_images[pg_idx]
+        for pg_idx, doctag_page in enumerate(doctag_document.pages):
+            page_doctags = doctag_page.tokens
+            image = doctag_page.image
 
             page_no = pg_idx + 1
             # bounding_boxes = []
 
-            pg_width = image.width
-            pg_height = image.height
+            if image is not None:
+                pg_width = image.width
+                pg_height = image.height
+            else:
+                pg_width = 1
+                pg_height = 1
 
             """
             1. Finds all <tag>...</tag>
@@ -3201,12 +3234,12 @@ class DoclingDocument(BaseModel):
                 full_chunk = match.group(0)
                 tag_name = match.group("tag")
 
-                bbox = extract_bounding_box(full_chunk)
+                bbox = extract_bounding_box(full_chunk) if image else None
                 doc_label = tag_to_doclabel.get(tag_name, DocItemLabel.PARAGRAPH)
 
                 if tag_name == DocumentToken.OTSL.value:
                     table_data = parse_table_content(full_chunk)
-                    bbox = extract_bounding_box(full_chunk)
+                    bbox = extract_bounding_box(full_chunk) if image else None
 
                     if bbox:
                         prov = ProvenanceItem(
@@ -3290,7 +3323,7 @@ class DoclingDocument(BaseModel):
                             enum_marker = str(enum_value) + "."
 
                         li_full_chunk = li_match.group(0)
-                        li_bbox = extract_bounding_box(li_full_chunk)
+                        li_bbox = extract_bounding_box(li_full_chunk) if image else None
                         text_content = extract_inner_text(li_full_chunk)
                         # Add list:
                         new_list = self.add_group(label=list_label, name="list")
@@ -3328,7 +3361,12 @@ class DoclingDocument(BaseModel):
                     )
         return self
 
-    def save_as_document_tokens(
+    @deprecated("Use save_as_doctags instead.")
+    def save_as_document_tokens(self, *args, **kwargs):
+        r"""Save the document content to a DocumentToken format."""
+        return self.save_as_doctags(*args, **kwargs)
+
+    def save_as_doctags(
         self,
         filename: Path,
         delim: str = "",
@@ -3344,7 +3382,7 @@ class DoclingDocument(BaseModel):
         add_table_cell_location: bool = False,
         add_table_cell_text: bool = True,
     ):
-        r"""Save the document content to a DocumentToken format."""
+        r"""Save the document content to DocTags format."""
         out = self.export_to_document_tokens(
             delim=delim,
             from_element=from_element,
