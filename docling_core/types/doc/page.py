@@ -142,13 +142,21 @@ class BoundingRectangle(BaseModel):
 
     def to_bounding_box(self) -> BoundingBox:
         """Convert to a BoundingBox representation."""
-        # FIXME: This code looks dangerous in assuming x0,y0 is
-        #  bottom-left most and x2,y2 is top-right most...
+        if self.coord_origin == CoordOrigin.BOTTOMLEFT:
+            top = max([self.r_y0, self.r_y1, self.r_y2, self.r_y3])
+            bottom = min([self.r_y0, self.r_y1, self.r_y2, self.r_y3])
+        else:
+            top = min([self.r_y0, self.r_y1, self.r_y2, self.r_y3])
+            bottom = max([self.r_y0, self.r_y1, self.r_y2, self.r_y3])
+
+        left = min([self.r_x0, self.r_x1, self.r_x2, self.r_x3])
+        right = max([self.r_x0, self.r_x1, self.r_x2, self.r_x3])
+
         return BoundingBox(
-            l=self.r_x0,
-            b=self.r_y0,
-            r=self.r_x2,
-            t=self.r_y2,
+            l=left,
+            b=bottom,
+            r=right,
+            t=top,
             coord_origin=self.coord_origin,
         )
 
