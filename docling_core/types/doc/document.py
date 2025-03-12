@@ -542,6 +542,8 @@ class DocTagsDocument(BaseModel):
         cls, doctags: List[Union[Path, str]], images: List[Union[Path, PILImage.Image]]
     ):
         """from_doctags_and_image_pairs."""
+        if len(doctags) != len(images):
+            raise ValueError("Number of page doctags must be equal to page images!")
         doctags_doc = cls()
 
         pages = []
