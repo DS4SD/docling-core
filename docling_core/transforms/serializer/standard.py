@@ -5,10 +5,11 @@
 
 """Define base classes for serialization."""
 import sys
+from functools import cached_property
 from pathlib import Path
 from typing import Optional, Union
 
-from pydantic import AnyUrl, BaseModel
+from pydantic import AnyUrl, BaseModel, computed_field
 from typing_extensions import override
 
 from docling_core.transforms.serializer.base import (
@@ -53,12 +54,15 @@ _DEFAULT_LABELS = DOCUMENT_TOKENS_EXPORT_LABELS
 class DocSerializer(BaseModel, BaseDocSerializer):
     """Class for document serializers."""
 
+    class Config:
+        """Pydantic config."""
+
+        arbitrary_types_allowed = True
+
     doc: DoclingDocument
 
-    include_formatting: bool = True  # added here since applied on text globally
-    include_hyperlinks: bool = True  # added here since applied on text globally
-    image_placeholder: str = "<!-- image -->"  # TODO this is too type-specific
-    image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER
+    include_formatting: bool = True
+    include_hyperlinks: bool = True
 
     # this filtering criteria are non-recursive;
     # e.g. if a list group node is outside the range and some of its children items are
@@ -79,10 +83,14 @@ class DocSerializer(BaseModel, BaseDocSerializer):
     list_serializer: BaseListSerializer
     inline_serializer: BaseInlineSerializer
 
-    @override
-    def get_excluded_nodes(self) -> list[str]:
-        """References to excluded items."""
-        _excluded: list[str] = [
+    # these will be passed to the picture serializer:
+    image_placeholder: Optional[str] = None
+    image_mode: Optional[ImageRefMode] = None
+
+    @computed_field  # type: ignore[misc]
+    @cached_property
+    def _excluded_refs(self) -> list[str]:
+        refs: list[str] = [
             item.self_ref
             for ix, (item, _) in enumerate(
                 self.doc.iterate_items(
@@ -108,12 +116,12 @@ class DocSerializer(BaseModel, BaseDocSerializer):
                 )
             )
         ]
-        return _excluded
+        return refs
 
-    class Config:
-        """Pydantic config."""
-
-        arbitrary_types_allowed = True
+    @override
+    def get_excluded_nodes(self) -> list[str]:
+        """References to excluded items."""
+        return self._excluded_refs
 
     # making some assumptions about the kwargs it can pass
     @override
@@ -206,8 +214,8 @@ class DocSerializer(BaseModel, BaseDocSerializer):
                     doc_serializer=self,
                     doc=self.doc,
                     visited=my_visited,
-                    image_placeholder=self.image_placeholder,
                     image_mode=self.image_mode,
+                    image_placeholder=self.image_placeholder,
                 )
             elif isinstance(item, KeyValueItem):
                 part = self.key_value_serializer.serialize(

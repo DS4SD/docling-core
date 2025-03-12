@@ -153,11 +153,18 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         item: PictureItem,
         doc_serializer: BaseDocSerializer,
         doc: DoclingDocument,
-        image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
-        image_placeholder: str = "<!-- image -->",
+        image_mode: Optional[ImageRefMode] = None,
+        image_placeholder: Optional[str] = None,
         **kwargs,
     ) -> SerializationResult:
         """Serializes the passed item."""
+        my_image_mode = (
+            image_mode if image_mode is not None else ImageRefMode.PLACEHOLDER
+        )
+        my_image_placeholder = (
+            image_placeholder if image_placeholder is not None else "<!-- image -->"
+        )
+
         texts: list[str] = []
 
         cap_res = doc_serializer.serialize_captions(
@@ -171,8 +178,8 @@ class MarkdownPictureSerializer(BasePictureSerializer):
             img_res = self._serialize_image_part(
                 item=item,
                 doc=doc,
-                image_mode=image_mode,
-                image_placeholder=image_placeholder,
+                image_mode=my_image_mode,
+                image_placeholder=my_image_placeholder,
             )
             if img_res.text:
                 texts.append(img_res.text)
