@@ -13,20 +13,19 @@ from pydantic import AnyUrl, BaseModel, PositiveInt
 from tabulate import tabulate
 from typing_extensions import override
 
-from docling_core.transforms.serializer import (
-    BaseDocSerializer,
-    BaseListSerializer,
-    BasePictureSerializer,
-    BaseTableSerializer,
-    BaseTextSerializer,
-)
 from docling_core.transforms.serializer.base import (
+    BaseDocSerializer,
     BaseFallbackSerializer,
     BaseFormSerializer,
     BaseInlineSerializer,
     BaseKeyValueSerializer,
+    BaseListSerializer,
+    BasePictureSerializer,
+    BaseTableSerializer,
+    BaseTextSerializer,
     SerializationResult,
 )
+from docling_core.transforms.serializer.standard import DocSerializer
 from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.document import (
     CodeItem,
@@ -114,7 +113,7 @@ class MarkdownTableSerializer(BaseTableSerializer):
         ).text:
             text_parts.append(caption_txt)
 
-        if item.self_ref not in doc_serializer.excluded:
+        if item.self_ref not in doc_serializer.get_excluded_nodes():
             rows = [
                 [
                     # make sure that md tables are not broken
@@ -154,8 +153,8 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         item: PictureItem,
         doc_serializer: BaseDocSerializer,
         doc: DoclingDocument,
-        image_placeholder: str,
-        image_mode: ImageRefMode,
+        image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
+        image_placeholder: str = "<!-- image -->",
         **kwargs,
     ) -> SerializationResult:
         """Serializes the passed item."""
@@ -168,12 +167,12 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         if cap_res.text:
             texts.append(cap_res.text)
 
-        if item.self_ref not in doc_serializer.excluded:
+        if item.self_ref not in doc_serializer.get_excluded_nodes():
             img_res = self._serialize_image_part(
                 item=item,
                 doc=doc,
-                image_placeholder=image_placeholder,
                 image_mode=image_mode,
+                image_placeholder=image_placeholder,
             )
             if img_res.text:
                 texts.append(img_res.text)
@@ -186,8 +185,8 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         self,
         item: PictureItem,
         doc: DoclingDocument,
-        image_placeholder: str,
         image_mode: ImageRefMode,
+        image_placeholder: str,
         **kwargs,
     ) -> SerializationResult:
         error_response = (
@@ -246,7 +245,7 @@ class MarkdownKeyValueSerializer(BaseKeyValueSerializer):
         # TODO add actual implementation
         text_res = (
             "<!-- missing-key-value-item -->"
-            if item.self_ref not in doc_serializer.excluded
+            if item.self_ref not in doc_serializer.get_excluded_nodes()
             else ""
         )
         return SerializationResult(text=text_res)
@@ -268,7 +267,7 @@ class MarkdownFormSerializer(BaseFormSerializer):
         # TODO add actual implementation
         text_res = (
             "<!-- missing-form-item -->"
-            if item.self_ref not in doc_serializer.excluded
+            if item.self_ref not in doc_serializer.get_excluded_nodes()
             else ""
         )
         return SerializationResult(text=text_res)
@@ -286,8 +285,8 @@ class MarkdownListSerializer(BaseModel, BaseListSerializer):
         item: Union[UnorderedList, OrderedList],
         doc_serializer: "BaseDocSerializer",
         doc: DoclingDocument,
-        list_level: int,
-        is_inline_scope: bool,
+        list_level: int = 0,
+        is_inline_scope: bool = False,
         visited: Optional[set[str]] = None,  # refs of visited items
         **kwargs,
     ) -> SerializationResult:
@@ -341,7 +340,7 @@ class MarkdownInlineSerializer(BaseInlineSerializer):
         item: InlineGroup,
         doc_serializer: "BaseDocSerializer",
         doc: DoclingDocument,
-        list_level: int,
+        list_level: int = 0,
         visited: Optional[set[str]] = None,  # refs of visited items
         **kwargs,
     ) -> SerializationResult:
@@ -393,7 +392,7 @@ class MarkdownFallbackSerializer(BaseFallbackSerializer):
         return SerializationResult(text=text_res)
 
 
-class MarkdownDocSerializer(BaseDocSerializer):
+class MarkdownDocSerializer(DocSerializer):
     """Markdown-specific document serializer."""
 
     # text_serializer: BaseTextSerializer = None  # type: ignore[assignment]
@@ -428,22 +427,22 @@ class MarkdownDocSerializer(BaseDocSerializer):
     #     return data
 
     @override
-    def serialize_bold(self, text: str):
+    def serialize_bold(self, text: str, **kwargs):
         """Apply Markdown-specific bold serialization."""
         return f"**{text}**"
 
     @override
-    def serialize_italic(self, text: str):
+    def serialize_italic(self, text: str, **kwargs):
         """Apply Markdown-specific italic serialization."""
         return f"*{text}*"
 
     @override
-    def serialize_strikethrough(self, text: str):
+    def serialize_strikethrough(self, text: str, **kwargs):
         """Apply Markdown-specific strikethrough serialization."""
         return f"~~{text}~~"
 
     @override
-    def serialize_hyperlink(self, text: str, hyperlink: Union[AnyUrl, Path]):
+    def serialize_hyperlink(self, text: str, hyperlink: Union[AnyUrl, Path], **kwargs):
         """Apply Markdown-specific hyperlink serialization."""
         return f"[{text}]({str(hyperlink)})"
 
