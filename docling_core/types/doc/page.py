@@ -286,11 +286,27 @@ class TextCell(ColorMixin, OrderedElement):
         self.rect = self.rect.to_top_left_origin(page_height=page_height)
 
 
+class PdfCellRenderingMode(int, Enum):
+    """Text Rendering Mode, according to PDF32000."""
+
+    FILL_TEXT = 0
+    STROKE_TEXT = 1
+    FILL_THEN_STROKE = 2
+    INVISIBLE = 3
+    FILL_AND_CLIPPING = 4
+    STROKE_AND_CLIPPING = 5
+    FILL_THEN_STROKE_AND_CLIPPING = 6
+    ONLY_CLIPPING = 7
+    UNKNOWN = -1
+
+
 class PdfTextCell(TextCell):
     """Specialized text cell for PDF documents with font information."""
 
-    rendering_mode: int  # Turn into enum (PDF32000 Text Rendering Mode)
-    widget: bool  # Is this a fillable field?
+    rendering_mode: (
+        PdfCellRenderingMode  # Turn into enum (PDF32000 Text Rendering Mode)
+    )
+    widget: bool  # Determines if this belongs to fillable PDF field.
 
     font_key: str
     font_name: str
