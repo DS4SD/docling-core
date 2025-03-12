@@ -2994,8 +2994,6 @@ class DoclingDocument(BaseModel):
 
     def load_from_doctags(  # noqa: C901
         self,
-        # pages_doctags: List[str],
-        # pages_images: List[PILImage.Image],
         doctag_document: DocTagsDocument,
     ) -> "DoclingDocument":
         r"""Load Docling document from lists of DocTags and Images."""
