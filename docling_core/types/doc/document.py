@@ -3314,7 +3314,7 @@ class DoclingDocument(BaseModel):
                     )
                     li_pattern = re.compile(list_item_pattern, re.DOTALL)
                     # Add list group:
-
+                    new_list = self.add_group(label=list_label, name="list")
                     # Pricess list items
                     for li_match in li_pattern.finditer(full_chunk):
                         enum_value += 1
@@ -3324,8 +3324,6 @@ class DoclingDocument(BaseModel):
                         li_full_chunk = li_match.group(0)
                         li_bbox = extract_bounding_box(li_full_chunk) if image else None
                         text_content = extract_inner_text(li_full_chunk)
-                        # Add list:
-                        new_list = self.add_group(label=list_label, name="list")
                         # Add list item
                         self.add_list_item(
                             marker=enum_marker,
