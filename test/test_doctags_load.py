@@ -1,16 +1,30 @@
+from pathlib import Path
+
 from PIL import Image as PILImage
 
 from docling_core.types.doc import DoclingDocument
 from docling_core.types.doc.document import DocTagsDocument
 
-pg_doctags = "Assistant: <doctag><page_header><loc_159><loc_60><loc_366><loc_66>Header</page_header><text><loc_109><loc_78><loc_393><loc_97>Hello World</text></doctag><end_of_utterance>"
 
-
-def test_doctags_load():
+def test_doctags_load_from_files():
     doc = DoclingDocument(name="Document")
-    pg_image = PILImage.new("RGB", (500, 500), "white")
 
-    doctags_doc = DocTagsDocument.from_doctags_and_image_pairs([pg_doctags], [pg_image])
+    doctags_doc = DocTagsDocument.from_doctags_and_image_pairs(
+        [Path("test/test/data/doc/page_with_pic.doctags")],
+        [Path("test/test/data/doc/page_with_pic.png")],
+    )
+
+    doc.load_from_doctags(doctags_doc)
+    # print(doc.export_to_html())
+
+
+def test_doctags_load_from_memory():
+    doc = DoclingDocument(name="Document")
+
+    doctags = Path("test/test/data/doc/page_with_pic.doctags").open("r").read()
+    image = PILImage.open(Path("test/test/data/doc/page_with_pic.png"))
+
+    doctags_doc = DocTagsDocument.from_doctags_and_image_pairs([doctags], [image])
 
     doc.load_from_doctags(doctags_doc)
     # print(doc.export_to_html())

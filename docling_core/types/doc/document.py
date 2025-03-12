@@ -560,6 +560,7 @@ class DocTagsDocument(BaseModel):
             page = DocTagsPage(tokens=dt, image=img)
             pages.append(page)
 
+        doctags_doc.pages = pages
         return doctags_doc
 
 
