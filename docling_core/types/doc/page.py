@@ -319,8 +319,8 @@ class PdfTextCell(TextCell):
             data["text_direction"] = (
                 "left_to_right" if data["left_to_right"] else "right_to_left"
             )
-        if "ordering" in data:
-            data["index"] = data["ordering"]
+        # if "ordering" in data:
+        #    data["index"] = data["ordering"]
         return data
 
 
