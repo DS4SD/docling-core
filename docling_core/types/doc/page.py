@@ -281,8 +281,8 @@ class TextCell(ColorMixin, OrderedElement):
 class PdfTextCell(TextCell):
     """Specialized text cell for PDF documents with font information."""
 
-    rendering_mode: int  # What is this?
-    widget: bool  # What is this?
+    rendering_mode: int  # Turn into enum (PDF32000 Text Rendering Mode)
+    widget: bool  # Is this a fillable field?
 
     font_key: str
     font_name: str
