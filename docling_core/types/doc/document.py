@@ -904,17 +904,16 @@ class PictureItem(FloatingItem):
     def export_to_markdown(
         self,
         doc: "DoclingDocument",
-        add_caption: bool = True,  # deprecate
+        add_caption: bool = True,  # deprecated
         image_mode: ImageRefMode = ImageRefMode.EMBEDDED,
         image_placeholder: str = "<!-- image -->",
     ) -> str:
         """Export picture to Markdown format."""
-        from docling_core.transforms.serializer.markdown import MarkdownDocSerializer
+        from docling_core.experimental.serializer.markdown import MarkdownDocSerializer
 
         if not add_caption:
-            warnings.warn(
-                "Argument `add_caption` is deprecated.",
-                DeprecationWarning,
+            _logger.warning(
+                "Argument `add_caption` is deprecated and will be ignored.",
             )
 
         serializer = MarkdownDocSerializer(
@@ -928,57 +927,11 @@ class PictureItem(FloatingItem):
                 doc=doc,
                 image_mode=image_mode,
                 image_placeholder=image_placeholder,
-                # TODO: decide on rest of params (drop / deprecate / propagate)
             ).text
             if serializer.picture_serializer
             else ""
         )
         return text
-
-        # """Export picture to Markdown format."""
-        # default_response = image_placeholder
-        # error_response = (
-        #     "<!-- 🖼️❌ Image not available. "
-        #     "Please use `PdfPipelineOptions(generate_picture_images=True)`"
-        #     " -->"
-        # )
-
-        # if image_mode == ImageRefMode.PLACEHOLDER:
-        #     return default_response
-
-        # elif image_mode == ImageRefMode.EMBEDDED:
-
-        #     # short-cut: we already have the image in base64
-        #     if (
-        #         isinstance(self.image, ImageRef)
-        #         and isinstance(self.image.uri, AnyUrl)
-        #         and self.image.uri.scheme == "data"
-        #     ):
-        #         text = f"![Image]({self.image.uri})"
-        #         return text
-
-        #     # get the self.image._pil or crop it out of the page-image
-        #     img = self.get_image(doc)
-
-        #     if img is not None:
-        #         imgb64 = self._image_to_base64(img)
-        #         text = f"![Image](data:image/png;base64,{imgb64})"
-
-        #         return text
-        #     else:
-        #         return error_response
-
-        # elif image_mode == ImageRefMode.REFERENCED:
-        #     if not isinstance(self.image, ImageRef) or (
-        #         isinstance(self.image.uri, AnyUrl) and self.image.uri.scheme == "data"
-        #     ):
-        #         return default_response
-
-        #     text = f"![Image]({quote(str(self.image.uri))})"
-        #     return text
-
-        # else:
-        #     return default_response
 
     def export_to_html(
         self,
@@ -1156,7 +1109,7 @@ class TableItem(FloatingItem):
     def export_to_markdown(self, doc: Optional["DoclingDocument"] = None) -> str:
         """Export the table as markdown."""
         if doc is not None:
-            from docling_core.transforms.serializer.markdown import (
+            from docling_core.experimental.serializer.markdown import (
                 MarkdownDocSerializer,
             )
 
@@ -1174,10 +1127,9 @@ class TableItem(FloatingItem):
             )
             return text
         else:
-            warnings.warn(
+            _logger.warning(
                 "Usage of TableItem.export_to_markdown() without `doc` argument is "
                 "deprecated.",
-                DeprecationWarning,
             )
 
             table = []
@@ -1498,10 +1450,6 @@ class KeyValueItem(FloatingItem):
 
     graph: GraphData
 
-    def _export_to_markdown(self) -> str:
-        # TODO add actual implementation
-        return "<!-- missing-key-value-item -->"
-
 
 class FormItem(FloatingItem):
     """FormItem."""
@@ -1509,10 +1457,6 @@ class FormItem(FloatingItem):
     label: typing.Literal[DocItemLabel.FORM] = DocItemLabel.FORM
 
     graph: GraphData
-
-    def _export_to_markdown(self) -> str:
-        # TODO add actual implementation
-        return "<!-- missing-form-item -->"
 
 
 ContentItem = Annotated[
@@ -2556,7 +2500,7 @@ class DoclingDocument(BaseModel):
         self,
         filename: Path,
         artifacts_dir: Optional[Path] = None,
-        delim: str = "\n\n",  # TODO: deprecate
+        delim: str = "\n\n",
         from_element: int = 0,
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DOCUMENT_TOKENS_EXPORT_LABELS,
@@ -2599,16 +2543,16 @@ class DoclingDocument(BaseModel):
 
     def export_to_markdown(  # noqa: C901
         self,
-        delim: str = "\n\n",  # deprecated
+        delim: str = "\n\n",
         from_element: int = 0,
         to_element: int = sys.maxsize,
         labels: set[DocItemLabel] = DOCUMENT_TOKENS_EXPORT_LABELS,
-        strict_text: bool = False,  # deprecated
-        escaping_underscores: bool = True,  # TODO
+        strict_text: bool = False,
+        escaping_underscores: bool = True,
         image_placeholder: str = "<!-- image -->",
         image_mode: ImageRefMode = ImageRefMode.PLACEHOLDER,
         indent: int = 4,
-        text_width: int = -1,  # TODO
+        text_width: int = -1,
         page_no: Optional[int] = None,
         included_content_layers: set[ContentLayer] = DEFAULT_CONTENT_LAYERS,
     ) -> str:
@@ -2617,9 +2561,8 @@ class DoclingDocument(BaseModel):
         Operates on a slice of the document's body as defined through arguments
         from_element and to_element; defaulting to the whole document.
 
-        :param delim: Delimiter to use when concatenating the various
-                Markdown parts. (Default value = "\n").
-        :type delim: str = "\n"
+        :param delim: Deprecated.
+        :type delim: str = "\n\n"
         :param from_element: Body slicing start index (inclusive).
                 (Default value = 0).
         :type from_element: int = 0
@@ -2628,8 +2571,7 @@ class DoclingDocument(BaseModel):
         :type to_element: int = sys.maxsize
         :param labels: The set of document labels to include in the export.
         :type labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS
-        :param strict_text: bool: Whether to only include the text content
-            of the document. (Default value = False).
+        :param strict_text: Deprecated.
         :type strict_text: bool = False
         :param escaping_underscores: bool: Whether to escape underscores in the
             text content of the document. (Default value = True).
@@ -2646,7 +2588,7 @@ class DoclingDocument(BaseModel):
         :returns: The exported Markdown representation.
         :rtype: str
         """
-        from docling_core.transforms.serializer.markdown import (
+        from docling_core.experimental.serializer.markdown import (
             MarkdownDocSerializer,
             MarkdownListSerializer,
             MarkdownTextSerializer,
@@ -2661,6 +2603,7 @@ class DoclingDocument(BaseModel):
             labels=labels,
             layers=included_content_layers,
             pages={page_no} if page_no is not None else None,
+            escaping_underscores=escaping_underscores,
             text_serializer=MarkdownTextSerializer(
                 wrap_width=text_width if text_width > 0 else None,
             ),
@@ -2671,14 +2614,12 @@ class DoclingDocument(BaseModel):
         ser_res = serializer.serialize()
 
         if delim != "\n\n":
-            warnings.warn(
-                "Parameter `delim` has been deprecated.",
-                DeprecationWarning,
+            _logger.warning(
+                "Parameter `delim` has been deprecated and will be ignored.",
             )
         if strict_text:
-            warnings.warn(
-                "Parameter `strict_text` has been deprecated.",
-                DeprecationWarning,
+            _logger.warning(
+                "Parameter `strict_text` has been deprecated and will be ignored.",
             )
 
         return ser_res.text
