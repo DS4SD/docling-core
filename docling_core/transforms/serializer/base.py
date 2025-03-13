@@ -11,7 +11,6 @@ from typing import Optional, Union
 from pydantic import AnyUrl, BaseModel
 
 from docling_core.types.doc.document import (
-    DOCUMENT_TOKENS_EXPORT_LABELS,
     DoclingDocument,
     FloatingItem,
     FormItem,
@@ -24,8 +23,6 @@ from docling_core.types.doc.document import (
     TextItem,
     UnorderedList,
 )
-
-_DEFAULT_LABELS = DOCUMENT_TOKENS_EXPORT_LABELS
 
 
 class SerializationResult(BaseModel):
@@ -225,6 +222,6 @@ class BaseDocSerializer(ABC):
         ...
 
     @abstractmethod
-    def get_excluded_nodes(self) -> list[str]:
+    def get_excluded_refs(self) -> list[str]:
         """Get references to excluded items."""
         ...

@@ -5,6 +5,7 @@
 
 """Define classes for Markdown serialization."""
 import html
+import re
 import textwrap
 from pathlib import Path
 from typing import Optional, Union
@@ -25,7 +26,7 @@ from docling_core.transforms.serializer.base import (
     BaseTextSerializer,
     SerializationResult,
 )
-from docling_core.transforms.serializer.standard import DocSerializer
+from docling_core.transforms.serializer.common import DocSerializer
 from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.document import (
     CodeItem,
@@ -64,14 +65,16 @@ class MarkdownTextSerializer(BaseModel, BaseTextSerializer):
         **kwargs,
     ) -> SerializationResult:
         """Serializes the passed item."""
-        do_escape_html = True
+        escape_html = True
+        escape_underscores = True
         if isinstance(item, TitleItem):
             res = f"# {item.text}"
         elif isinstance(item, SectionHeaderItem):
             res = f"{(item.level + 1) * '#'} {item.text}"
         elif isinstance(item, CodeItem):
             res = f"`{item.text}`" if is_inline_scope else f"```\n{item.text}\n```"
-            do_escape_html = False
+            escape_html = False
+            escape_underscores = False
         elif isinstance(item, FormulaItem):
             if item.text:
                 res = f"${item.text}$" if is_inline_scope else f"$${item.text}$$"
@@ -79,14 +82,16 @@ class MarkdownTextSerializer(BaseModel, BaseTextSerializer):
                 res = "<!-- formula-not-decoded -->"
             else:
                 res = ""
-            do_escape_html = False
+            escape_html = False
+            escape_underscores = False
         elif self.wrap_width:
             res = textwrap.fill(item.text, width=self.wrap_width)
         else:
             res = item.text
         res = doc_serializer.post_process(
             text=res,
-            do_escape_html=do_escape_html,
+            escape_html=escape_html,
+            escape_underscores=escape_underscores,
             formatting=item.formatting,
             hyperlink=item.hyperlink,
         )
@@ -113,7 +118,7 @@ class MarkdownTableSerializer(BaseTableSerializer):
         ).text:
             text_parts.append(caption_txt)
 
-        if item.self_ref not in doc_serializer.get_excluded_nodes():
+        if item.self_ref not in doc_serializer.get_excluded_refs():
             rows = [
                 [
                     # make sure that md tables are not broken
@@ -174,7 +179,7 @@ class MarkdownPictureSerializer(BasePictureSerializer):
         if cap_res.text:
             texts.append(cap_res.text)
 
-        if item.self_ref not in doc_serializer.get_excluded_nodes():
+        if item.self_ref not in doc_serializer.get_excluded_refs():
             img_res = self._serialize_image_part(
                 item=item,
                 doc=doc,
@@ -252,7 +257,7 @@ class MarkdownKeyValueSerializer(BaseKeyValueSerializer):
         # TODO add actual implementation
         text_res = (
             "<!-- missing-key-value-item -->"
-            if item.self_ref not in doc_serializer.get_excluded_nodes()
+            if item.self_ref not in doc_serializer.get_excluded_refs()
             else ""
         )
         return SerializationResult(text=text_res)
@@ -274,7 +279,7 @@ class MarkdownFormSerializer(BaseFormSerializer):
         # TODO add actual implementation
         text_res = (
             "<!-- missing-form-item -->"
-            if item.self_ref not in doc_serializer.get_excluded_nodes()
+            if item.self_ref not in doc_serializer.get_excluded_refs()
             else ""
         )
         return SerializationResult(text=text_res)
@@ -453,21 +458,46 @@ class MarkdownDocSerializer(DocSerializer):
         """Apply Markdown-specific hyperlink serialization."""
         return f"[{text}]({str(hyperlink)})"
 
+    @classmethod
+    def _escape_underscores(cls, text: str):
+        """Escape underscores but leave them intact in the URL.."""
+        # Firstly, identify all the URL patterns.
+        url_pattern = r"!\[.*?\]\((.*?)\)"
+
+        parts = []
+        last_end = 0
+
+        for match in re.finditer(url_pattern, text):
+            # Text to add before the URL (needs to be escaped)
+            before_url = text[last_end : match.start()]
+            parts.append(re.sub(r"(?<!\\)_", r"\_", before_url))
+
+            # Add the full URL part (do not escape)
+            parts.append(match.group(0))
+            last_end = match.end()
+
+        # Add the final part of the text (which needs to be escaped)
+        if last_end < len(text):
+            parts.append(re.sub(r"(?<!\\)_", r"\_", text[last_end:]))
+
+        return "".join(parts)
+        # return text.replace("_", r"\_")
+
     def post_process(
         self,
         text: str,
         *,
-        do_escape_html: bool = True,
-        # do_escape_underscores: bool = True,
+        escape_html: bool = True,
+        escape_underscores: bool = True,
         formatting: Optional[Formatting] = None,
         hyperlink: Optional[Union[AnyUrl, Path]] = None,
         **kwargs,
     ) -> str:
         """Apply some text post-processing steps."""
         res = text
-        # if do_escape_underscores #and escaping_underscores:
-        #     text = _escape_underscores(text)
-        if do_escape_html:
+        if escape_underscores:
+            res = self._escape_underscores(text)
+        if escape_html:
             res = html.escape(res, quote=False)
         res = super().post_process(
             text=res,

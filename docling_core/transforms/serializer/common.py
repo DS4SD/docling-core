@@ -83,7 +83,8 @@ class DocSerializer(BaseModel, BaseDocSerializer):
     list_serializer: BaseListSerializer
     inline_serializer: BaseInlineSerializer
 
-    # these will be passed to the picture serializer:
+    # these will be passed to the picture serializer (None defers/delegates fallback
+    # setting to callee):
     image_placeholder: Optional[str] = None
     image_mode: Optional[ImageRefMode] = None
 
@@ -119,7 +120,7 @@ class DocSerializer(BaseModel, BaseDocSerializer):
         return refs
 
     @override
-    def get_excluded_nodes(self) -> list[str]:
+    def get_excluded_refs(self) -> list[str]:
         """References to excluded items."""
         return self._excluded_refs
 
@@ -151,7 +152,7 @@ class DocSerializer(BaseModel, BaseDocSerializer):
         label_blocklist = {
             DocItemLabel.CAPTION,
             DocItemLabel.FOOTNOTE,
-            # TODO more? Perhaps push down to iterate_items?
+            # TODO handle differently as it clashes with self.labels
         }
         for ix, (item, _) in enumerate(
             self.doc.iterate_items(
@@ -199,7 +200,7 @@ class DocSerializer(BaseModel, BaseDocSerializer):
                         doc=self.doc,
                         is_inline_scope=is_inline_scope,
                     )
-                    if item.self_ref not in self.get_excluded_nodes()
+                    if item.self_ref not in self.get_excluded_refs()
                     else SerializationResult(text="")
                 )
             elif isinstance(item, TableItem):
@@ -304,7 +305,7 @@ class DocSerializer(BaseModel, BaseDocSerializer):
             it.text
             for cap in item.captions
             if isinstance(it := cap.resolve(self.doc), TextItem)
-            and it.self_ref not in self.get_excluded_nodes()
+            and it.self_ref not in self.get_excluded_refs()
         ]
         text_res = (separator or "\n").join(text_parts)
         text_res = self.post_process(text=text_res)
