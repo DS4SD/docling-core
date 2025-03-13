@@ -4,9 +4,20 @@ import json
 import logging
 import math
 import re
+import typing
 from enum import Enum
 from pathlib import Path
-from typing import Annotated, Dict, Iterator, List, NamedTuple, Optional, Tuple, Union
+from typing import (
+    Annotated,
+    Dict,
+    Iterator,
+    List,
+    Literal,
+    NamedTuple,
+    Optional,
+    Tuple,
+    Union,
+)
 
 import numpy as np
 from PIL import Image as PILImage
@@ -17,10 +28,9 @@ from pydantic import AnyUrl, BaseModel, Field, model_validator
 from docling_core.types.doc.base import BoundingBox, CoordOrigin
 from docling_core.types.doc.document import ImageRef
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+_logger = logging.getLogger(__name__)
+
+PageNumber = typing.Annotated[int, Field(ge=1)]
 
 
 class TextCellUnit(str, Enum):
@@ -175,13 +185,13 @@ class BoundingRectangle(BaseModel):
             coord_origin=bbox.coord_origin,
         )
 
-    def to_polygon(self) -> List[Tuple[float, float]]:
+    def to_polygon(self) -> List[Coord2D]:
         """Convert to a list of point coordinates forming a polygon."""
         return [
-            (self.r_x0, self.r_y0),
-            (self.r_x1, self.r_y1),
-            (self.r_x2, self.r_y2),
-            (self.r_x3, self.r_y3),
+            Coord2D(self.r_x0, self.r_y0),
+            Coord2D(self.r_x1, self.r_y1),
+            Coord2D(self.r_x2, self.r_y2),
+            Coord2D(self.r_x3, self.r_y3),
         ]
 
     def to_bottom_left_origin(self, page_height: float) -> "BoundingRectangle":
@@ -264,6 +274,7 @@ class TextCell(ColorMixin, OrderedElement):
     text_direction: TextDirection = TextDirection.LEFT_TO_RIGHT
 
     confidence: float = 1.0
+    from_ocr: bool
 
     def to_bounding_box(self) -> BoundingBox:
         """Convert the cell rectangle to a BoundingBox."""
@@ -311,6 +322,8 @@ class PdfTextCell(TextCell):
     font_key: str
     font_name: str
 
+    from_ocr: Literal[False] = False
+
     @model_validator(mode="before")
     @classmethod
     def update_ltr_property(cls, data: dict) -> dict:
@@ -351,7 +364,7 @@ class PdfLine(ColorMixin, OrderedElement):
     """Model representing a line in a PDF document."""
 
     parent_id: int
-    points: List[Tuple[float, float]]
+    points: List[Coord2D]
     width: float = 1.0
 
     coord_origin: CoordOrigin = CoordOrigin.BOTTOMLEFT
@@ -362,7 +375,7 @@ class PdfLine(ColorMixin, OrderedElement):
 
     def iterate_segments(
         self,
-    ) -> Iterator[Tuple[Tuple[float, float], Tuple[float, float]]]:
+    ) -> Iterator[Tuple[Coord2D, Coord2D]]:
         """Iterate through line segments defined by consecutive point pairs."""
         for k in range(0, len(self.points) - 1):
             yield (self.points[k], self.points[k + 1])
@@ -377,7 +390,7 @@ class PdfLine(ColorMixin, OrderedElement):
             return self
         elif self.coord_origin == CoordOrigin.TOPLEFT:
             for i, point in enumerate(self.points):
-                self.points[i] = (point[0], page_height - point[1])
+                self.points[i] = Coord2D(point[0], page_height - point[1])
 
             self.coord_origin = CoordOrigin.BOTTOMLEFT
 
@@ -391,12 +404,12 @@ class PdfLine(ColorMixin, OrderedElement):
             return self
         elif self.coord_origin == CoordOrigin.BOTTOMLEFT:
             for i, point in enumerate(self.points):
-                self.points[i] = (point[0], page_height - point[1])
+                self.points[i] = Coord2D(point[0], page_height - point[1])
 
             self.coord_origin = CoordOrigin.TOPLEFT
 
 
-class PageDimensions(BaseModel):
+class PageGeometry(BaseModel):
     """Model representing dimensions of a page."""
 
     angle: float
@@ -421,7 +434,7 @@ class PageDimensions(BaseModel):
         return (self.rect.to_bounding_box().l, self.rect.to_bounding_box().b)
 
 
-class PdfPageDimensions(PageDimensions):
+class PdfPageGeometry(PageGeometry):
     """Extended dimensions model specific to PDF pages with boundary types."""
 
     boundary_type: PdfPageBoundaryType
@@ -454,7 +467,7 @@ class PdfPageDimensions(PageDimensions):
 class SegmentedPage(BaseModel):
     """Model representing a segmented page with text cells and resources."""
 
-    dimension: PageDimensions
+    dimension: PageGeometry
 
     bitmap_resources: List[BitmapResource] = []
 
@@ -493,7 +506,7 @@ class SegmentedPdfPage(SegmentedPage):
     """Extended segmented page model specific to PDF documents."""
 
     # Redefine typing to use PdfPageDimensions
-    dimension: PdfPageDimensions
+    dimension: PdfPageGeometry
 
     lines: List[PdfLine] = []
 
@@ -503,12 +516,12 @@ class SegmentedPdfPage(SegmentedPage):
     textline_cells: List[Union[PdfTextCell, TextCell]]
 
     def get_cells_in_bbox(
-        self, label: TextCellUnit, bbox: BoundingBox, ios: float = 0.8
+        self, cell_unit: TextCellUnit, bbox: BoundingBox, ios: float = 0.8
     ) -> List[Union[PdfTextCell, TextCell]]:
         """Get text cells that are within the specified bounding box.
 
         Args:
-            label: Type of text unit to check
+            cell_unit: Type of text unit to check
             bbox: Bounding box to check against
             ios: Minimum intersection over self ratio
 
@@ -516,7 +529,7 @@ class SegmentedPdfPage(SegmentedPage):
             List of text cells within the bounding box
         """
         cells = []
-        for page_cell in self.iterate_cells(label):
+        for page_cell in self.iterate_cells(cell_unit):
             cell_bbox = page_cell.to_bounding_box()
             if cell_bbox.intersection_over_self(bbox) > ios:
                 cells.append(page_cell)
@@ -559,16 +572,16 @@ class SegmentedPdfPage(SegmentedPage):
         with open(filename, "r", encoding="utf-8") as f:
             return cls.model_validate_json(f.read())
 
-    def crop_text(self, label: TextCellUnit, bbox: BoundingBox, eps: float = 1.0):
+    def crop_text(self, cell_unit: TextCellUnit, bbox: BoundingBox, eps: float = 1.0):
         """Extract text from cells within the specified bounding box.
 
         Args:
-            label: Type of text unit to extract
+            cell_unit: Type of text unit to extract
             bbox: Bounding box to extract from
             eps: Epsilon value for position comparison
         """
         selection = []
-        for page_cell in self.iterate_cells(label):
+        for page_cell in self.iterate_cells(cell_unit):
             cell_bbox = page_cell.rect.to_bottom_left_origin(
                 page_height=self.dimension.height
             ).to_bounding_box()
@@ -602,7 +615,7 @@ class SegmentedPdfPage(SegmentedPage):
 
     def export_to_textlines(
         self,
-        label: TextCellUnit,
+        cell_unit: TextCellUnit,
         add_location: bool = True,
         add_fontkey: bool = False,
         add_fontname: bool = True,
@@ -610,7 +623,7 @@ class SegmentedPdfPage(SegmentedPage):
         """Export text cells as formatted text lines.
 
         Args:
-            label: Type of text unit to export
+            cell_unit: Type of text unit to export
             add_location: Whether to include position information
             add_fontkey: Whether to include font key information
             add_fontname: Whether to include font name information
@@ -619,7 +632,7 @@ class SegmentedPdfPage(SegmentedPage):
             List of formatted text lines
         """
         lines: List[str] = []
-        for cell in self.iterate_cells(label):
+        for cell in self.iterate_cells(cell_unit):
 
             line = ""
             if add_location:
@@ -641,7 +654,7 @@ class SegmentedPdfPage(SegmentedPage):
 
     def render_as_image(
         self,
-        label: TextCellUnit,
+        cell_unit: TextCellUnit,
         boundary_type: PdfPageBoundaryType = PdfPageBoundaryType.CROP_BOX,  # media_box
         draw_cells_bbox: bool = False,
         draw_cells_text: bool = True,
@@ -678,7 +691,7 @@ class SegmentedPdfPage(SegmentedPage):
         """Render the page as an image with various visualization options.
 
         Args:
-            label: Type of text unit to render
+            cell_unit: Type of text unit to render
             boundary_type: Type of page boundary to use
             draw_cells_bbox: Whether to draw bounding boxes for cells
             draw_cells_text: Whether to draw text content of cells
@@ -751,12 +764,12 @@ class SegmentedPdfPage(SegmentedPage):
 
         if draw_cells_text:
             result = self._render_cells_text(
-                label=label, img=result, page_height=page_height
+                cell_unit=cell_unit, img=result, page_height=page_height
             )
 
         elif draw_cells_bbox:
             self._render_cells_bbox(
-                label=label,
+                cell_unit=cell_unit,
                 draw=draw,
                 page_height=page_height,
                 cell_fill=cell_color,
@@ -766,7 +779,7 @@ class SegmentedPdfPage(SegmentedPage):
 
         if draw_cells_bl:
             self._draw_cells_bl(
-                label=label,
+                cell_unit=cell_unit,
                 draw=draw,
                 page_height=page_height,
                 cell_bl_color=cell_bl_color,
@@ -777,7 +790,7 @@ class SegmentedPdfPage(SegmentedPage):
 
         if draw_cells_tr:
             self._draw_cells_tr(
-                label=label,
+                cell_unit=cell_unit,
                 draw=draw,
                 page_height=page_height,
                 cell_tr_color=cell_tr_color,
@@ -852,7 +865,7 @@ class SegmentedPdfPage(SegmentedPage):
 
     def _render_cells_bbox(
         self,
-        label: TextCellUnit,
+        cell_unit: TextCellUnit,
         draw: ImageDraw.ImageDraw,
         page_height: float,
         cell_fill: str,
@@ -862,7 +875,7 @@ class SegmentedPdfPage(SegmentedPage):
         """Render bounding boxes for text cells.
 
         Args:
-            label: Type of text unit to render
+            cell_unit: Type of text unit to render
             draw: PIL ImageDraw object
             page_height: Height of the page
             cell_fill: Fill color for cells
@@ -876,7 +889,7 @@ class SegmentedPdfPage(SegmentedPage):
         outline = self._get_rgba(name=cell_outline, alpha=cell_alpha)
 
         # Draw each rectangle by connecting its four points
-        for page_cell in self.iterate_cells(unit_type=label):
+        for page_cell in self.iterate_cells(unit_type=cell_unit):
             poly = page_cell.rect.to_top_left_origin(
                 page_height=page_height
             ).to_polygon()
@@ -950,70 +963,13 @@ class SegmentedPdfPage(SegmentedPage):
 
         return img
 
-    def _draw_text_in_bounding_bbox(
-        self,
-        img: PILImage.Image,
-        bbox: Tuple[float, float, float, float],
-        text: str,
-        font: Optional[Union[FreeTypeFont, ImageFont.ImageFont]] = None,
-        fill: str = "black",
-    ) -> PILImage.Image:
-        """Draw text within a bounding box.
-
-        Args:
-            img: PIL Image to draw on
-            bbox: Bounding box coordinates (x0, y0, x1, y1)
-            text: Text content to draw
-            font: Font to use for drawing text
-            fill: Text color
-
-        Returns:
-            Updated PIL Image
-        """
-        x0, y0, x1, y1 = bbox
-
-        width, height = round(x1 - x0), round(y0 - y1)
-
-        if width <= 2 or height <= 2:
-            # logging.warning(f"skipping to draw text
-            # (width: {x1-x0}, height: {y1-y0}): {text}")
-            return img
-
-        # Use the default font if no font is provided
-        if font is None:
-            font = ImageFont.load_default()
-
-        # Create a temporary image for the text
-        tmp_img = PILImage.new("RGBA", (1, 1), (255, 255, 255, 0))  # Dummy size
-        tmp_draw = ImageDraw.Draw(tmp_img)
-        _, _, text_width, text_height = tmp_draw.textbbox((0, 0), text=text, font=font)
-
-        # Create a properly sized temporary image
-        tmp_img = PILImage.new(
-            "RGBA", (round(text_width), round(text_height)), (255, 255, 255, 255)
-        )
-        tmp_draw = ImageDraw.Draw(tmp_img)
-        tmp_draw.text((0, 0), text, font=font, fill=(0, 0, 0, 255))
-
-        # Resize image
-        res_img = tmp_img.resize((width, height), PILImage.Resampling.LANCZOS)
-
-        # Paste the resized text image onto the original image
-        img.paste(
-            im=res_img,
-            box=(round(x0), round(y1), round(x0) + width, round(y1) + height),
-            mask=None,
-        )
-
-        return img  # draw
-
     def _render_cells_text(
-        self, label: TextCellUnit, img: PILImage.Image, page_height: float
+        self, cell_unit: TextCellUnit, img: PILImage.Image, page_height: float
     ) -> PILImage.Image:
         """Render text content of cells on the image.
 
         Args:
-            label: Type of text unit to render
+            cell_unit: Type of text unit to render
             img: PIL Image to draw on
             page_height: Height of the page
 
@@ -1021,17 +977,7 @@ class SegmentedPdfPage(SegmentedPage):
             Updated PIL Image
         """
         # Draw each rectangle by connecting its four points
-        for page_cell in self.iterate_cells(unit_type=label):
-            # Alternative approach using polygon
-            # poly = page_cell.rect.to_top_left_origin(
-            #     page_height=page_height
-            # ).to_polygon()
-            #
-            # result = self._draw_text_in_bounding_bbox(
-            #     img=img,
-            #     bbox=(poly[0][0], poly[0][1], poly[2][0], poly[2][1]),
-            #     text=page_cell.text,
-            # )
+        for page_cell in self.iterate_cells(unit_type=cell_unit):
             rect = page_cell.rect.to_top_left_origin(page_height=page_height)
             img = self._draw_text_in_rectangle(
                 img=img,
@@ -1043,7 +989,7 @@ class SegmentedPdfPage(SegmentedPage):
 
     def _draw_cells_bl(
         self,
-        label: TextCellUnit,
+        cell_unit: TextCellUnit,
         draw: ImageDraw.ImageDraw,
         page_height: float,
         cell_bl_color: str,
@@ -1054,7 +1000,7 @@ class SegmentedPdfPage(SegmentedPage):
         """Draw bottom-left points of text cells.
 
         Args:
-            label: Type of text unit to render
+            cell_unit: Type of text unit to render
             draw: PIL ImageDraw object
             page_height: Height of the page
             cell_bl_color: Fill color for bottom-left points
@@ -1069,7 +1015,7 @@ class SegmentedPdfPage(SegmentedPage):
         outline = self._get_rgba(name=cell_bl_outline, alpha=cell_bl_alpha)
 
         # Draw each rectangle by connecting its four points
-        for page_cell in self.iterate_cells(unit_type=label):
+        for page_cell in self.iterate_cells(unit_type=cell_unit):
             poly = page_cell.rect.to_top_left_origin(
                 page_height=page_height
             ).to_polygon()
@@ -1086,7 +1032,7 @@ class SegmentedPdfPage(SegmentedPage):
 
     def _draw_cells_tr(
         self,
-        label: TextCellUnit,
+        cell_unit: TextCellUnit,
         draw: ImageDraw.ImageDraw,
         page_height: float,
         cell_tr_color: str,
@@ -1097,7 +1043,7 @@ class SegmentedPdfPage(SegmentedPage):
         """Draw top-right points of text cells.
 
         Args:
-            label: Type of text unit to render
+            cell_unit: Type of text unit to render
             draw: PIL ImageDraw object
             page_height: Height of the page
             cell_tr_color: Fill color for top-right points
@@ -1112,7 +1058,7 @@ class SegmentedPdfPage(SegmentedPage):
         outline = self._get_rgba(name=cell_tr_outline, alpha=cell_tr_alpha)
 
         # Draw each rectangle by connecting its four points
-        for page_cell in self.iterate_cells(unit_type=label):
+        for page_cell in self.iterate_cells(unit_type=cell_unit):
             poly = page_cell.rect.to_top_left_origin(
                 page_height=page_height
             ).to_polygon()
@@ -1182,7 +1128,7 @@ class PdfMetaData(BaseModel):
         for _ in matches:
             namespace_open, tag_open, content, namespace_close, tag_close = _
             if namespace_open == namespace_close and tag_open == tag_close:
-                print(
+                _logger.debug(
                     f"Namespace: {namespace_open}, Tag: {tag_open}, Content: {content}"
                 )
                 self.data[tag_open] = content
@@ -1237,7 +1183,7 @@ class PdfTableOfContents(BaseModel):
 class ParsedPdfDocument(BaseModel):
     """Model representing a completely parsed PDF document with all components."""
 
-    pages: Dict[int, SegmentedPdfPage] = {}
+    pages: Dict[PageNumber, SegmentedPdfPage] = {}
 
     meta_data: Optional[PdfMetaData] = None
     table_of_contents: Optional[PdfTableOfContents] = None
