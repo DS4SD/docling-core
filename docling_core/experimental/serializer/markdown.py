@@ -306,16 +306,6 @@ class MarkdownListSerializer(BaseModel, BaseListSerializer):
         my_visited = visited or set()
         parts = doc_serializer.get_parts(
             node=item,
-            # from_element=from_element,
-            # to_element=to_element,
-            # labels=labels,
-            # strict_text=strict_text,
-            # escaping_underscores=escaping_underscores,
-            # image_placeholder=image_placeholder,
-            # image_mode=image_mode,
-            # text_width=text_width,
-            # page_no=page_no,
-            # included_content_layers=included_content_layers,
             list_level=list_level + 1,
             is_inline_scope=is_inline_scope,
             visited=my_visited,
@@ -333,12 +323,6 @@ class MarkdownListSerializer(BaseModel, BaseListSerializer):
                 for i, c in enumerate(parts)
             ]
         )
-        # text = self._post_process(
-        #     text=text,
-        #     do_escape_html=False,  # already escaped as needed
-        #     formatting=None,
-        #     hyperlink=None,
-        # )
         return SerializationResult(text=text_res)
 
 
@@ -360,27 +344,11 @@ class MarkdownInlineSerializer(BaseInlineSerializer):
         my_visited = visited or set()
         parts = doc_serializer.get_parts(
             node=item,
-            # from_element=from_element,
-            # to_element=to_element,
-            # labels=labels,
-            # strict_text=strict_text,
-            # escaping_underscores=escaping_underscores,
-            # image_placeholder=image_placeholder,
-            # image_mode=image_mode,
-            # text_width=text_width,
-            # page_no=page_no,
-            # included_content_layers=included_content_layers,
             list_level=list_level,
             is_inline_scope=True,
             visited=my_visited,
         )
         text_res = " ".join([p.text for p in parts if p.text])
-        # text = self._post_process(
-        #     text=text,
-        #     do_escape_html=False,  # already escaped as needed
-        #     formatting=None,
-        #     hyperlink=None,
-        # )
         return SerializationResult(text=text_res)
 
 
@@ -407,7 +375,6 @@ class MarkdownFallbackSerializer(BaseFallbackSerializer):
 class MarkdownDocSerializer(DocSerializer):
     """Markdown-specific document serializer."""
 
-    # text_serializer: BaseTextSerializer = None  # type: ignore[assignment]
     text_serializer: BaseTextSerializer = MarkdownTextSerializer()
     table_serializer: BaseTableSerializer = MarkdownTableSerializer()
     picture_serializer: BasePictureSerializer = MarkdownPictureSerializer()
@@ -415,28 +382,8 @@ class MarkdownDocSerializer(DocSerializer):
     form_serializer: BaseFormSerializer = MarkdownFormSerializer()
     fallback_serializer: BaseFallbackSerializer = MarkdownFallbackSerializer()
 
-    # list_serializer: BaseListSerializer = None  # type: ignore[assignment]
     list_serializer: BaseListSerializer = MarkdownListSerializer()
     inline_serializer: BaseInlineSerializer = MarkdownInlineSerializer()
-
-    # # format-specific
-    # indent: Optional[int] = None
-    # wrap_width: Optional[PositiveInt] = None
-
-    # @model_validator(mode="before")
-    # @classmethod
-    # def _create(cls, data):
-    #     if data.get(key := "text_serializer") is None:
-    #         kwargs = {}
-    #         if (wrap_width := data.get("wrap_width")) is not None:
-    #             kwargs["wrap_width"] = wrap_width
-    #         data[key] = MarkdownTextSerializer(**kwargs)
-    #     if data.get(key := "list_serializer") is None:
-    #         kwargs = {}
-    #         if (indent := data.get("indent")) is not None:
-    #             kwargs["indent"] = indent
-    #         data[key] = MarkdownListSerializer(**kwargs)
-    #     return data
 
     @override
     def serialize_bold(self, text: str, **kwargs):

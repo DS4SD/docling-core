@@ -564,7 +564,7 @@ class GroupItem(NodeItem):  # Container type, can't be a leaf node
         "group"  # Name of the group, e.g. "Introduction Chapter",
         # "Slide 5", "Navigation menu list", ...
     )
-    # TODO narrow down possible values (i.e. excluding those used for children)
+    # TODO narrow down to allowed values, i.e. excluding those used for subtypes
     label: GroupLabel = GroupLabel.UNSPECIFIED
 
 

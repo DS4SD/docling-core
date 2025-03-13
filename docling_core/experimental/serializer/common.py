@@ -132,15 +132,6 @@ class DocSerializer(BaseModel, BaseDocSerializer):
         node: Optional[NodeItem] = None,
         *,
         traverse_pictures: bool = False,
-        # from_element: int,
-        # to_element: int,
-        # strict_text: bool,
-        # escaping_underscores: bool,
-        # image_placeholder: str,
-        # image_mode: ImageRefMode,
-        # text_width: int,
-        # page_no: Optional[int],
-        # included_content_layers: set[ContentLayer],
         list_level: int = 0,
         is_inline_scope: bool = False,
         visited: Optional[set[str]] = None,  # refs of visited items
@@ -296,8 +287,6 @@ class DocSerializer(BaseModel, BaseDocSerializer):
     def serialize_captions(
         self,
         item: FloatingItem,
-        # doc_serializer: "BaseDocSerializer",
-        # doc: DoclingDocument,
         separator: Optional[str] = None,
         **kwargs,
     ) -> SerializationResult:
@@ -326,11 +315,9 @@ class PictureSerializer(BasePictureSerializer):
         visited: Optional[set[str]] = None,
         **kwargs,
     ) -> SerializationResult:
-        parts = doc_serializer.get_parts(  # FIXME
+        parts = doc_serializer.get_parts(
             node=item,
             traverse_pictures=True,
-            # list_level=list_level,
-            # is_inline_scope=is_inline_scope,
             visited=visited,
         )
         text_res = (separator or " ").join([p.text for p in parts])
