@@ -1579,7 +1579,7 @@ class DoclingDocument(BaseModel):
 
     groups: List[Union[OrderedList, UnorderedList, InlineGroup, GroupItem]] = []
     texts: List[
-        Union[TitleItem, SectionHeaderItem, ListItem, TextItem, CodeItem, FormulaItem]
+        Union[TitleItem, SectionHeaderItem, ListItem, CodeItem, FormulaItem, TextItem]
     ] = []
     pictures: List[PictureItem] = []
     tables: List[TableItem] = []

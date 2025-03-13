@@ -21,6 +21,7 @@ from docling_core.types.doc.document import (  # BoundingBox,
     FloatingItem,
     Formatting,
     FormItem,
+    FormulaItem,
     GraphCell,
     GraphData,
     GraphLink,
@@ -35,6 +36,7 @@ from docling_core.types.doc.document import (  # BoundingBox,
     TableData,
     TableItem,
     TextItem,
+    TitleItem,
 )
 from docling_core.types.doc.labels import (
     DocItemLabel,
@@ -175,7 +177,7 @@ def test_orientation():
     assert bbox1_.is_strictly_above(bbox4_) is True
 
 
-def ztest_docitems():
+def test_docitems():
 
     # Iterative function to find all subclasses
     def find_all_subclasses_iterative(base_class):
@@ -321,6 +323,15 @@ def ztest_docitems():
             )
             verify(dc, obj)
 
+        elif dc is TitleItem:
+            obj = dc(
+                text="whatever",
+                orig="whatever",
+                label=DocItemLabel.TITLE,
+                self_ref="#",
+            )
+            verify(dc, obj)
+
         elif dc is SectionHeaderItem:
             obj = dc(
                 text="whatever",
@@ -349,6 +360,13 @@ def ztest_docitems():
                 orig="whatever",
                 text="print(Hello World!)",
                 code_language="Python",
+            )
+            verify(dc, obj)
+        elif dc is FormulaItem:
+            obj = dc(
+                self_ref="#",
+                orig="whatever",
+                text="E=mc^2",
             )
             verify(dc, obj)
         elif dc is GraphData:  # we skip this on purpose
