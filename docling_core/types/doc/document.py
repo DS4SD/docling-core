@@ -2570,7 +2570,7 @@ class DoclingDocument(BaseModel):
                 (exclusive). (Default value = maxint).
         :type to_element: int = sys.maxsize
         :param labels: The set of document labels to include in the export.
-        :type labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS
+        :type labels: set[DocItemLabel] = DOCUMENT_TOKENS_EXPORT_LABELS
         :param strict_text: Deprecated.
         :type strict_text: bool = False
         :param escaping_underscores: bool: Whether to escape underscores in the
@@ -2629,7 +2629,7 @@ class DoclingDocument(BaseModel):
         delim: str = "\n\n",
         from_element: int = 0,
         to_element: int = 1000000,
-        labels: set[DocItemLabel] = DEFAULT_EXPORT_LABELS,
+        labels: set[DocItemLabel] = DOCUMENT_TOKENS_EXPORT_LABELS,
     ) -> str:
         """export_to_text."""
         return self.export_to_markdown(
