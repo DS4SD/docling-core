@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "docling-core"
-version = "2.21.2"
+version = "2.23.0"
 description = "A python library to define and validate data types in Docling."
 license = "MIT"
 authors = [
@@ -23,7 +23,7 @@ maintainers = [
 ]
 readme = "README.md"
 homepage = "https://ds4sd.github.io/"
-repository = "https://github.com/DS4SD/docling-core"
+repository = "https://github.com/docling-project/docling-core"
 keywords = ["docling", "discovery", "etl", "information retrieval", "analytics", "database", "database schema", "schema", "JSON"]
 classifiers=[
     "Development Status :: 5 - Production/Stable",
@@ -79,6 +79,7 @@ jsondiff = "^2.0.0"
 types-setuptools = "^70.3.0"
 python-semantic-release = "^7.32.2"
 pandas-stubs = "^2.1.4.231227"
+ipykernel = "^6.29.5"
 
 [tool.poetry.group.constraints]
 optional = true
