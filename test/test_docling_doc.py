@@ -1158,3 +1158,118 @@ def test_save_to_disk():
     _verify_saved_output(filename=filename, paths=paths)
 
     assert True
+
+
+def test_page_markers_in_markdown_export():
+    """Test that page markers are correctly inserted in markdown export."""
+    # Create a document with multiple pages
+    doc = DoclingDocument(name="Page Marker Test")
+
+    # Add pages
+    doc.add_page(page_no=1, size=Size(width=500, height=700))
+    doc.add_page(page_no=2, size=Size(width=500, height=700))
+    doc.add_page(page_no=3, size=Size(width=500, height=700))
+
+    # Add content with different page numbers
+    prov1 = ProvenanceItem(
+        page_no=1, bbox=BoundingBox(l=10, t=10, r=100, b=20), charspan=(0, 10)
+    )
+    prov2 = ProvenanceItem(
+        page_no=2, bbox=BoundingBox(l=10, t=10, r=100, b=20), charspan=(0, 10)
+    )
+    prov3 = ProvenanceItem(
+        page_no=3, bbox=BoundingBox(l=10, t=10, r=100, b=20), charspan=(0, 10)
+    )
+
+    # Add content to page 1
+    doc.add_text(label=DocItemLabel.TEXT, text="This is text on page 1", prov=prov1)
+
+    # Add content to page 2
+    doc.add_text(label=DocItemLabel.TEXT, text="This is text on page 2", prov=prov2)
+
+    # Add content to page 3
+    doc.add_text(label=DocItemLabel.TEXT, text="This is text on page 3", prov=prov3)
+
+    # Test without page markers (default)
+    md_without_markers = doc.export_to_markdown()
+    assert (
+        "##PAGE" not in md_without_markers
+    ), "Page markers should not be present by default"
+
+    # Test with page markers
+    md_with_markers = doc.export_to_markdown(include_page_markers=True)
+
+    # Check that page markers are present
+    assert "##PAGE 1##" in md_with_markers, "Page 1 marker should be present"
+    assert "##PAGE 2##" in md_with_markers, "Page 2 marker should be present"
+    assert "##PAGE 3##" in md_with_markers, "Page 3 marker should be present"
+
+    # Check the order of page markers
+    page1_pos = md_with_markers.find("##PAGE 1##")
+    page2_pos = md_with_markers.find("##PAGE 2##")
+    page3_pos = md_with_markers.find("##PAGE 3##")
+
+    assert page1_pos < page2_pos < page3_pos, "Page markers should be in correct order"
+
+    # Check that page markers are followed by content
+    assert "This is text on page 1" in md_with_markers[page1_pos:page2_pos]
+    assert "This is text on page 2" in md_with_markers[page2_pos:page3_pos]
+    assert "This is text on page 3" in md_with_markers[page3_pos:]
+
+
+def test_page_markers_in_save_as_markdown():
+    """Test that page markers are correctly saved when using save_as_markdown."""
+    # Create a document with multiple pages
+    doc = DoclingDocument(name="Page Marker Save Test")
+
+    # Add pages
+    doc.add_page(page_no=1, size=Size(width=500, height=700))
+    doc.add_page(page_no=2, size=Size(width=500, height=700))
+
+    # Add content with different page numbers
+    prov1 = ProvenanceItem(
+        page_no=1, bbox=BoundingBox(l=10, t=10, r=100, b=20), charspan=(0, 10)
+    )
+    prov2 = ProvenanceItem(
+        page_no=2, bbox=BoundingBox(l=10, t=10, r=100, b=20), charspan=(0, 10)
+    )
+
+    # Add content to page 1
+    doc.add_text(label=DocItemLabel.TEXT, text="This is text on page 1", prov=prov1)
+
+    # Add content to page 2
+    doc.add_text(label=DocItemLabel.TEXT, text="This is text on page 2", prov=prov2)
+
+    # Create temporary files for testing
+    temp_file_without_markers = Path("test_without_markers.md")
+    temp_file_with_markers = Path("test_with_markers.md")
+
+    try:
+        # Save without page markers (default)
+        doc.save_as_markdown(filename=temp_file_without_markers)
+
+        # Save with page markers
+        doc.save_as_markdown(filename=temp_file_with_markers, include_page_markers=True)
+
+        # Read the files
+        with open(temp_file_without_markers, "r", encoding="utf-8") as f:
+            content_without_markers = f.read()
+
+        with open(temp_file_with_markers, "r", encoding="utf-8") as f:
+            content_with_markers = f.read()
+
+        # Check that page markers are not present in the first file
+        assert (
+            "##PAGE" not in content_without_markers
+        ), "Page markers should not be present by default"
+
+        # Check that page markers are present in the second file
+        assert "##PAGE 1##" in content_with_markers, "Page 1 marker should be present"
+        assert "##PAGE 2##" in content_with_markers, "Page 2 marker should be present"
+
+    finally:
+        # Clean up temporary files
+        if temp_file_without_markers.exists():
+            temp_file_without_markers.unlink()
+        if temp_file_with_markers.exists():
+            temp_file_with_markers.unlink()

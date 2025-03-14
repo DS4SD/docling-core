@@ -2288,6 +2288,7 @@ class DoclingDocument(BaseModel):
         text_width: int = -1,
         page_no: Optional[int] = None,
         included_content_layers: set[ContentLayer] = DEFAULT_CONTENT_LAYERS,
+        include_page_markers: bool = False,
     ):
         """Save to markdown."""
         artifacts_dir, reference_path = self._get_output_paths(filename, artifacts_dir)
@@ -2312,6 +2313,7 @@ class DoclingDocument(BaseModel):
             text_width=text_width,
             page_no=page_no,
             included_content_layers=included_content_layers,
+            include_page_markers=include_page_markers,
         )
 
         with open(filename, "w", encoding="utf-8") as fw:
@@ -2331,6 +2333,7 @@ class DoclingDocument(BaseModel):
         text_width: int = -1,
         page_no: Optional[int] = None,
         included_content_layers: set[ContentLayer] = DEFAULT_CONTENT_LAYERS,
+        include_page_markers: bool = False,
     ) -> str:
         r"""Serialize to Markdown.
 
@@ -2363,6 +2366,9 @@ class DoclingDocument(BaseModel):
         :param indent: The indent in spaces of the nested lists.
             (Default value = 4).
         :type indent: int = 4
+        :param include_page_markers: Whether to insert page number markers
+            (e.g., ##PAGE 1##) at page transitions. (Default value = False).
+        :type include_page_markers: bool = False
         :returns: The exported Markdown representation.
         :rtype: str
         """
@@ -2382,6 +2388,7 @@ class DoclingDocument(BaseModel):
             list_level=0,
             is_inline_scope=False,
             visited=set(),
+            include_page_markers=include_page_markers,
         )
         return delim.join(comps)
 
@@ -2402,8 +2409,12 @@ class DoclingDocument(BaseModel):
         list_level: int,
         is_inline_scope: bool,
         visited: set[str],  # refs of visited items
+        include_page_markers: bool = False,
     ) -> list[str]:
         components: list[str] = []  # components to concatenate
+        previous_page_no = (
+            None  # Track the previous page number for page marker insertion
+        )
 
         # Our export markdown doesn't contain any emphasis styling:
         # Bold, Italic, or Bold-Italic
@@ -2459,6 +2470,15 @@ class DoclingDocument(BaseModel):
             else:
                 visited.add(item.self_ref)
 
+            if include_page_markers and isinstance(item, DocItem) and item.prov:
+                current_page_no = item.prov[0].page_no
+                if previous_page_no is None or current_page_no != previous_page_no:
+                    if previous_page_no is not None:
+                        # Add a newline before the page marker if it's not the first one
+                        components.append("\n")
+                    components.append(f"##PAGE {current_page_no}##\n\n")
+                    previous_page_no = current_page_no
+
             if ix < from_element or to_element <= ix:
                 continue  # skip as many items as you want
 
@@ -2486,6 +2506,7 @@ class DoclingDocument(BaseModel):
                         list_level=list_level + 1,
                         is_inline_scope=is_inline_scope,
                         visited=visited,
+                        include_page_markers=include_page_markers,
                     )
                     indent_str = list_level * indent * " "
                     is_ol = item.label == GroupLabel.ORDERED_LIST
@@ -2523,6 +2544,7 @@ class DoclingDocument(BaseModel):
                         list_level=list_level,
                         is_inline_scope=True,
                         visited=visited,
+                        include_page_markers=include_page_markers,
                     )
                     text = " ".join(comps)
                     _ingest_text(
