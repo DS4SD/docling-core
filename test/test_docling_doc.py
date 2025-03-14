@@ -45,7 +45,7 @@ from docling_core.types.doc.labels import (
     GroupLabel,
 )
 
-GENERATE = False
+from .test_data_gen_flag import GEN_TEST_DATA
 
 
 def test_doc_origin():
@@ -477,7 +477,7 @@ def _test_serialize_and_reload(doc):
 
 
 def _verify_regression_test(pred: str, filename: str, ext: str):
-    if os.path.exists(filename + f".{ext}") and not GENERATE:
+    if os.path.exists(filename + f".{ext}") and not GEN_TEST_DATA:
         with open(filename + f".{ext}", "r", encoding="utf-8") as fr:
             gt_true = fr.read().rstrip()
 
@@ -1101,7 +1101,7 @@ def _verify_saved_output(filename: str, paths: List[Path]):
 
     pred = _normalise_string_wrt_filepaths(pred, paths=paths)
 
-    if GENERATE:
+    if GEN_TEST_DATA:
         with open(str(filename) + ".gt", "w", encoding="utf-8") as fw:
             fw.write(pred)
     else:
